@@ -88,7 +88,6 @@
             const bodyWidth = 36 - (12 * progress);
             const faceY = 32;
 
-            // กำหนดสถานะท่าทางจากตารางซ้อมปัจจุบัน
             const act = currentConfig?.id === 'rest' ? 'stretch' : 'cardio';
 
             let statusText = '';
@@ -128,27 +127,22 @@
                         `}</style>
                         
                         <g className={act === 'stretch' ? 'anim-sway origin-bottom' : 'anim-float-run'}>
-                            {/* เสื้อด้านหลัง */}
                             <path d="M 32 25 Q 50 5 68 25 L 68 35 Q 50 20 32 35 Z" fill="#1e293b" />
                             
-                            {/* ขาซ้าย */}
                             <g className={`origin-hip-l ${act === 'cardio' ? 'anim-run-leg-l' : ''}`}>
                                 <rect x="42" y="60" width="6" height="28" rx="3" fill="#fcd5ce" />
                                 <path d="M 41 85 L 48.5 85 L 48.5 94 Q 45 96 41 94 Z" fill="#bef264" /> 
                                 <rect x="42" y="80" width="6" height="5" fill="#3f6212" /> 
                             </g>
 
-                            {/* ขาขวา */}
                             <g className={`origin-hip-r ${act === 'cardio' ? 'anim-run-leg-r' : ''}`}>
                                 <rect x="52" y="60" width="6" height="28" rx="3" fill="#fcd5ce" />
                                 <path d="M 51.5 85 L 59 85 L 59 94 Q 55 96 51.5 94 Z" fill="#bef264" /> 
                                 <rect x="52" y="80" width="6" height="5" fill="#3f6212" /> 
                             </g>
 
-                            {/* กางเกงวิ่ง */}
                             <path d={`M ${50 - bodyWidth/2 - 2} 60 L ${50 + bodyWidth/2 + 2} 60 L ${50 + bodyWidth/2 + 3} 72 L 51 70 L 49 70 L ${50 - bodyWidth/2 - 3} 72 Z`} fill="#111827" />
 
-                            {/* แขนซ้าย */}
                             <g className={`origin-shoulder-l ${act === 'cardio' ? 'anim-run-arm-l' : ''}`}>
                                 {act === 'stretch' ? (
                                     <line x1="38" y1="52" x2="25" y2="20" stroke="#fcd5ce" strokeWidth="5.5" strokeLinecap="round" />
@@ -157,19 +151,16 @@
                                 )}
                             </g>
 
-                            {/* ลำตัวและเสื้อ */}
                             <rect x={50 - bodyWidth/2} y="50" width={bodyWidth} height="15" rx="3" fill="#f97316" className="transition-all duration-700 ease-out" />
                             <path d={`M ${50 - bodyWidth/2} 50 L ${50 - bodyWidth/2 + 4} 43 L ${50 - bodyWidth/2 + 8} 50 Z`} fill="#f97316" className="transition-all duration-700 ease-out"/>
                             <path d={`M ${50 + bodyWidth/2} 50 L ${50 + bodyWidth/2 - 4} 43 L ${50 + bodyWidth/2 - 8} 50 Z`} fill="#f97316" className="transition-all duration-700 ease-out"/>
 
-                            {/* เบอร์วิ่ง (BIB) */}
                             <g transform={`translate(${50 - 8}, 52)`}>
                                 <rect x="0" y="0" width="16" height="9" fill="#ffffff" rx="1.5" />
                                 <rect x="1" y="1" width="14" height="2" fill="#ef4444" rx="0.5" />
                                 <text x="8" y="7.5" fontSize="4.5" fontWeight="900" fill="#000" textAnchor="middle" fontFamily="sans-serif">80</text>
                             </g>
 
-                            {/* แขนขวา */}
                             <g className={`origin-shoulder-r ${act === 'cardio' ? 'anim-run-arm-r' : ''}`}>
                                 {act === 'stretch' ? (
                                     <line x1="62" y1="52" x2="75" y2="20" stroke="#fcd5ce" strokeWidth="5.5" strokeLinecap="round" />
@@ -178,22 +169,19 @@
                                 )}
                             </g>
 
-                            {/* ศีรษะและใบหน้า */}
                             <rect x="46" y={faceY + 12} width="8" height="6" fill="#fcd5ce" />
                             <circle cx="50" cy={faceY} r="14.5" fill="#fcd5ce" />
                             <path d="M 35 25 Q 50 10 65 25 Q 50 18 35 25" fill="#1e293b" />
                             <path d="M 40 20 L 45 8 L 50 16 L 56 10 L 60 20 Z" fill="#1e293b" />
                             <path d="M 35 30 Q 50 27 65 30 L 63 35 Q 50 40 37 35 Z" fill="#0f172a" />
                             
-                            {/* สายคาดหัว */}
                             <path d="M 38 31 L 62 31 L 60 34 L 40 34 Z" fill="#f97316" opacity="0.8"/>
 
-                            {/* ตาและปาก เปลี่ยนตามกิจกรรม */}
                             {act === 'cardio' ? (
                                 <g>
                                     <path d="M 42 29 Q 44 28 46 29" fill="none" stroke="#1e293b" strokeWidth="1.5" strokeLinecap="round" />
                                     <path d="M 54 29 Q 56 28 58 29" fill="none" stroke="#1e293b" strokeWidth="1.5" strokeLinecap="round" />
-                                    <circle cx="50" cy="40" r="2" fill="#0f172a" /> {/* อ้าปากหอบ */}
+                                    <circle cx="50" cy="40" r="2" fill="#0f172a" /> 
                                 </g>
                             ) : (
                                 <g>
@@ -201,11 +189,10 @@
                                     <circle cx="56" cy="29" r="2.5" fill="#1e293b" />
                                     <circle cx="44.5" cy="28.5" r="1" fill="#ffffff" />
                                     <circle cx="56.5" cy="28.5" r="1" fill="#ffffff" />
-                                    <path d="M 47 40 Q 50 42 53 40" fill="none" stroke="#0f172a" strokeWidth="1.2" strokeLinecap="round" /> {/* ยิ้ม */}
+                                    <path d="M 47 40 Q 50 42 53 40" fill="none" stroke="#0f172a" strokeWidth="1.2" strokeLinecap="round" />
                                 </g>
                             )}
 
-                            {/* ออร่าความฟิตเมื่อเป้าหมายสำเร็จ */}
                             {progress >= 0.6 && (
                                 <g className="text-orange-500" opacity={progress}>
                                     <path d="M 22 25 L 24 30 L 29 32 L 24 34 L 22 39 L 20 34 L 15 32 L 20 30 Z" fill="currentColor" className="animate-pulse"/>
@@ -264,7 +251,6 @@
             
             const dateString = new Date().toDateString(); 
 
-            // State สำหรับ Profile
             const [initialWeight, setInitialWeight] = useState(cachedData?.initialWeight || 90.0);
             const [targetWeight, setTargetWeight] = useState(cachedData?.targetWeight || 80.0);
             const [weight, setWeight] = useState(cachedData?.weight || 90.0);
@@ -274,7 +260,7 @@
             const [setupTargetWeight, setSetupTargetWeight] = useState(targetWeight);
 
             const [allRecords, setAllRecords] = useState(cachedData?.records || {});
-            const [leaderboardData, setLeaderboardData] = useState([]); // 🔥 State เก็บข้อมูลเพื่อนนักวิ่งทั้งหมด
+            const [leaderboardData, setLeaderboardData] = useState([]); 
             
             const defaultDailyData = {
                 water: 0, breakfastDone: false, lunchDone: false, snackDone: false, dinnerDone: false,
@@ -311,12 +297,10 @@
             
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'profiles', normalizedProfileName);
 
-            // 🔥 โหลดข้อมูลส่วนตัว + ดึงข้อมูล Leaderboard ของทุกคนแบบ Real-time
             useEffect(() => {
                 if (!user) return;
                 const timeoutId = setTimeout(() => setLoadingData(false), 2000);
 
-                // ดึงข้อมูลส่วนตัว
                 const unsubscribeUser = onSnapshot(docRef, (docSnap) => {
                     clearTimeout(timeoutId); 
                     if (docSnap.exists()) {
@@ -332,11 +316,9 @@
                     setLoadingData(false);
                 }, (error) => { console.error("Cloud Error", error); setLoadingData(false); });
 
-                // 🔥 ดึงข้อมูลนักวิ่งทุกคนในชมรมเพื่อทำ Leaderboard
                 const profilesRef = collection(db, 'artifacts', appId, 'public', 'data', 'profiles');
                 const unsubscribeLeaderboard = onSnapshot(profilesRef, (snapshot) => {
                     const usersArray = [];
-                    // หาวันที่ 7 วันย้อนหลัง
                     const last7 = Array.from({length: 7}, (_, i) => { const d = new Date(); d.setDate(d.getDate() - 6 + i); return d.toDateString(); });
                     
                     snapshot.forEach((docSnap) => {
@@ -346,27 +328,20 @@
                         let allTimeTotal = 0;
 
                         if (data.records) {
-                            // คำนวณรายสัปดาห์
                             last7.forEach(dateStr => {
                                 if (data.records[dateStr]?.runLogged && data.records[dateStr]?.runDistance) {
                                     weeklyTotal += parseFloat(data.records[dateStr].runDistance);
                                 }
                             });
-                            // คำนวณสะสมทั้งหมด
                             Object.values(data.records).forEach(rec => {
                                 if (rec.runLogged && rec.runDistance) {
                                     allTimeTotal += parseFloat(rec.runDistance);
                                 }
                             });
                         }
-                        usersArray.push({ 
-                            name: userName.charAt(0).toUpperCase() + userName.slice(1), 
-                            weeklyKM: weeklyTotal, 
-                            totalKM: allTimeTotal 
-                        });
+                        usersArray.push({ name: userName.charAt(0).toUpperCase() + userName.slice(1), weeklyKM: weeklyTotal, totalKM: allTimeTotal });
                     });
                     
-                    // จัดอันดับเรียงจากคนวิ่งเยอะสุดในสัปดาห์นี้
                     usersArray.sort((a, b) => b.weeklyKM - a.weeklyKM);
                     setLeaderboardData(usersArray);
                 });
@@ -470,21 +445,69 @@
                 return total;
             }, 0);
 
+            // 🔥 --- คำนวณ PB, Achievements และ AI Predictor ---
             let totalDistanceAllTime = 0;
             let totalSecondsAllTime = 0;
-            Object.values(allRecords).forEach(rec => {
+            let longestRun = 0;
+            let fastest5kSecs = Infinity;
+            let fastest10kSecs = Infinity;
+            let streakCount = 0;
+            let maxStreakCount = 0;
+            let aquaCount = 0;
+            let maxAquaCount = 0;
+
+            // ฟังก์ชันแปลแปลงเวลา Pace
+            const parsePace = (pace) => {
+                if (!pace) return Infinity;
+                const parts = pace.split(':');
+                return parts.length === 2 ? parseInt(parts[0]) * 60 + parseInt(parts[1]) : Infinity;
+            }
+            const formatPace = (secs) => {
+                if (secs === Infinity) return '--:--';
+                const m = Math.floor(secs / 60);
+                const s = Math.floor(secs % 60);
+                return `${m}:${s.toString().padStart(2, '0')}`;
+            }
+
+            // จัดเรียงวันที่เพื่อคำนวณ Streak
+            const sortedDates = Object.keys(allRecords).sort((a, b) => new Date(a) - new Date(b));
+
+            sortedDates.forEach(date => {
+                const rec = allRecords[date];
                 if (rec.runLogged && rec.runDistance && rec.runPace) {
                     const dist = parseFloat(rec.runDistance);
-                    const paceParts = rec.runPace.split(':');
-                    if(paceParts.length === 2 && !isNaN(paceParts[0]) && !isNaN(paceParts[1])) {
-                        const paceSecs = parseInt(paceParts[0]) * 60 + parseInt(paceParts[1]);
-                        totalDistanceAllTime += dist; totalSecondsAllTime += (paceSecs * dist);
+                    const pSecs = parsePace(rec.runPace);
+                    if (pSecs !== Infinity) {
+                        totalDistanceAllTime += dist; 
+                        totalSecondsAllTime += (pSecs * dist);
+                        
+                        if (dist > longestRun) longestRun = dist;
+                        if (dist >= 5 && pSecs < fastest5kSecs) fastest5kSecs = pSecs;
+                        if (dist >= 10 && pSecs < fastest10kSecs) fastest10kSecs = pSecs;
                     }
+                    streakCount++;
+                } else {
+                    streakCount = 0;
                 }
+                if (streakCount > maxStreakCount) maxStreakCount = streakCount;
+
+                if (rec.water >= 8) aquaCount++; else aquaCount = 0;
+                if (aquaCount > maxAquaCount) maxAquaCount = aquaCount;
             });
+
+            // สถานะเหรียญรางวัล
+            const achievements = {
+                halfMarathon: longestRun >= 21.1,
+                streakMaster: maxStreakCount >= 7,
+                aquaMan: maxAquaCount >= 3
+            };
 
             const shoeMileage = totalDistanceAllTime;
             const shoeProgress = Math.min((shoeMileage / 500) * 100, 100);
+            
+            // แผนที่ Virtual Map (เป้าหมาย 600 KM ตลอดโครงการ)
+            const virtualMapGoal = 600;
+            const virtualMapProgress = Math.min((totalDistanceAllTime / virtualMapGoal) * 100, 100);
 
             let predictedTimeStr = "NEED MORE DATA";
             let isSub5 = false;
@@ -916,6 +939,66 @@
                             </div>
                         ) : activeTab === 'stats' ? (
                             <div className="space-y-6 pb-10 animation-fade-in">
+                                
+                                {/* 🗺️ Virtual Map (แผนที่วิ่งทิพย์) */}
+                                <section className="bg-zinc-900 rounded-[24px] p-6 border border-zinc-800">
+                                    <h2 className="font-black text-xl text-white mb-2 uppercase tracking-widest italic">Virtual Map</h2>
+                                    <p className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-6">สะสมระยะทางสู่มาราธอนบางแสน</p>
+                                    
+                                    <div className="relative w-full h-8 bg-zinc-950 rounded-full border border-zinc-800 overflow-visible mb-3">
+                                        {/* แถบถนน */}
+                                        <div className="absolute top-0 left-0 h-full bg-gradient-to-r from-blue-600 to-cyan-400 rounded-full shadow-[0_0_15px_rgba(34,211,238,0.4)] transition-all duration-1000" style={{width: `${virtualMapProgress}%`}}></div>
+                                        {/* ไอคอนนักวิ่งขยับตามระยะ */}
+                                        <div className="absolute top-1/2 -translate-y-1/2 text-2xl drop-shadow-md transition-all duration-1000 z-10" style={{left: `calc(${virtualMapProgress}% - 16px)`}}>🏃‍♂️</div>
+                                    </div>
+                                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest">
+                                        <span className="text-zinc-500">START</span>
+                                        <span className="text-cyan-400 text-xs">{totalDistanceAllTime.toFixed(1)} KM</span>
+                                        <span className="text-zinc-500">{virtualMapGoal} KM</span>
+                                    </div>
+                                </section>
+
+                                {/* ⚡ Personal Bests (สถิติส่วนตัว) */}
+                                <section className="bg-zinc-900 rounded-[24px] p-6 border border-zinc-800">
+                                    <h2 className="font-black text-xl text-white mb-6 uppercase tracking-widest italic">Personal Bests</h2>
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <div className="bg-zinc-950 p-4 rounded-[16px] border border-zinc-800 text-center flex flex-col items-center">
+                                            <span className="text-2xl mb-2">🏅</span>
+                                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Fastest 5K</span>
+                                            <span className="text-white font-black text-lg italic">{formatPace(fastest5kSecs)}</span>
+                                        </div>
+                                        <div className="bg-zinc-950 p-4 rounded-[16px] border border-zinc-800 text-center flex flex-col items-center">
+                                            <span className="text-2xl mb-2">🏆</span>
+                                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Fastest 10K</span>
+                                            <span className="text-white font-black text-lg italic">{formatPace(fastest10kSecs)}</span>
+                                        </div>
+                                        <div className="bg-zinc-950 p-4 rounded-[16px] border border-zinc-800 text-center flex flex-col items-center">
+                                            <span className="text-2xl mb-2">🔥</span>
+                                            <span className="text-[9px] text-zinc-500 font-bold uppercase tracking-widest mb-1">Longest Run</span>
+                                            <span className="text-white font-black text-lg italic">{longestRun.toFixed(1)}<span className="text-[10px] ml-1">KM</span></span>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                {/* 🏆 Trophy Room (ตู้โชว์ถ้วยรางวัล) */}
+                                <section className="bg-zinc-900 rounded-[24px] p-6 border border-zinc-800">
+                                    <h2 className="font-black text-xl text-white mb-6 uppercase tracking-widest italic">Trophy Room</h2>
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <div className={`p-4 rounded-[16px] border text-center transition-all ${achievements.halfMarathon ? 'bg-yellow-400/10 border-yellow-400/50 shadow-[0_0_15px_rgba(234,179,8,0.2)]' : 'bg-zinc-950 border-zinc-800 opacity-50 grayscale'}`}>
+                                            <span className="text-3xl mb-2 block">{achievements.halfMarathon ? '🎖️' : '🔒'}</span>
+                                            <span className={`text-[9px] font-black uppercase tracking-wider block leading-tight ${achievements.halfMarathon ? 'text-yellow-400' : 'text-zinc-500'}`}>Half-Way<br/>(21.1 KM)</span>
+                                        </div>
+                                        <div className={`p-4 rounded-[16px] border text-center transition-all ${achievements.streakMaster ? 'bg-orange-500/10 border-orange-500/50 shadow-[0_0_15px_rgba(249,115,22,0.2)]' : 'bg-zinc-950 border-zinc-800 opacity-50 grayscale'}`}>
+                                            <span className="text-3xl mb-2 block">{achievements.streakMaster ? '⚡' : '🔒'}</span>
+                                            <span className={`text-[9px] font-black uppercase tracking-wider block leading-tight ${achievements.streakMaster ? 'text-orange-400' : 'text-zinc-500'}`}>Streak<br/>(7 Days)</span>
+                                        </div>
+                                        <div className={`p-4 rounded-[16px] border text-center transition-all ${achievements.aquaMan ? 'bg-blue-500/10 border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]' : 'bg-zinc-950 border-zinc-800 opacity-50 grayscale'}`}>
+                                            <span className="text-3xl mb-2 block">{achievements.aquaMan ? '💦' : '🔒'}</span>
+                                            <span className={`text-[9px] font-black uppercase tracking-wider block leading-tight ${achievements.aquaMan ? 'text-blue-400' : 'text-zinc-500'}`}>Aqua Man<br/>(3 Days)</span>
+                                        </div>
+                                    </div>
+                                </section>
+
                                 <section className="bg-zinc-900 rounded-[24px] p-6 border border-zinc-800">
                                     <h2 className="font-black text-xl text-white mb-2 uppercase tracking-widest italic">Performance</h2>
                                     <p className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-8">Last 7 Days Record</p>
