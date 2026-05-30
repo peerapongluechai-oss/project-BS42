@@ -456,7 +456,6 @@
             let aquaCount = 0;
             let maxAquaCount = 0;
 
-            // ฟังก์ชันแปลแปลงเวลา Pace
             const parsePace = (pace) => {
                 if (!pace) return Infinity;
                 const parts = pace.split(':');
@@ -469,7 +468,6 @@
                 return `${m}:${s.toString().padStart(2, '0')}`;
             }
 
-            // จัดเรียงวันที่เพื่อคำนวณ Streak
             const sortedDates = Object.keys(allRecords).sort((a, b) => new Date(a) - new Date(b));
 
             sortedDates.forEach(date => {
@@ -495,7 +493,6 @@
                 if (aquaCount > maxAquaCount) maxAquaCount = aquaCount;
             });
 
-            // สถานะเหรียญรางวัล
             const achievements = {
                 halfMarathon: longestRun >= 21.1,
                 streakMaster: maxStreakCount >= 7,
@@ -505,7 +502,6 @@
             const shoeMileage = totalDistanceAllTime;
             const shoeProgress = Math.min((shoeMileage / 500) * 100, 100);
             
-            // แผนที่ Virtual Map (เป้าหมาย 600 KM ตลอดโครงการ)
             const virtualMapGoal = 600;
             const virtualMapProgress = Math.min((totalDistanceAllTime / virtualMapGoal) * 100, 100);
 
@@ -518,6 +514,67 @@
                 predictedTimeStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
                 isSub5 = predictedSecs < (5 * 3600);
             }
+
+            // 🤖 --- ฟังก์ชัน AI วิเคราะห์การวิ่งรายวัน (Adaptive AI Coach) ---
+            const getAICoachFeedback = () => {
+                if (!dailyData.runLogged || !dailyData.runPace) return null;
+                
+                const parsePaceToSecs = (p) => {
+                    if(!p) return 0;
+                    const parts = p.split(':');
+                    return parts.length >= 2 ? parseInt(parts[0])*60 + parseInt(parts[1]) : 0;
+                };
+
+                const userPaceSecs = parsePaceToSecs(dailyData.runPace);
+                if (userPaceSecs === 0) return null;
+
+                let targetMinSecs = 0;
+                let targetMaxSecs = 0;
+                
+                // ถอดค่าเป้าหมายเพซจากข้อความ เช่น "7:45 - 8:15"
+                const paceRegex = /(\d+:\d+)/g;
+                const matches = [...currentConfig.pace.matchAll(paceRegex)];
+                if (matches.length >= 2) {
+                    targetMinSecs = parsePaceToSecs(matches[0][0]);
+                    targetMaxSecs = parsePaceToSecs(matches[1][0]);
+                } else if (matches.length === 1) {
+                    targetMinSecs = parsePaceToSecs(matches[0][0]);
+                    targetMaxSecs = targetMinSecs + 30; // ถ้ามีเพซเดียว เผื่อช่วงบัฟเฟอร์ให้ 30 วิ
+                }
+
+                let hrWarning = "";
+                // ถอดค่าเป้าหมายหัวใจ เช่น "125-140 bpm"
+                const hrRegex = /(\d+)-(\d+)\s*bpm/i;
+                const hrMatch = currentConfig.hr.match(hrRegex);
+                if (hrMatch && dailyData.runHR) {
+                    const maxHR = parseInt(hrMatch[2]);
+                    if (parseInt(dailyData.runHR) > maxHR + 5) {
+                        hrWarning = " ⚠️ (ข้อควรระวัง: หัวใจแอบทะลุโซนไปนิด คราวหน้าค่อยๆ เลี้ยงความเร็วลงเพื่อเซฟเครื่องยนต์นะครับ!)";
+                    }
+                }
+
+                if (currentConfig.id === 'easy' || currentConfig.id === 'long') {
+                    if (targetMinSecs > 0 && userPaceSecs < targetMinSecs - 5) {
+                        return { title: "⚠️ โค้ชขอเตือน", msg: `ใจเย็นลูกพี่! วันนี้เน้น ${currentConfig.id === 'long' ? 'Long Run' : 'Easy Run'} แต่ดันวิ่งเพซ ${dailyData.runPace} เร็วกว่าเป้าหมายไปเยอะ เน้นช้าๆ คุมโซนเพื่อเซฟกล้ามเนื้อดีกว่าครับ!${hrWarning}`, type: "warning" };
+                    } else if (targetMaxSecs > 0 && userPaceSecs > targetMaxSecs + 15) {
+                        return { title: "🌟 โค้ชให้กำลังใจ", msg: `เพซ ${dailyData.runPace} ช้ากว่าเป้าเล็กน้อยแต่ไม่เป็นไรครับ! วันนี้เน้นสะสมระยะและเวลาบนเท้า (Time on feet) ถือว่าร่างกายได้ความอึดแล้ว!${hrWarning}`, type: "success" };
+                    } else {
+                        return { title: "🎯 โค้ชถูกใจสิ่งนี้", msg: `เพอร์เฟกต์! คุมเพซ ${dailyData.runPace} ได้นิ่งเป๊ะตามตำรา ร่างกายได้ประโยชน์จาก Aerobic Base ไปเต็มๆ 100% 👏${hrWarning}`, type: "perfect" };
+                    }
+                } else if (currentConfig.id === 'speed') {
+                    if (targetMaxSecs > 0 && userPaceSecs > targetMaxSecs + 10) {
+                        return { title: "🔥 โค้ชกระตุ้น", msg: `วันนี้ซ้อมความเร็ว เพซ ${dailyData.runPace} อาจจะหลุดเป้าไปนิด ไม่เป็นไรครับ! พักผ่อนให้พอ คราวหน้ามาอัดกันใหม่ สู้ๆ!${hrWarning}`, type: "warning" };
+                    } else {
+                        return { title: "⚡ สุดยอดเยี่ยม", msg: `อัดเพซ ${dailyData.runPace} เข้าเป้าหมายเป๊ะ! วันนี้ปอดและหัวใจได้ฝึกความทนทานแบบเต็มพิกัด พร้อมลุย Sub 5 แน่นอน! 🚀${hrWarning}`, type: "perfect" };
+                    }
+                } else if (currentConfig.id === 'rest') {
+                     return { title: "🤖 AI Coach", msg: `วันนี้วันพักนะลูกพี่ แอบไปวิ่งมา ${dailyData.runDistance} กม. หรอเนี่ย! อย่าลืมพักผ่อนยืดเหยียดให้ถึงด้วยล่ะ!`, type: "warning" };
+                }
+                
+                return { title: "🤖 AI Coach", msg: `บันทึกสถิติสำเร็จ! ระยะ ${dailyData.runDistance} กม. วันนี้เก่งมากครับ พักผ่อนยืดเหยียดด้วยนะ!`, type: "success" };
+            };
+
+            const aiFeedback = getAICoachFeedback();
 
             let dailyScore = 0;
             if (dailyData.breakfastDone) dailyScore += 10; if (dailyData.lunchDone) dailyScore += 10; if (dailyData.snackDone) dailyScore += 10; if (dailyData.dinnerDone) dailyScore += 10;
@@ -795,16 +852,35 @@
                                     {loggerOpen && (
                                     <div className="mt-6 animation-fade-in">
                                         {dailyData.runLogged ? (
-                                            <div className="bg-zinc-950 p-5 rounded-[16px] border border-lime-500/50 shadow-[0_0_15px_rgba(163,230,53,0.1)]">
-                                                <div className="flex justify-between items-start mb-4">
+                                            <div className="bg-zinc-950 p-5 rounded-[16px] border border-lime-500/50 shadow-[0_0_15px_rgba(163,230,53,0.1)] relative overflow-hidden">
+                                                <div className="flex justify-between items-start mb-4 relative z-10">
                                                     <div><h3 className="text-lime-400 font-black tracking-widest uppercase text-sm">RUN SAVED! 🔥</h3><p className="text-zinc-400 text-xs mt-1">สถิติซ้อมวันนี้ถูกบันทึกแล้ว</p></div>
                                                     <button onClick={() => updateDaily('runLogged', false)} className="text-zinc-500 text-[10px] font-bold underline uppercase hover:text-white">Edit</button>
                                                 </div>
-                                                <div className="grid grid-cols-3 gap-2 text-center">
+                                                <div className="grid grid-cols-3 gap-2 text-center relative z-10">
                                                     <div className="bg-zinc-900 rounded-xl p-3 border border-zinc-800"><span className="text-[10px] text-zinc-500 font-bold block uppercase mb-1">Dist (KM)</span><span className="text-white font-black text-xl italic">{dailyData.runDistance}</span></div>
                                                     <div className="bg-zinc-900 rounded-xl p-3 border border-zinc-800"><span className="text-[10px] text-zinc-500 font-bold block uppercase mb-1">Avg Pace</span><span className="text-white font-black text-xl italic">{dailyData.runPace}</span></div>
                                                     <div className="bg-zinc-900 rounded-xl p-3 border border-zinc-800"><span className="text-[10px] text-zinc-500 font-bold block uppercase mb-1">Avg HR</span><span className="text-white font-black text-xl italic">{dailyData.runHR}</span></div>
                                                 </div>
+                                                
+                                                {/* 🤖 กล่องข้อความจาก AI Coach */}
+                                                {aiFeedback && (
+                                                    <div className={`mt-4 p-4 rounded-xl border flex items-start gap-3 relative z-10 ${
+                                                        aiFeedback.type === 'warning' ? 'bg-orange-950/40 border-orange-500/50' : 
+                                                        aiFeedback.type === 'perfect' ? 'bg-lime-900/20 border-lime-500/50' : 
+                                                        'bg-blue-900/20 border-blue-500/50'
+                                                    }`}>
+                                                        <span className="text-2xl shrink-0 leading-none">{aiFeedback.type === 'warning' ? '⚠️' : aiFeedback.type === 'perfect' ? '🎯' : '🌟'}</span>
+                                                        <div>
+                                                            <h4 className={`text-xs font-black uppercase tracking-widest mb-1 ${
+                                                                aiFeedback.type === 'warning' ? 'text-orange-400' : 
+                                                                aiFeedback.type === 'perfect' ? 'text-lime-400' : 
+                                                                'text-blue-400'
+                                                            }`}>{aiFeedback.title}</h4>
+                                                            <p className="text-xs text-zinc-300 font-medium leading-relaxed">{aiFeedback.msg}</p>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         ) : (
                                             <div className="space-y-4">
