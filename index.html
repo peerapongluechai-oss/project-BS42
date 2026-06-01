@@ -81,7 +81,6 @@
             );
         };
 
-        // 🏃‍♂️ --- ตัวการ์ตูนนักวิ่ง (ระบบแอนิเมชันตามตารางซ้อม) ---
         const CoolRunnerAvatar = ({ weight, targetWeight, initialWeight, currentConfig }) => {
             const weightDiff = initialWeight - targetWeight;
             const progress = weightDiff > 0 ? Math.max(0, Math.min(1, (initialWeight - weight) / weightDiff)) : 0;
@@ -110,14 +109,12 @@
                             .origin-shoulder-l { transform-origin: 38px 52px; }
                             .origin-shoulder-r { transform-origin: 62px 52px; }
                             .origin-bottom { transform-origin: 50px 85px; }
-
                             @keyframes float-run { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-3px); } }
                             @keyframes run-leg-l { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-8px) rotate(-15deg); } }
                             @keyframes run-leg-r { 0%, 100% { transform: translateY(-8px) rotate(-15deg); } 50% { transform: translateY(0px) rotate(0deg); } }
                             @keyframes run-arm-l { 0%, 100% { transform: rotate(0deg); } 50% { transform: rotate(30deg); } }
                             @keyframes run-arm-r { 0%, 100% { transform: rotate(30deg); } 50% { transform: rotate(0deg); } }
                             @keyframes sway { 0%, 100% { transform: rotate(3deg); } 50% { transform: rotate(-3deg); } }
-
                             .anim-float-run { animation: float-run 0.6s ease-in-out infinite; }
                             .anim-run-leg-l { animation: run-leg-l 0.6s infinite; }
                             .anim-run-leg-r { animation: run-leg-r 0.6s infinite; }
@@ -125,58 +122,39 @@
                             .anim-run-arm-r { animation: run-arm-r 0.6s infinite; }
                             .anim-sway { animation: sway 4s ease-in-out infinite; }
                         `}</style>
-                        
                         <g className={act === 'stretch' ? 'anim-sway origin-bottom' : 'anim-float-run'}>
                             <path d="M 32 25 Q 50 5 68 25 L 68 35 Q 50 20 32 35 Z" fill="#1e293b" />
-                            
                             <g className={`origin-hip-l ${act === 'cardio' ? 'anim-run-leg-l' : ''}`}>
                                 <rect x="42" y="60" width="6" height="28" rx="3" fill="#fcd5ce" />
                                 <path d="M 41 85 L 48.5 85 L 48.5 94 Q 45 96 41 94 Z" fill="#bef264" /> 
                                 <rect x="42" y="80" width="6" height="5" fill="#3f6212" /> 
                             </g>
-
                             <g className={`origin-hip-r ${act === 'cardio' ? 'anim-run-leg-r' : ''}`}>
                                 <rect x="52" y="60" width="6" height="28" rx="3" fill="#fcd5ce" />
                                 <path d="M 51.5 85 L 59 85 L 59 94 Q 55 96 51.5 94 Z" fill="#bef264" /> 
                                 <rect x="52" y="80" width="6" height="5" fill="#3f6212" /> 
                             </g>
-
                             <path d={`M ${50 - bodyWidth/2 - 2} 60 L ${50 + bodyWidth/2 + 2} 60 L ${50 + bodyWidth/2 + 3} 72 L 51 70 L 49 70 L ${50 - bodyWidth/2 - 3} 72 Z`} fill="#111827" />
-
                             <g className={`origin-shoulder-l ${act === 'cardio' ? 'anim-run-arm-l' : ''}`}>
-                                {act === 'stretch' ? (
-                                    <line x1="38" y1="52" x2="25" y2="20" stroke="#fcd5ce" strokeWidth="5.5" strokeLinecap="round" />
-                                ) : (
-                                    <path d={`M ${50 - bodyWidth/2 + 2} 52 Q 35 65 38 75`} fill="none" stroke="#fcd5ce" strokeWidth="5.5" strokeLinecap="round" />
-                                )}
+                                {act === 'stretch' ? ( <line x1="38" y1="52" x2="25" y2="20" stroke="#fcd5ce" strokeWidth="5.5" strokeLinecap="round" /> ) : ( <path d={`M ${50 - bodyWidth/2 + 2} 52 Q 35 65 38 75`} fill="none" stroke="#fcd5ce" strokeWidth="5.5" strokeLinecap="round" /> )}
                             </g>
-
                             <rect x={50 - bodyWidth/2} y="50" width={bodyWidth} height="15" rx="3" fill="#f97316" className="transition-all duration-700 ease-out" />
                             <path d={`M ${50 - bodyWidth/2} 50 L ${50 - bodyWidth/2 + 4} 43 L ${50 - bodyWidth/2 + 8} 50 Z`} fill="#f97316" className="transition-all duration-700 ease-out"/>
                             <path d={`M ${50 + bodyWidth/2} 50 L ${50 + bodyWidth/2 - 4} 43 L ${50 + bodyWidth/2 - 8} 50 Z`} fill="#f97316" className="transition-all duration-700 ease-out"/>
-
                             <g transform={`translate(${50 - 8}, 52)`}>
                                 <rect x="0" y="0" width="16" height="9" fill="#ffffff" rx="1.5" />
                                 <rect x="1" y="1" width="14" height="2" fill="#ef4444" rx="0.5" />
                                 <text x="8" y="7.5" fontSize="4.5" fontWeight="900" fill="#000" textAnchor="middle" fontFamily="sans-serif">80</text>
                             </g>
-
                             <g className={`origin-shoulder-r ${act === 'cardio' ? 'anim-run-arm-r' : ''}`}>
-                                {act === 'stretch' ? (
-                                    <line x1="62" y1="52" x2="75" y2="20" stroke="#fcd5ce" strokeWidth="5.5" strokeLinecap="round" />
-                                ) : (
-                                    <path d={`M ${50 + bodyWidth/2 - 2} 52 Q 65 65 62 75`} fill="none" stroke="#fcd5ce" strokeWidth="5.5" strokeLinecap="round" />
-                                )}
+                                {act === 'stretch' ? ( <line x1="62" y1="52" x2="75" y2="20" stroke="#fcd5ce" strokeWidth="5.5" strokeLinecap="round" /> ) : ( <path d={`M ${50 + bodyWidth/2 - 2} 52 Q 65 65 62 75`} fill="none" stroke="#fcd5ce" strokeWidth="5.5" strokeLinecap="round" /> )}
                             </g>
-
                             <rect x="46" y={faceY + 12} width="8" height="6" fill="#fcd5ce" />
                             <circle cx="50" cy={faceY} r="14.5" fill="#fcd5ce" />
                             <path d="M 35 25 Q 50 10 65 25 Q 50 18 35 25" fill="#1e293b" />
                             <path d="M 40 20 L 45 8 L 50 16 L 56 10 L 60 20 Z" fill="#1e293b" />
                             <path d="M 35 30 Q 50 27 65 30 L 63 35 Q 50 40 37 35 Z" fill="#0f172a" />
-                            
                             <path d="M 38 31 L 62 31 L 60 34 L 40 34 Z" fill="#f97316" opacity="0.8"/>
-
                             {act === 'cardio' ? (
                                 <g>
                                     <path d="M 42 29 Q 44 28 46 29" fill="none" stroke="#1e293b" strokeWidth="1.5" strokeLinecap="round" />
@@ -192,7 +170,6 @@
                                     <path d="M 47 40 Q 50 42 53 40" fill="none" stroke="#0f172a" strokeWidth="1.2" strokeLinecap="round" />
                                 </g>
                             )}
-
                             {progress >= 0.6 && (
                                 <g className="text-orange-500" opacity={progress}>
                                     <path d="M 22 25 L 24 30 L 29 32 L 24 34 L 22 39 L 20 34 L 15 32 L 20 30 Z" fill="currentColor" className="animate-pulse"/>
@@ -247,34 +224,33 @@
             const [loadingData, setLoadingData] = useState(!cachedData);
             const [activeTab, setActiveTab] = useState('tracker'); 
             const [showConfetti, setShowConfetti] = useState(false);
-            
             const dateString = new Date().toDateString(); 
 
-            // 🔥 State สำหรับ Profile ที่ยืดหยุ่นขึ้น
+            // 🔥 State สำหรับ Profile ครบสูตร AI
             const [initialWeight, setInitialWeight] = useState(cachedData?.initialWeight || 90.0);
             const [targetWeight, setTargetWeight] = useState(cachedData?.targetWeight || 80.0);
             const [weight, setWeight] = useState(cachedData?.weight || 90.0);
             const [vcrDistance, setVcrDistance] = useState(cachedData?.vcrDistance || 4500); 
-            
-            // 🎯 NEW: ระยะเป้าหมาย (10K, 21K, 42K)
             const [targetDistance, setTargetDistance] = useState(cachedData?.targetDistance || 42.195);
-            // 📅 NEW: วันแข่งเป้าหมาย
             const [raceDateStr, setRaceDateStr] = useState(cachedData?.raceDateStr || '2026-11-15');
-            
-            // 📅 NEW: เก็บแค่วันว่า 'ซ้อม(true)' หรือ 'พัก(false)'
-            const defaultAvailability = { 0: true, 1: false, 2: true, 3: true, 4: true, 5: true, 6: false }; // อา(ซ้อม), จ(พัก), ...
-            const [availability, setAvailability] = useState(cachedData?.availability || defaultAvailability);
-            
-            // 📅 NEW: แผนการซ้อมที่ AI จัดให้ (โหมดของแต่ละวัน)
+            const [availability, setAvailability] = useState(cachedData?.availability || { 0: true, 1: false, 2: true, 3: true, 4: true, 5: true, 6: false });
             const [schedule, setSchedule] = useState(cachedData?.schedule || {});
+            const [goalMode, setGoalMode] = useState(cachedData?.goalMode || 'performance');
+
+            // 🧬 State สรีระ (ใหม่!)
+            const [age, setAge] = useState(cachedData?.age || 35);
+            const [height, setHeight] = useState(cachedData?.height || 170);
+            const [gender, setGender] = useState(cachedData?.gender || 'male');
+            const [restingHR, setRestingHR] = useState(cachedData?.restingHR || 60);
+            const [injuryFocus, setInjuryFocus] = useState(cachedData?.injuryFocus || 'none');
+            const [activityLevel, setActivityLevel] = useState(cachedData?.activityLevel || 'sedentary');
 
             const [showSetup, setShowSetup] = useState(false);
+            const [setupStep, setSetupStep] = useState(1); 
+            
             const [setupInitWeight, setSetupInitWeight] = useState(initialWeight);
             const [setupTargetWeight, setSetupTargetWeight] = useState(targetWeight);
             const [setupVcrDistance, setSetupVcrDistance] = useState(vcrDistance);
-            const [setupTargetDistance, setSetupTargetDistance] = useState(targetDistance);
-            const [setupRaceDate, setSetupRaceDate] = useState(raceDateStr);
-            const [setupAvailability, setSetupAvailability] = useState(availability);
 
             const [allRecords, setAllRecords] = useState(cachedData?.records || {});
             const [leaderboardData, setLeaderboardData] = useState([]); 
@@ -287,9 +263,7 @@
             };
             
             const [dailyData, setDailyData] = useState(() => {
-                if (cachedData?.records && cachedData.records[dateString]) {
-                    return { ...defaultDailyData, ...cachedData.records[dateString] };
-                }
+                if (cachedData?.records && cachedData.records[dateString]) return { ...defaultDailyData, ...cachedData.records[dateString] };
                 return defaultDailyData;
             });
 
@@ -303,15 +277,6 @@
                 setHrInput(dailyData.runHR || '');
             }, [dailyData.runDistance, dailyData.runPace, dailyData.runHR]);
 
-            const saveRunLog = () => {
-                const newData = { ...dailyData, runDistance: distanceInput, runPace: paceInput, runHR: hrInput, runLogged: true };
-                setDailyData(newData);
-                const newRecords = { ...allRecords, [dateString]: newData };
-                setAllRecords(newRecords);
-                window.localStorage.setItem(localCacheKey, JSON.stringify({ initialWeight, targetWeight, weight, vcrDistance, targetDistance, raceDateStr, schedule, records: newRecords }));
-                setDoc(docRef, { records: { [dateString]: newData } }, { merge: true });
-            };
-            
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'profiles', normalizedProfileName);
 
             useEffect(() => {
@@ -322,16 +287,13 @@
                     clearTimeout(timeoutId); 
                     if (docSnap.exists()) {
                         const data = docSnap.data();
-                        // ถ้าไม่มีข้อมูลพวกนี้ เด้งไปหน้า Setup 
-                        if (!data.initialWeight || !data.targetDistance || !data.schedule || !data.raceDateStr) setShowSetup(true);
+                        if (!data.initialWeight || !data.targetDistance || !data.schedule || !data.raceDateStr || !data.age) setShowSetup(true);
                         else { 
-                            setInitialWeight(data.initialWeight); 
-                            setTargetWeight(data.targetWeight); 
-                            setVcrDistance(data.vcrDistance || 4500);
-                            setTargetDistance(data.targetDistance || 42.195);
-                            setRaceDateStr(data.raceDateStr || '2026-11-15');
-                            setAvailability(data.availability || defaultAvailability);
-                            setSchedule(data.schedule || {});
+                            setInitialWeight(data.initialWeight); setTargetWeight(data.targetWeight); setVcrDistance(data.vcrDistance || 4500);
+                            setTargetDistance(data.targetDistance || 42.195); setRaceDateStr(data.raceDateStr || '2026-11-15');
+                            setAvailability(data.availability); setSchedule(data.schedule); setGoalMode(data.goalMode);
+                            setAge(data.age); setHeight(data.height); setGender(data.gender); setRestingHR(data.restingHR);
+                            setInjuryFocus(data.injuryFocus); setActivityLevel(data.activityLevel);
                         }
                         if (data.weight) setWeight(data.weight);
                         if (data.records) setAllRecords(data.records);
@@ -350,24 +312,13 @@
                     snapshot.forEach((docSnap) => {
                         const data = docSnap.data();
                         const userName = docSnap.id; 
-                        let weeklyTotal = 0;
-                        let allTimeTotal = 0;
-
+                        let weeklyTotal = 0; let allTimeTotal = 0;
                         if (data.records) {
-                            last7.forEach(dateStr => {
-                                if (data.records[dateStr]?.runLogged && data.records[dateStr]?.runDistance) {
-                                    weeklyTotal += parseFloat(data.records[dateStr].runDistance);
-                                }
-                            });
-                            Object.values(data.records).forEach(rec => {
-                                if (rec.runLogged && rec.runDistance) {
-                                    allTimeTotal += parseFloat(rec.runDistance);
-                                }
-                            });
+                            last7.forEach(dateStr => { if (data.records[dateStr]?.runLogged && data.records[dateStr]?.runDistance) weeklyTotal += parseFloat(data.records[dateStr].runDistance); });
+                            Object.values(data.records).forEach(rec => { if (rec.runLogged && rec.runDistance) allTimeTotal += parseFloat(rec.runDistance); });
                         }
                         usersArray.push({ name: userName.charAt(0).toUpperCase() + userName.slice(1), weeklyKM: weeklyTotal, totalKM: allTimeTotal });
                     });
-                    
                     usersArray.sort((a, b) => b.weeklyKM - a.weeklyKM);
                     setLeaderboardData(usersArray);
                 });
@@ -375,94 +326,75 @@
                 return () => { clearTimeout(timeoutId); unsubscribeUser(); unsubscribeLeaderboard(); };
             }, [user.uid, normalizedProfileName, dateString]);
 
-            // 🧠 AI Smart Scheduler: คำนวณตารางจากวันที่ User ว่าง
+            // 🧠 AI Smart Scheduler
             const generateSmartSchedule = (avail) => {
                 let newSchedule = { 0: 'rest', 1: 'rest', 2: 'rest', 3: 'rest', 4: 'rest', 5: 'rest', 6: 'rest' };
                 const trainingDays = Object.keys(avail).filter(day => avail[day]).map(Number);
                 
-                if (trainingDays.length === 0) return newSchedule; // ไม่ว่างเลย = พักทุกวัน
-
-                // 1. หาวัน Long Run (พยายามเอา อาทิตย์(0) หรือ เสาร์(6) ก่อน)
+                if (trainingDays.length === 0) return newSchedule; 
                 let longRunDay = -1;
                 if (trainingDays.includes(0)) longRunDay = 0;
                 else if (trainingDays.includes(6)) longRunDay = 6;
-                else longRunDay = trainingDays[trainingDays.length - 1]; // ถ้าไม่ว่าง ส-อา เลย เอาวันซ้อมวันสุดท้าย
+                else longRunDay = trainingDays[trainingDays.length - 1]; 
                 
                 newSchedule[longRunDay] = 'long';
 
-                // 2. หาวัน Speed/Tempo (หาวันที่ห่างจาก Long Run มากที่สุด)
                 if (trainingDays.length > 1) {
-                    let speedDay = -1;
-                    let maxDistance = -1;
+                    let speedDay = -1; let maxDistance = -1;
                     trainingDays.forEach(day => {
                         if (day !== longRunDay) {
-                            // คำนวณระยะห่าง (แบบวงกลม 7 วัน)
                             let dist = Math.abs(day - longRunDay);
                             if (dist > 3) dist = 7 - dist; 
-                            if (dist > maxDistance) {
-                                maxDistance = dist;
-                                speedDay = day;
-                            }
+                            if (dist > maxDistance) { maxDistance = dist; speedDay = day; }
                         }
                     });
                     if (speedDay !== -1) newSchedule[speedDay] = 'speed';
                 }
 
-                // 3. วันที่เหลือจับยัดเป็น Easy Run
-                trainingDays.forEach(day => {
-                    if (newSchedule[day] === 'rest') {
-                        newSchedule[day] = 'easy';
-                    }
-                });
-
+                trainingDays.forEach(day => { if (newSchedule[day] === 'rest') newSchedule[day] = 'easy'; });
                 return newSchedule;
             };
 
             const saveProfileSetup = () => {
-                const generatedSchedule = generateSmartSchedule(setupAvailability);
-                
+                const generatedSchedule = generateSmartSchedule(availability);
                 const dataToSave = { 
-                    initialWeight: setupInitWeight, 
-                    targetWeight: setupTargetWeight, 
-                    weight: setupInitWeight, 
-                    vcrDistance: setupVcrDistance,
-                    targetDistance: setupTargetDistance,
-                    raceDateStr: setupRaceDate,
-                    availability: setupAvailability,
-                    schedule: generatedSchedule,
+                    initialWeight: setupInitWeight, targetWeight: goalMode === 'performance' ? setupInitWeight : setupTargetWeight, 
+                    weight: setupInitWeight, vcrDistance: setupVcrDistance, targetDistance, raceDateStr, 
+                    availability, schedule: generatedSchedule, goalMode,
+                    age, height, gender, restingHR, injuryFocus, activityLevel,
                     records: allRecords 
                 };
-                setInitialWeight(setupInitWeight); setTargetWeight(setupTargetWeight); setWeight(setupInitWeight); 
-                setVcrDistance(setupVcrDistance); setTargetDistance(setupTargetDistance); setRaceDateStr(setupRaceDate);
-                setAvailability(setupAvailability); setSchedule(generatedSchedule);
-                
+                setWeight(setupInitWeight); setSchedule(generatedSchedule);
                 window.localStorage.setItem(localCacheKey, JSON.stringify(dataToSave));
-                setDoc(docRef, dataToSave, { merge: true }); setShowSetup(false);
+                setDoc(docRef, dataToSave, { merge: true }); setShowSetup(false); setSetupStep(1);
+            };
+
+            const saveRunLog = () => {
+                const newData = { ...dailyData, runDistance: distanceInput, runPace: paceInput, runHR: hrInput, runLogged: true };
+                setDailyData(newData);
+                const newRecords = { ...allRecords, [dateString]: newData }; setAllRecords(newRecords);
+                window.localStorage.setItem(localCacheKey, JSON.stringify({ initialWeight, targetWeight, weight, vcrDistance, targetDistance, raceDateStr, schedule, age, height, gender, restingHR, injuryFocus, activityLevel, records: newRecords }));
+                setDoc(docRef, { records: { [dateString]: newData } }, { merge: true });
             };
 
             const updateDaily = (key, value) => {
                 const newData = { ...dailyData, [key]: value }; setDailyData(newData); 
                 const newRecords = { ...allRecords, [dateString]: newData }; setAllRecords(newRecords);
-                window.localStorage.setItem(localCacheKey, JSON.stringify({ initialWeight, targetWeight, weight, vcrDistance, targetDistance, raceDateStr, schedule, records: newRecords }));
+                window.localStorage.setItem(localCacheKey, JSON.stringify({ initialWeight, targetWeight, weight, vcrDistance, targetDistance, raceDateStr, schedule, age, height, gender, restingHR, injuryFocus, activityLevel, records: newRecords }));
                 setDoc(docRef, { records: { [dateString]: newData } }, { merge: true });
             };
 
             const updateWeightToCloud = (newWeight) => {
                 setWeight(newWeight);
-                window.localStorage.setItem(localCacheKey, JSON.stringify({ initialWeight, targetWeight, weight: newWeight, vcrDistance, targetDistance, raceDateStr, schedule, records: allRecords }));
+                window.localStorage.setItem(localCacheKey, JSON.stringify({ initialWeight, targetWeight, weight: newWeight, vcrDistance, targetDistance, raceDateStr, schedule, age, height, gender, restingHR, injuryFocus, activityLevel, records: allRecords }));
                 setDoc(docRef, { weight: newWeight }, { merge: true });
             };
 
-            // คำนวณวันและระยะเวลาจากเป้าหมายที่ตั้งไว้
             const todayObj = new Date();
             const todayMidnight = new Date(); todayMidnight.setHours(0,0,0,0);
+            const raceDateObj = new Date(raceDateStr); raceDateObj.setHours(0,0,0,0);
             
-            const raceDateObj = new Date(raceDateStr);
-            raceDateObj.setHours(0,0,0,0);
-            
-            // หา startDate โดยนับย้อนกลับไป 24 สัปดาห์ (168 วัน) จากวันแข่ง
-            const planStartDate = new Date(raceDateObj);
-            planStartDate.setDate(planStartDate.getDate() - 168);
+            const planStartDate = new Date(raceDateObj); planStartDate.setDate(planStartDate.getDate() - 168);
 
             const totalDuration = raceDateObj.getTime() - planStartDate.getTime();
             const totalDays = Math.floor(totalDuration / (1000 * 60 * 60 * 24)) + 1; 
@@ -485,104 +417,106 @@
             else if(currentWeekIndex < 23) { phaseName = "TAPER PHASE (ลดระยะพักฟื้น)"; phaseColor = "text-yellow-400"; }
             else { phaseName = "RACE WEEK! (พร้อมลุย)"; phaseColor = "text-red-500"; }
 
-            // 🔥 --- ระบบคำนวณสถิติสะสม (PB Tracker) ---
-            let totalDistanceAllTime = 0;
-            let totalSecondsAllTime = 0;
-            let longestRun = 0;
-            let fastest5kSecs = Infinity;
-            let fastest10kSecs = Infinity;
-            let streakCount = 0;
-            let maxStreakCount = 0;
-            let aquaCount = 0;
-            let maxAquaCount = 0;
+            // การคำนวณโภชนาการ (BMR & TDEE)
+            const calculateNutrition = () => {
+                const w = weight; const h = height; const a = age;
+                let bmr = (10 * w) + (6.25 * h) - (5 * a);
+                bmr = gender === 'male' ? bmr + 5 : bmr - 161;
+
+                let activityMultiplier = 1.2;
+                if (activityLevel === 'light') activityMultiplier = 1.375;
+                if (activityLevel === 'moderate') activityMultiplier = 1.55;
+                if (activityLevel === 'active') activityMultiplier = 1.725;
+
+                const tdee = bmr * activityMultiplier;
+                const targetCalories = goalMode === 'weightloss' ? tdee - 400 : tdee + 200; 
+                const proteinGrams = w * (goalMode === 'performance' ? 1.6 : 1.8); 
+
+                return { calories: Math.round(targetCalories), protein: Math.round(proteinGrams) };
+            };
+            const nutritionGoal = calculateNutrition();
+
+            // คำนวณสถิติสะสม (PB Tracker)
+            let totalDistanceAllTime = 0; let totalSecondsAllTime = 0; let longestRun = 0;
+            let fastest5kSecs = Infinity; let fastest10kSecs = Infinity;
+            let streakCount = 0; let maxStreakCount = 0; let aquaCount = 0; let maxAquaCount = 0;
 
             const parsePaceToSecs = (pace) => {
                 if (!pace) return Infinity;
-                const parts = pace.split(':');
-                return parts.length === 2 ? parseInt(parts[0]) * 60 + parseInt(parts[1]) : Infinity;
+                const parts = pace.split(':'); return parts.length === 2 ? parseInt(parts[0]) * 60 + parseInt(parts[1]) : Infinity;
             }
             const formatPace = (secs) => {
                 if (secs === Infinity) return '--:--';
-                const m = Math.floor(secs / 60);
-                const s = Math.floor(secs % 60);
-                return `${m}:${s.toString().padStart(2, '0')}`;
+                const m = Math.floor(secs / 60); const s = Math.floor(secs % 60); return `${m}:${s.toString().padStart(2, '0')}`;
             }
 
             const sortedDates = Object.keys(allRecords).sort((a, b) => new Date(a) - new Date(b));
-
             sortedDates.forEach(date => {
                 const rec = allRecords[date];
                 if (rec.runLogged && rec.runDistance && rec.runPace) {
-                    const dist = parseFloat(rec.runDistance);
-                    const pSecs = parsePaceToSecs(rec.runPace);
+                    const dist = parseFloat(rec.runDistance); const pSecs = parsePaceToSecs(rec.runPace);
                     if (pSecs !== Infinity) {
-                        totalDistanceAllTime += dist; 
-                        totalSecondsAllTime += (pSecs * dist);
-                        
+                        totalDistanceAllTime += dist; totalSecondsAllTime += (pSecs * dist);
                         if (dist > longestRun) longestRun = dist;
                         if (dist >= 5 && pSecs < fastest5kSecs) fastest5kSecs = pSecs;
                         if (dist >= 10 && pSecs < fastest10kSecs) fastest10kSecs = pSecs;
                     }
                     streakCount++;
-                } else {
-                    streakCount = 0;
-                }
+                } else streakCount = 0;
                 if (streakCount > maxStreakCount) maxStreakCount = streakCount;
-
                 if (rec.water >= 8) aquaCount++; else aquaCount = 0;
                 if (aquaCount > maxAquaCount) maxAquaCount = aquaCount;
             });
 
-            // สถานะเหรียญรางวัล
-            const achievements = {
-                halfMarathon: longestRun >= (targetDistance === 42.195 ? 21.1 : targetDistance / 2),
-                streakMaster: maxStreakCount >= 7,
-                aquaMan: maxAquaCount >= 3
-            };
-
-            const shoeMileage = totalDistanceAllTime;
-            const shoeProgress = Math.min((shoeMileage / 500) * 100, 100);
+            const achievements = { halfMarathon: longestRun >= (targetDistance === 42.195 ? 21.1 : targetDistance / 2), streakMaster: maxStreakCount >= 7, aquaMan: maxAquaCount >= 3 };
+            const shoeMileage = totalDistanceAllTime; const shoeProgress = Math.min((shoeMileage / 500) * 100, 100);
             
-            // แผนที่ Virtual Map (เป้าหมายเปลี่ยนตามระยะที่เลือก)
             let virtualMapGoal = 600;
-            if (targetDistance === 21.1) virtualMapGoal = 300;
-            if (targetDistance === 10) virtualMapGoal = 150;
+            if (targetDistance === 21.1) virtualMapGoal = 300; if (targetDistance === 10) virtualMapGoal = 150;
             const virtualMapProgress = Math.min((totalDistanceAllTime / virtualMapGoal) * 100, 100);
 
-            // 🧠 --- ระบบ VCR Auto-Adapt ---
+            // FIX: เพิ่ม last7Days และ weeklyMileage ใน Scope เพื่อให้ใช้งานได้ถูกต้อง
+            const last7Days = Array.from({length: 7}, (_, i) => {
+                const d = new Date();
+                d.setDate(d.getDate() - 6 + i);
+                return d.toDateString();
+            });
+
+            const weeklyMileage = last7Days.reduce((total, dateStr) => {
+                const rec = allRecords[dateStr];
+                if (rec && rec.runLogged && rec.runDistance) {
+                    return total + parseFloat(rec.runDistance);
+                }
+                return total;
+            }, 0);
+
+            // VCR Auto-Adapt
             let isVcrAdapted = false;
             let baseVcrSpeed = vcrDistance / 1800; 
-            
             if (fastest5kSecs !== Infinity) {
                 const best5kSpeed = 1000 / fastest5kSecs; 
-                if (best5kSpeed * 0.95 > baseVcrSpeed) {
-                    baseVcrSpeed = best5kSpeed * 0.95; 
-                    isVcrAdapted = true; 
-                }
+                if (best5kSpeed * 0.95 > baseVcrSpeed) { baseVcrSpeed = best5kSpeed * 0.95; isVcrAdapted = true; }
             }
-
             const vcrSpeed = baseVcrSpeed; 
-
             const calculatePaceStr = (percentVCR) => {
                 const targetSpeedMS = vcrSpeed * (percentVCR / 100);
                 if(targetSpeedMS <= 0) return "0:00";
                 const secsPerKm = 1000 / targetSpeedMS;
-                const m = Math.floor(secsPerKm / 60);
-                const s = Math.floor(secsPerKm % 60);
+                const m = Math.floor(secsPerKm / 60); const s = Math.floor(secsPerKm % 60);
                 return `${m}:${s.toString().padStart(2, '0')}`;
             };
+            const paceZones = { regeneration: calculatePaceStr(70), easy: calculatePaceStr(80), longRun: calculatePaceStr(85), tempo: calculatePaceStr(97), interval: calculatePaceStr(105) };
 
-            const paceZones = {
-                regeneration: calculatePaceStr(70), 
-                easy: calculatePaceStr(80),         
-                longRun: calculatePaceStr(85),      
-                tempo: calculatePaceStr(97),        
-                interval: calculatePaceStr(105)     
+            // Karvonen Heart Rate Zones
+            const getHRZoneStr = (minPct, maxPct) => {
+                const maxHR = 220 - age;
+                const hrr = maxHR - restingHR;
+                const minBpm = Math.round((hrr * minPct) + restingHR);
+                const maxBpm = Math.round((hrr * maxPct) + restingHR);
+                return `${minBpm}-${maxBpm} bpm`;
             };
 
-            // 🤖 --- DYNAMIC TRAINING LOGIC (อัปเกรดตารางซ้อมให้ยืดหยุ่นตาม Setup) ---
             const getTrainingConfig = (dayIndex, weekIndex, isRaceDay) => {
-                // 1. กำหนดตารางระยะ Long Run ตามเป้าหมายที่เลือก
                 let baseLongDistance = 10;
                 if (targetDistance === 42.195) {
                     const fullDistances = [10, 12, 14, 10, 16, 18, 20, 15, 22, 24, 26, 18, 28, 30, 21, 32, 25, 35, 25, 30, 21, 15, 10, 42.195];
@@ -595,25 +529,31 @@
                     baseLongDistance = tenKDistances[weekIndex] || 3;
                 }
 
-                // 2. ดึงประเภทการซ้อมของวันนี้ จากตารางที่ AI จัดให้ (หรือพักถ้าไม่มี)
                 const dayType = schedule[dayIndex] || 'rest';
 
-                const genericMeals = { breakfast: 'แซนวิชขนมปังโฮลวีตไข่ต้ม 2 ฟอง + กาแฟดำ', lunch: 'ข้าวกล้อง 1.5 ทัพพี + อกไก่ย่าง/ไก่อบ + ผักต้ม', snack: 'ถั่วแระญี่ปุ่น หรือ กล้วยหอม 1 ลูก', dinner: 'สเต็กปลาแซลมอน/ปลาดอลลี่ ย่าง + สลัดผักชามใหญ่' };
+                const mealPlan = goalMode === 'performance' 
+                    ? { breakfast: 'ข้าวโอ๊ต+กล้วยหอม หรือ ขนมปังทาเนยถั่ว (เน้นพลังงาน)', lunch: 'พาสต้า / ข้าวราดแกงทั่วไป (กินให้อิ่ม มีแรงซ้อม)', snack: 'Energy Bar / ผลไม้สด', dinner: 'ข้าวสวย + เนื้อสัตว์เน้นโปรตีน (เติมไกลโคเจนให้เต็ม)' }
+                    : { breakfast: 'แซนวิชโฮลวีตไข่ต้ม 2 ฟอง + กาแฟดำ', lunch: 'ข้าวกล้อง 1.5 ทัพพี + อกไก่ย่าง/ไก่อบ + ผักต้ม', snack: 'ถั่วแระญี่ปุ่น หรือ กล้วยหอม 1 ลูก', dinner: 'สเต็กปลาแซลมอน/ปลาดอลลี่ ย่าง + สลัดผักชามใหญ่' };
+
+                const rehabExercises = [];
+                if (injuryFocus === 'knee') rehabExercises.push({ title: 'Knee Rehab (Clamshells)', focus: 'ปั้นก้นลดภาระเข่า', detail: 'นอนตะแคงเปิด-ปิดเข่าช้าๆ ข้างละ 30 วินาที' });
+                else if (injuryFocus === 'plantar') rehabExercises.push({ title: 'Plantar Rehab', focus: 'พังผืดฝ่าเท้า', detail: 'ใช้ลูกเทนนิสเหยียบคลึงเบาๆ ข้างละ 2 นาที' });
+                else if (injuryFocus === 'itband') rehabExercises.push({ title: 'IT Band Stretch', focus: 'ด้านข้างขา', detail: 'ไขว้ขาแล้วก้มแตะสลับ ค้างไว้ 40 วินาที' });
+                if (activityLevel === 'sedentary') rehabExercises.push({ title: 'Office Syndrome Fix', focus: 'ยืดเหยียดหลังและสะโพก', detail: 'ทำท่า Cat-Cow คลายแผ่นหลัง 15 ครั้ง' });
 
                 if (isRaceDay) {
-                    return { id: 'long', icon: '🏆', color: 'yellow-400', bg: 'yellow-400/20', title: `RACE DAY: ${targetDistance}K!`, desc: 'ถึงเวลาโชว์ผลการซ้อม!', pace: 'ตามแผนการวิ่ง', hr: 'ZONE 3-4', waterModifier: 4, meals: { breakfast: 'ขนมปังแยม 2 แผ่น + กาแฟดำ', lunch: 'อาหารหลังเข้าเส้นชัย (กินให้เต็มที่!)', snack: 'เบียร์เย็นๆ 1 กระป๋องฉลองชัยชนะ 🍻', dinner: 'ชาบู/หมูกระทะ ปาร์ตี้ฉลองเหรียญ!' }, exercises: [ { title: `🏃‍♂️ RACE: ${targetDistance} KM`, focus: 'หัวใจนักสู้', detail: 'คุมเพซช่วงแรกให้ดี ดื่มน้ำทุกจุด' }, { title: 'รับเหรียญ & ถ่ายรูป', focus: 'ความภูมิใจ', detail: 'คุณทำได้แล้ว!' }, { title: 'แช่น้ำเย็น', focus: 'Recovery', detail: 'แช่เท้า 15 นาที ลดการอักเสบ' } ] };
+                    return { id: 'long', icon: '🏆', color: 'yellow-400', bg: 'yellow-400/20', title: `RACE DAY: ${targetDistance}K!`, desc: 'ถึงเวลาโชว์ผลการซ้อม!', pace: 'ตามแผนการวิ่ง', hr: `ZONE 3-4 (${getHRZoneStr(0.7, 0.88)})`, waterModifier: 4, meals: { breakfast: 'ขนมปังแยม 2 แผ่น + กาแฟดำ', lunch: 'อาหารหลังเข้าเส้นชัย (กินให้เต็มที่!)', snack: 'เบียร์เย็นๆ 1 กระป๋องฉลองชัยชนะ 🍻', dinner: 'ชาบู/หมูกระทะ ปาร์ตี้ฉลองเหรียญ!' }, exercises: [ { title: `🏃‍♂️ RACE: ${targetDistance} KM`, focus: 'หัวใจนักสู้', detail: 'คุมเพซช่วงแรกให้ดี ดื่มน้ำทุกจุด' }, { title: 'รับเหรียญ & ถ่ายรูป', focus: 'ความภูมิใจ', detail: 'คุณทำได้แล้ว!' }, { title: 'แช่น้ำเย็น', focus: 'Recovery', detail: 'แช่เท้า 15 นาที ลดการอักเสบ' } ] };
                 }
 
                 if (dayType === 'long') {
-                    return { id: 'long', icon: '🔥', color: 'red-500', bg: 'red-500/10', title: `Long Run ${baseLongDistance} KM`, desc: 'ฝึกความทนทานของกล้ามเนื้อและหัวใจ', pace: `${paceZones.longRun} - ${paceZones.easy}`, hr: 'ZONE 2-3 (130-150 bpm)', waterModifier: 3, meals: genericMeals, exercises: [ { title: `🏃‍♂️ วิ่ง Long Run ระยะ ${baseLongDistance} กม.`, focus: 'ความทนทาน', detail: `พยายามรักษาเพซเป้าหมายให้คงที่` }, { title: 'ทาครีมกันเสียดสี/เตรียมเจล', focus: 'การเตรียมตัว', detail: 'ฝึกกินเจลทุกๆ 45 นาที' }, { title: 'Quad & Hamstring Stretch', focus: 'กล้ามเนื้อขา', detail: 'ยืดเหยียดชุดใหญ่หลังวิ่งจบ' } ] };
+                    return { id: 'long', icon: '🔥', color: 'red-500', bg: 'red-500/10', title: `Long Run ${baseLongDistance} KM`, desc: 'ฝึกความทนทานของกล้ามเนื้อและหัวใจ', pace: `${paceZones.longRun} - ${paceZones.easy}`, hr: `ZONE 2-3 (${getHRZoneStr(0.65, 0.75)})`, waterModifier: 3, meals: goalMode === 'performance' ? { breakfast: 'โหลดคาร์บหนักๆ ขนมปัง 3-4 แผ่น', lunch: 'ก๋วยเตี๋ยวชามใหญ่', snack: 'แตงโม/เกลือแร่', dinner: 'หมูกระทะฉลองวิ่งยาว' } : mealPlan, exercises: [ { title: `🏃‍♂️ วิ่ง Long Run ระยะ ${baseLongDistance} กม.`, focus: 'ความทนทาน', detail: `พยายามรักษาเพซเป้าหมายให้คงที่` }, { title: 'ทาครีมกันเสียดสี/เตรียมเจล', focus: 'การเตรียมตัว', detail: 'ฝึกกินเจลทุกๆ 45 นาที' }, ...rehabExercises, { title: 'Quad & Hamstring Stretch', focus: 'กล้ามเนื้อขา', detail: 'ยืดเหยียดชุดใหญ่หลังวิ่งจบ' } ].slice(0, 4) };
                 } else if (dayType === 'speed') {
-                    return { id: 'speed', icon: '⚡', color: 'orange-500', bg: 'orange-500/10', title: 'Speed Work / Tempo', desc: 'ซ้อมความเร็วรอบขา ฝึกให้หัวใจทนต่อความเหนื่อย', pace: `${paceZones.interval} - ${paceZones.tempo}`, hr: 'ZONE 4 (155-170 bpm)', waterModifier: 2, meals: genericMeals, exercises: [ { title: '⚡ วิ่ง Tempo / Interval', focus: 'ความเร็ว (Pace)', detail: `วอร์มอัพ 2k -> วิ่งเพซ ${paceZones.tempo} -> คูลดาวน์ 2k` }, { title: 'Dynamic Stretching', focus: 'ยืดเหยียดแบบเคลื่อนไหว', detail: 'เตะขาไปมา หมุนข้อต่อ ก่อนลงคอร์ทวิ่งเร็ว' }, { title: 'Forward Lunges', focus: 'ต้นขาด้านหน้าและก้น', detail: 'ก้าวสลับซ้ายขวา 3 เซต เซตละ 10 ครั้ง/ข้าง' } ] };
+                    return { id: 'speed', icon: '⚡', color: 'orange-500', bg: 'orange-500/10', title: 'Speed Work / Tempo', desc: 'ซ้อมความเร็วรอบขา ฝึกให้หัวใจทนต่อความเหนื่อย', pace: `${paceZones.interval} - ${paceZones.tempo}`, hr: `ZONE 4 (${getHRZoneStr(0.8, 0.88)})`, waterModifier: 2, meals: mealPlan, exercises: [ { title: '⚡ วิ่ง Tempo / Interval', focus: 'ความเร็ว (Pace)', detail: `วอร์มอัพ 2k -> วิ่งเพซ ${paceZones.tempo} -> คูลดาวน์ 2k` }, { title: 'Dynamic Stretching', focus: 'ยืดเหยียดแบบเคลื่อนไหว', detail: 'เตะขาไปมา หมุนข้อต่อ ก่อนลงคอร์ทวิ่งเร็ว' }, { title: 'Forward Lunges', focus: 'ต้นขาด้านหน้าและก้น', detail: 'ก้าวสลับซ้ายขวา 3 เซต เซตละ 10 ครั้ง/ข้าง' } ] };
                 } else if (dayType === 'easy') {
-                    // ระยะ Easy Run ปรับตามเป้าหมายหลัก
                     const easyDist = targetDistance === 42.195 ? (weekIndex < 8 ? '5' : '8') : (targetDistance === 21.1 ? '5' : '3');
-                    return { id: 'easy', icon: '👟', color: 'lime-400', bg: 'lime-400/10', title: 'Easy Run (Base Run)', desc: 'วิ่งสบายๆ สร้างฐานความฟิต (Aerobic Base)', pace: `${paceZones.easy} - ${paceZones.regeneration}`, hr: 'ZONE 2 (125-140 bpm)', waterModifier: 1, meals: genericMeals, exercises: [ { title: `🏃‍♂️ วิ่ง Easy Run ${easyDist} กม.`, focus: 'ระบบหายใจ', detail: 'คุมหัวใจให้อยู่แค่โซน 2 (วิ่งไปคุยไปได้สบายๆ)' }, { title: 'Bodyweight Squats', focus: 'กล้ามเนื้อหน้าขา', detail: 'ทำหลังวิ่งจบ 3 เซต เซตละ 15 ครั้ง' }, { title: 'Calf Raises', focus: 'น่องและข้อเท้า', detail: 'ยืนเขย่งปลายเท้า 3 เซต เซตละ 20 ครั้ง' } ] };
+                    return { id: 'easy', icon: '👟', color: 'lime-400', bg: 'lime-400/10', title: 'Easy Run (Base Run)', desc: 'วิ่งสบายๆ สร้างฐานความฟิต (Aerobic Base)', pace: `${paceZones.easy} - ${paceZones.regeneration}`, hr: `ZONE 2 (${getHRZoneStr(0.6, 0.7)})`, waterModifier: 1, meals: mealPlan, exercises: [ { title: `🏃‍♂️ วิ่ง Easy Run ${easyDist} กม.`, focus: 'ระบบหายใจ', detail: 'คุมหัวใจให้อยู่แค่โซน 2 (วิ่งไปคุยไปได้สบายๆ)' }, ...rehabExercises, { title: 'Bodyweight Squats', focus: 'กล้ามเนื้อหน้าขา', detail: 'ทำหลังวิ่งจบ 3 เซต เซตละ 15 ครั้ง' } ].slice(0, 4) };
                 } else {
-                    return { id: 'rest', icon: '💤', color: 'blue-500', bg: 'blue-500/10', title: 'Rest & Recovery', desc: 'วันพักผ่อน ฟื้นฟูกล้ามเนื้อ', pace: 'พักวิ่ง', hr: 'REST', waterModifier: 0, meals: genericMeals, exercises: [ { title: '💤 พักการวิ่ง 1 วัน (Full Rest)', focus: 'กล้ามเนื้อขา', detail: 'งดวิ่งเด็ดขาด เพื่อให้ร่างกายได้ซ่อมแซม' }, { title: 'Core Plank', focus: 'แกนกลางลำตัว (Core)', detail: 'ทำ 3 เซต เซตละ 40 วินาที' }, { title: 'Foam Rolling (กลิ้งโฟม)', focus: 'น่องและหน้าขา', detail: 'กลิ้งจุดละ 1-2 นาที คลายกรดแลคติกที่สะสม' } ] };
+                    return { id: 'rest', icon: '💤', color: 'blue-500', bg: 'blue-500/10', title: 'Rest & Recovery', desc: 'วันพักผ่อน ฟื้นฟูกล้ามเนื้อ', pace: 'พักวิ่ง', hr: 'REST', waterModifier: 0, meals: goalMode === 'performance' ? { breakfast: 'ข้าว+กับข้าวทั่วไปเน้นโปรตีน', lunch: 'ก๋วยเตี๋ยว/เกาเหลา', snack: 'โยเกิร์ต/ถั่ว', dinner: 'สเต็กเนื้อ/ไก่ (ลดแป้ง)' } : mealPlan, exercises: [ { title: '💤 พักการวิ่ง 1 วัน (Full Rest)', focus: 'กล้ามเนื้อขา', detail: 'งดวิ่งเด็ดขาด เพื่อให้ร่างกายได้ซ่อมแซม' }, ...rehabExercises, { title: 'Core Plank', focus: 'แกนกลางลำตัว (Core)', detail: 'ทำ 3 เซต เซตละ 40 วินาที' } ].slice(0, 4) };
                 }
             };
 
@@ -643,7 +583,7 @@
                 return Math.min(Math.round(s), 100);
             };
 
-            // 🔥 --- ระบบ AI Predictor อัปเกรด (ใช้สูตร Riegel) ---
+            // AI Predictor logic
             let predictedTimeStr = "NEED MORE DATA";
             let isSub5 = false;
             let predictionSource = "ซ้อมสะสมให้ครบ 5 KM เพื่อประเมินเวลา";
@@ -653,7 +593,7 @@
                 const predictedSecs = t1 * Math.pow((targetDistance / 10), 1.06); 
                 const h = Math.floor(predictedSecs / 3600); const m = Math.floor((predictedSecs % 3600) / 60); const s = Math.floor(predictedSecs % 60);
                 predictedTimeStr = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
-                isSub5 = predictedSecs < (5 * 3600); // เทียบกับ 5 ชั่วโมง
+                isSub5 = predictedSecs < (5 * 3600);
                 predictionSource = "คำนวณจากสถิติ Fastest 10K ล่าสุด";
             } else if (fastest5kSecs !== Infinity) {
                 const t1 = fastest5kSecs * 5; 
@@ -671,26 +611,16 @@
                 predictionSource = "คำนวณจากเพซเฉลี่ยรวม (เผื่อความล้า 5%)";
             }
 
-            // 🤖 --- VCR-Powered AI Coach ---
             const getAICoachFeedback = () => {
                 if (!dailyData.runLogged || !dailyData.runPace) return null;
-
                 const userPaceSecs = parsePaceToSecs(dailyData.runPace);
                 if (userPaceSecs === Infinity) return null;
 
-                let targetMinSecs = 0;
-                let targetMaxSecs = 0;
-                
+                let targetMinSecs = 0; let targetMaxSecs = 0;
                 const paceRegex = /(\d+:\d+)/g;
                 const matches = [...currentConfig.pace.matchAll(paceRegex)];
-                if (matches.length >= 2) {
-                    targetMinSecs = parsePaceToSecs(matches[0][0]);
-                    targetMaxSecs = parsePaceToSecs(matches[1][0]);
-                } else if (matches.length === 1) {
-                    targetMinSecs = parsePaceToSecs(matches[0][0]);
-                    targetMaxSecs = targetMinSecs + 30;
-                }
-                
+                if (matches.length >= 2) { targetMinSecs = parsePaceToSecs(matches[0][0]); targetMaxSecs = parsePaceToSecs(matches[1][0]); } 
+                else if (matches.length === 1) { targetMinSecs = parsePaceToSecs(matches[0][0]); targetMaxSecs = targetMinSecs + 30; }
                 if(targetMinSecs > targetMaxSecs) { const temp = targetMinSecs; targetMinSecs = targetMaxSecs; targetMaxSecs = temp; }
 
                 let hrWarning = "";
@@ -698,31 +628,19 @@
                 const hrMatch = currentConfig.hr.match(hrRegex);
                 if (hrMatch && dailyData.runHR) {
                     const maxHR = parseInt(hrMatch[2]);
-                    if (parseInt(dailyData.runHR) > maxHR + 5) {
-                        hrWarning = " ⚠️ (แต่หัวใจแอบสูงไปนิด ลดความเร็วลงหน่อยเพื่อเซฟเข่าและหัวใจนะครับ!)";
-                    }
+                    if (parseInt(dailyData.runHR) > maxHR + 5) hrWarning = " ⚠️ (แต่หัวใจแอบสูงไปนิด ลดความเร็วลงหน่อยเพื่อเซฟเข่าและหัวใจนะครับ!)";
                 }
 
                 if (currentConfig.id === 'easy' || currentConfig.id === 'long') {
-                    if (targetMinSecs > 0 && userPaceSecs < targetMinSecs - 5) {
-                        return { title: "⚠️ โค้ชขอเตือน", msg: `ใจเย็นลูกพี่! วันนี้เน้น ${currentConfig.id === 'long' ? 'Long Run' : 'Easy Run'} แต่ดันวิ่งเพซ ${dailyData.runPace} เร็วเกินไป เน้นช้าๆ คุมโซนดีกว่าครับ!${hrWarning}`, type: "warning" };
-                    } 
-                    else if (targetMaxSecs > 0 && userPaceSecs > targetMaxSecs + 15) {
-                        return { title: "🌟 โค้ชให้กำลังใจ", msg: `เพซ ${dailyData.runPace} ช้ากว่าเกณฑ์ VCR ไปนิด ไม่เป็นไรครับ! วันนี้เน้นสะสมเวลาบนเท้า (Time on feet) ถือว่าได้ความอึดแล้ว!${hrWarning}`, type: "success" };
-                    } 
-                    else {
-                        return { title: "🎯 โค้ชถูกใจสิ่งนี้", msg: `เพอร์เฟกต์! คุมเพซ ${dailyData.runPace} ได้เข้าโซน VCR เป๊ะตามสรีระ ร่างกายได้พัฒนา Aerobic Base เต็มๆ 100% 👏${hrWarning}`, type: "perfect" };
-                    }
+                    if (targetMinSecs > 0 && userPaceSecs < targetMinSecs - 5) return { title: "⚠️ โค้ชขอเตือน", msg: `ใจเย็นลูกพี่! วันนี้เน้น ${currentConfig.id === 'long' ? 'Long Run' : 'Easy Run'} แต่ดันวิ่งเพซ ${dailyData.runPace} เร็วเกินไป เน้นช้าๆ คุมโซนดีกว่าครับ!${hrWarning}`, type: "warning" };
+                    else if (targetMaxSecs > 0 && userPaceSecs > targetMaxSecs + 15) return { title: "🌟 โค้ชให้กำลังใจ", msg: `เพซ ${dailyData.runPace} ช้ากว่าเกณฑ์ VCR ไปนิด ไม่เป็นไรครับ! วันนี้เน้นสะสมเวลาบนเท้า ถือว่าได้ความอึดแล้ว!${hrWarning}`, type: "success" };
+                    else return { title: "🎯 โค้ชถูกใจสิ่งนี้", msg: `เพอร์เฟกต์! คุมเพซ ${dailyData.runPace} ได้เข้าโซน VCR เป๊ะตามสรีระ ร่างกายได้พัฒนา Aerobic Base เต็มๆ 100% 👏${hrWarning}`, type: "perfect" };
                 } else if (currentConfig.id === 'speed') {
-                    if (targetMaxSecs > 0 && userPaceSecs > targetMaxSecs + 10) {
-                        return { title: "🔥 โค้ชกระตุ้น", msg: `วันนี้ซ้อมความเร็ว เพซ ${dailyData.runPace} อาจจะหลุดเกณฑ์ Tempo ของคุณไปนิด ไม่เป็นไรครับ! พักผ่อนให้พอ คราวหน้ามาอัดกันใหม่ สู้ๆ!${hrWarning}`, type: "warning" };
-                    } else {
-                        return { title: "⚡ สุดยอดเยี่ยม", msg: `อัดเพซ ${dailyData.runPace} เข้าเกณฑ์ Lactate Threshold ของคุณเป๊ะ! ปอดและหัวใจได้ฝึกความทนทานแบบเต็มพิกัด! 🚀${hrWarning}`, type: "perfect" };
-                    }
+                    if (targetMaxSecs > 0 && userPaceSecs > targetMaxSecs + 10) return { title: "🔥 โค้ชกระตุ้น", msg: `วันนี้ซ้อมความเร็ว เพซ ${dailyData.runPace} อาจจะหลุดเกณฑ์ Tempo ของคุณไปนิด ไม่เป็นไรครับ! พักผ่อนให้พอ คราวหน้ามาอัดกันใหม่ สู้ๆ!${hrWarning}`, type: "warning" };
+                    else return { title: "⚡ สุดยอดเยี่ยม", msg: `อัดเพซ ${dailyData.runPace} เข้าเกณฑ์ Lactate Threshold ของคุณเป๊ะ! ปอดและหัวใจได้ฝึกความทนทานแบบเต็มพิกัด! 🚀${hrWarning}`, type: "perfect" };
                 } else if (currentConfig.id === 'rest') {
                      return { title: "🤖 AI Coach", msg: `วันนี้วันพักนะลูกพี่ แอบไปวิ่งมา ${dailyData.runDistance} กม. หรอเนี่ย! อย่าลืมพักผ่อนยืดเหยียดให้ถึงด้วยล่ะ!`, type: "warning" };
                 }
-                
                 return { title: "🤖 AI Coach", msg: `บันทึกสถิติสำเร็จ! ระยะ ${dailyData.runDistance} กม. วันนี้เก่งมากครับ พักผ่อนยืดเหยียดด้วยนะ!`, type: "success" };
             };
 
@@ -767,91 +685,135 @@
                 );
             }
 
-            // 🔥 🎯 หน้าจอ Setup โฉมใหม่! (ปรับเปลี่ยนวันและเป้าหมายได้)
             if (showSetup) {
                 return (
                     <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center p-6 text-zinc-200 relative overflow-hidden z-50">
                         <div className="absolute top-[-10%] left-[-10%] w-64 h-64 bg-orange-600 rounded-full blur-[100px] opacity-20"></div>
                         <div className="bg-zinc-900 border border-zinc-800 p-8 rounded-[24px] shadow-2xl shadow-black w-full max-w-sm relative z-10 overflow-y-auto max-h-[90vh] hide-scrollbar">
                             <h2 className="text-3xl font-black text-white italic uppercase tracking-tighter mb-1">Runner Profile</h2>
-                            <p className="text-sm font-bold text-zinc-500 tracking-wide mb-6">ตั้งค่าเป้าหมายและตารางซ้อมส่วนตัวของคุณ 🎯</p>
+                            <p className="text-sm font-bold text-zinc-500 tracking-wide mb-6">ตั้งค่าเป้าหมายและข้อมูลสรีระของคุณ 🎯</p>
                             
-                            <div className="space-y-6">
-                                {/* 1. เป้าหมายระยะทาง */}
-                                <div>
-                                    <label className="text-[10px] font-black text-lime-400 uppercase tracking-widest mb-2 block">1. Target Race Distance</label>
-                                    <div className="grid grid-cols-3 gap-2">
-                                        {[{d: 10, l: '10K'}, {d: 21.1, l: 'Half'}, {d: 42.195, l: 'Full'}].map(dist => (
-                                            <button 
-                                                key={dist.d} 
-                                                onClick={() => setSetupTargetDistance(dist.d)}
-                                                className={`py-3 rounded-xl text-xs font-black uppercase transition-all ${setupTargetDistance === dist.d ? 'bg-lime-500 text-black shadow-[0_0_15px_rgba(132,204,22,0.4)]' : 'bg-zinc-950 text-zinc-500 border border-zinc-800'}`}
-                                            >
-                                                {dist.l}
+                            {setupStep === 1 && (
+                                <div className="space-y-6 animation-fade-in">
+                                    <div>
+                                        <label className="text-[10px] font-black text-white uppercase tracking-widest mb-2 block">Main Goal (เป้าหมายหลักของคุณ)</label>
+                                        <div className="flex gap-2">
+                                            <button onClick={() => setGoalMode('performance')} className={`flex-1 p-3 rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition-all ${goalMode === 'performance' ? 'bg-blue-500/20 border-blue-500 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.3)]' : 'bg-zinc-950 border-zinc-800 text-zinc-600'}`}>
+                                                <span className="text-2xl">🏃‍♂️</span><span className="text-[9px] font-black uppercase tracking-wider">Performance<br/>(เน้นทำสถิติ)</span>
                                             </button>
-                                        ))}
-                                    </div>
-                                </div>
-
-                                {/* วันแข่งเป้าหมาย */}
-                                <div>
-                                    <label className="text-[10px] font-black text-yellow-400 uppercase tracking-widest mb-2 block">Race Date (วันแข่งจริง)</label>
-                                    <input type="date" value={setupRaceDate} onChange={e=>setSetupRaceDate(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-center text-white font-black outline-none focus:border-yellow-400 transition-colors"/>
-                                    <p className="text-[9px] text-zinc-500 mt-2">AI จะสร้างตารางซ้อมถอยหลังให้พอดีกับวันแข่งครับ</p>
-                                </div>
-
-                                {/* 2. แจ้งวันว่าง ให้ AI จัดตาราง */}
-                                <div>
-                                    <div className="flex justify-between items-end mb-2">
-                                        <label className="text-[10px] font-black text-fuchsia-400 uppercase tracking-widest block">2. Training Days (เลือกวันว่างซ้อม)</label>
-                                        <span className="text-[9px] font-bold text-zinc-500">ซ้อม {Object.values(setupAvailability).filter(Boolean).length} วัน</span>
-                                    </div>
-                                    <p className="text-[9px] text-zinc-400 mb-3">กดเลือกวันว่างของคุณ แล้ว <span className="text-fuchsia-400">AI โค้ชจะจัดตารางซ้อมที่เหมาะสมให้เอง</span></p>
-                                    
-                                    <div className="flex justify-between gap-1 mt-2">
-                                        {['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'].map((dayStr, dIdx) => {
-                                            const isAvailable = setupAvailability[dIdx];
-                                            return (
-                                                <div key={dIdx} className="flex flex-col items-center gap-1.5 w-full">
-                                                    <span className="text-[10px] font-bold text-zinc-400">{dayStr}</span>
-                                                    <button 
-                                                        onClick={() => setSetupAvailability({...setupAvailability, [dIdx]: !isAvailable})}
-                                                        className={`w-full py-2.5 rounded-lg border flex items-center justify-center text-lg transition-colors active:scale-90 ${isAvailable ? 'bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/50 shadow-[0_0_10px_rgba(217,70,239,0.2)]' : 'bg-zinc-950 text-zinc-600 border-zinc-800'}`}
-                                                    >
-                                                        {isAvailable ? '👟' : '💤'}
-                                                    </button>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
-                                </div>
-
-                                {/* 3. น้ำหนัก */}
-                                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-zinc-800">
-                                    <div>
-                                        <label className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-1.5 block">Start Weight (KG)</label>
-                                        <input type="number" step="0.1" value={setupInitWeight} onChange={e=>setSetupInitWeight(Number(e.target.value))} className="w-full bg-zinc-950 border-b-2 border-zinc-800 p-3 text-center text-white font-black text-2xl italic outline-none focus:border-orange-500 transition-colors"/>
+                                            <button onClick={() => setGoalMode('weightloss')} className={`flex-1 p-3 rounded-xl border-2 flex flex-col items-center justify-center gap-1 transition-all ${goalMode === 'weightloss' ? 'bg-orange-500/20 border-orange-500 text-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.3)]' : 'bg-zinc-950 border-zinc-800 text-zinc-600'}`}>
+                                                <span className="text-2xl">⚖️</span><span className="text-[9px] font-black uppercase tracking-wider">Weight Loss<br/>(เน้นลดน้ำหนัก)</span>
+                                            </button>
+                                        </div>
                                     </div>
                                     <div>
-                                        <label className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-1.5 block">Target Weight (KG)</label>
-                                        <input type="number" step="0.1" value={setupTargetWeight} onChange={e=>setSetupTargetWeight(Number(e.target.value))} className="w-full bg-zinc-950 border-b-2 border-zinc-800 p-3 text-center text-white font-black text-2xl italic outline-none focus:border-orange-500 transition-colors"/>
+                                        <label className="text-[10px] font-black text-lime-400 uppercase tracking-widest mb-2 block">Target Race Distance</label>
+                                        <div className="grid grid-cols-3 gap-2">
+                                            {[{d: 10, l: '10K'}, {d: 21.1, l: 'Half'}, {d: 42.195, l: 'Full'}].map(dist => (
+                                                <button key={dist.d} onClick={() => setTargetDistance(dist.d)} className={`py-3 rounded-xl text-xs font-black uppercase transition-all ${targetDistance === dist.d ? 'bg-lime-500 text-black shadow-[0_0_15px_rgba(132,204,22,0.4)]' : 'bg-zinc-950 text-zinc-500 border border-zinc-800'}`}>
+                                                    {dist.l}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black text-yellow-400 uppercase tracking-widest mb-2 block">Race Date (วันแข่งจริง)</label>
+                                        <input type="date" value={raceDateStr} onChange={e=>setRaceDateStr(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-center text-white font-black outline-none focus:border-yellow-400 transition-colors"/>
+                                    </div>
+                                    <div>
+                                        <div className="flex justify-between items-end mb-2">
+                                            <label className="text-[10px] font-black text-fuchsia-400 uppercase tracking-widest block">Training Days (เลือกวันว่างซ้อม)</label>
+                                            <span className="text-[9px] font-bold text-zinc-500">ซ้อม {Object.values(availability).filter(Boolean).length} วัน</span>
+                                        </div>
+                                        <div className="flex justify-between gap-1 mt-2">
+                                            {['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'].map((dayStr, dIdx) => {
+                                                const isAvailable = availability[dIdx];
+                                                return (
+                                                    <div key={dIdx} className="flex flex-col items-center gap-1.5 w-full">
+                                                        <span className="text-[10px] font-bold text-zinc-400">{dayStr}</span>
+                                                        <button onClick={() => setAvailability({...availability, [dIdx]: !isAvailable})} className={`w-full py-2.5 rounded-lg border flex items-center justify-center text-lg transition-colors active:scale-90 ${isAvailable ? 'bg-fuchsia-500/20 text-fuchsia-400 border-fuchsia-500/50 shadow-[0_0_10px_rgba(217,70,239,0.2)]' : 'bg-zinc-950 text-zinc-600 border-zinc-800'}`}>
+                                                            {isAvailable ? '👟' : '💤'}
+                                                        </button>
+                                                    </div>
+                                                )
+                                            })}
+                                        </div>
+                                    </div>
+                                    <button onClick={() => setSetupStep(2)} className="w-full bg-white text-black font-black uppercase tracking-widest py-4 rounded-xl mt-4 active:scale-95 transition-all">Next Step ➡️</button>
+                                </div>
+                            )}
+
+                            {setupStep === 2 && (
+                                <div className="space-y-6 animation-fade-in">
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="text-[10px] font-black text-white uppercase tracking-widest mb-1.5 block">Age (อายุ)</label>
+                                            <input type="number" value={age} onChange={e=>setAge(Number(e.target.value))} className="w-full bg-zinc-950 border-b-2 border-zinc-800 p-3 text-center text-white font-black text-xl italic outline-none focus:border-white transition-colors"/>
+                                        </div>
+                                        <div>
+                                            <label className="text-[10px] font-black text-white uppercase tracking-widest mb-1.5 block">Height (ส่วนสูง cm)</label>
+                                            <input type="number" value={height} onChange={e=>setHeight(Number(e.target.value))} className="w-full bg-zinc-950 border-b-2 border-zinc-800 p-3 text-center text-white font-black text-xl italic outline-none focus:border-white transition-colors"/>
+                                        </div>
+                                    </div>
+                                    <div className={`grid ${goalMode === 'weightloss' ? 'grid-cols-2' : 'grid-cols-1'} gap-4`}>
+                                        <div>
+                                            <label className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-1.5 block">Current Weight (KG)</label>
+                                            <input type="number" step="0.1" value={setupInitWeight} onChange={e=>setSetupInitWeight(Number(e.target.value))} className="w-full bg-zinc-950 border-b-2 border-zinc-800 p-3 text-center text-white font-black text-2xl italic outline-none focus:border-orange-500 transition-colors"/>
+                                        </div>
+                                        {goalMode === 'weightloss' && (
+                                            <div>
+                                                <label className="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-1.5 block">Target Weight (KG)</label>
+                                                <input type="number" step="0.1" value={setupTargetWeight} onChange={e=>setSetupTargetWeight(Number(e.target.value))} className="w-full bg-zinc-950 border-b-2 border-zinc-800 p-3 text-center text-white font-black text-2xl italic outline-none focus:border-orange-500 transition-colors"/>
+                                            </div>
+                                        )}
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2 block">Daily Activity (กิจกรรมแต่ละวัน)</label>
+                                        <select value={activityLevel} onChange={e=>setActivityLevel(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-white font-bold outline-none focus:border-blue-400">
+                                            <option value="sedentary">นั่งออฟฟิศทั้งวัน (Sedentary)</option>
+                                            <option value="light">เดินบ้างนิดหน่อย (Light)</option>
+                                            <option value="moderate">เคลื่อนไหวบ่อย (Moderate)</option>
+                                            <option value="active">ใช้แรงงานเยอะ (Active)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black text-red-400 uppercase tracking-widest mb-2 block">Injury Focus (จุดที่มักปวด/บาดเจ็บ)</label>
+                                        <select value={injuryFocus} onChange={e=>setInjuryFocus(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 p-3 rounded-xl text-white font-bold outline-none focus:border-red-400">
+                                            <option value="none">ไม่มี (แข็งแรงดี!)</option>
+                                            <option value="knee">ปวดเข่าด้านหน้า (Runner's Knee)</option>
+                                            <option value="itband">ปวดข้างเข่า/สะโพก (IT Band)</option>
+                                            <option value="plantar">เจ็บฝ่าเท้า/ส้นเท้า (รองช้ำ)</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex gap-2 mt-4">
+                                        <button onClick={() => setSetupStep(1)} className="flex-1 bg-zinc-800 text-white font-black uppercase tracking-widest py-4 rounded-xl active:scale-95 transition-all">Back</button>
+                                        <button onClick={() => setSetupStep(3)} className="flex-1 bg-white text-black font-black uppercase tracking-widest py-4 rounded-xl active:scale-95 transition-all">Next ➡️</button>
                                     </div>
                                 </div>
+                            )}
 
-                                {/* 4. VCR Test */}
-                                <div>
-                                    <label className="text-[10px] font-black text-cyan-400 uppercase tracking-widest mb-1.5 flex items-center justify-between">
-                                        <span>3. 30-Min VCR Test (ระยะทาง)</span>
-                                        <span>เมตร</span>
-                                    </label>
-                                    <input type="number" step="10" value={setupVcrDistance} onChange={e=>setSetupVcrDistance(Number(e.target.value))} className="w-full bg-zinc-950 border-b-2 border-zinc-800 p-3 text-center text-cyan-400 font-black text-3xl italic outline-none focus:border-cyan-400 transition-colors"/>
-                                    <p className="text-[10px] text-zinc-500 font-bold mt-2 leading-relaxed">วิ่งจับเวลา 30 นาที แล้วกรอกระยะทางที่ได้ (เช่น 4500) <br/>AI จะใช้เพื่อหาเพซและโซนหัวใจให้คุณ</p>
+                            {setupStep === 3 && (
+                                <div className="space-y-6 animation-fade-in">
+                                    <div>
+                                        <label className="text-[10px] font-black text-pink-400 uppercase tracking-widest mb-1.5 flex items-center justify-between">
+                                            <span>Resting Heart Rate (ตอนตื่นนอน)</span><span>BPM</span>
+                                        </label>
+                                        <input type="number" value={restingHR} onChange={e=>setRestingHR(Number(e.target.value))} className="w-full bg-zinc-950 border-b-2 border-zinc-800 p-3 text-center text-pink-400 font-black text-3xl italic outline-none focus:border-pink-400 transition-colors"/>
+                                        <p className="text-[10px] text-zinc-500 font-bold mt-2 leading-relaxed">ค่าชีพจรตอนตื่นนอน เพื่อหาโซนหัวใจ (Karvonen) ส่วนตัวคุณ</p>
+                                    </div>
+                                    <div>
+                                        <label className="text-[10px] font-black text-cyan-400 uppercase tracking-widest mb-1.5 flex items-center justify-between">
+                                            <span>30-Min VCR Test (ระยะทาง)</span><span>เมตร</span>
+                                        </label>
+                                        <input type="number" step="10" value={setupVcrDistance} onChange={e=>setSetupVcrDistance(Number(e.target.value))} className="w-full bg-zinc-950 border-b-2 border-zinc-800 p-3 text-center text-cyan-400 font-black text-3xl italic outline-none focus:border-cyan-400 transition-colors"/>
+                                        <p className="text-[10px] text-zinc-500 font-bold mt-2 leading-relaxed">วิ่งจับเวลา 30 นาที แล้วกรอกระยะทางที่ได้ (เช่น 4500) <br/>AI จะใช้เพื่อหาเพซเป้าหมายให้คุณ</p>
+                                    </div>
+                                    <div className="flex gap-2 mt-4">
+                                        <button onClick={() => setSetupStep(2)} className="w-1/3 bg-zinc-800 text-white font-black uppercase tracking-widest py-4 rounded-xl active:scale-95 transition-all">Back</button>
+                                        <button onClick={saveProfileSetup} className="w-2/3 bg-orange-500 hover:bg-orange-400 text-black font-black uppercase tracking-widest py-4 rounded-xl active:scale-95 transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)]">Build My Plan 🔥</button>
+                                    </div>
                                 </div>
-                                
-                                <button onClick={saveProfileSetup} className="w-full bg-orange-500 hover:bg-orange-400 text-black font-black uppercase tracking-widest py-4 rounded-xl mt-4 active:scale-95 transition-all shadow-[0_0_15px_rgba(249,115,22,0.3)]">
-                                    Build My Plan 🔥
-                                </button>
-                            </div>
+                            )}
                         </div>
                     </div>
                 );
@@ -900,16 +862,36 @@
                     <div className="px-5 -mt-8 relative z-20 space-y-5">
                         <div className="bg-zinc-900/90 backdrop-blur-xl rounded-[24px] p-6 shadow-2xl border border-zinc-800 flex items-center justify-between gap-3 overflow-hidden relative">
                             <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-orange-500/10 to-transparent"></div>
+                            
                             <div className="flex flex-col z-10 shrink-0">
-                                <span className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400 mb-2">Target Weight</span>
-                                <div className="flex items-baseline gap-1">
-                                    <input type="number" step="0.1" value={weight} onChange={(e) => updateWeightToCloud(parseFloat(e.target.value) || 0)} className="w-28 bg-transparent text-5xl font-black text-white italic tracking-tighter outline-none border-b-4 border-zinc-800 focus:border-lime-400 transition-colors" />
-                                    <span className="text-lime-400 font-bold text-base uppercase tracking-wider">KG</span>
-                                </div>
-                                <div className="flex gap-3 mt-5">
-                                    <button onClick={() => updateWeightToCloud(Number((weight + 0.1).toFixed(1)))} className="w-12 h-12 bg-zinc-800 rounded-lg text-zinc-300 font-black text-2xl hover:bg-zinc-700 active:scale-95 transition-all">+</button>
-                                    <button onClick={() => updateWeightToCloud(Math.max(40, Number((weight - 0.1).toFixed(1))))} className="w-12 h-12 bg-orange-500 rounded-lg text-black font-black text-3xl shadow-[0_0_15px_rgba(249,115,22,0.4)] active:scale-95 transition-all">-</button>
-                                </div>
+                                {goalMode === 'weightloss' ? (
+                                    <>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className="text-xs font-black uppercase tracking-[0.2em] text-zinc-400">Target Weight</span>
+                                        </div>
+                                        <div className="flex items-baseline gap-1">
+                                            <input type="number" step="0.1" value={weight} onChange={(e) => updateWeightToCloud(parseFloat(e.target.value) || 0)} className="w-28 bg-transparent text-5xl font-black text-white italic tracking-tighter outline-none border-b-4 border-zinc-800 focus:border-lime-400 transition-colors" />
+                                            <span className="text-lime-400 font-bold text-base uppercase tracking-wider">KG</span>
+                                        </div>
+                                        <div className="flex gap-3 mt-5">
+                                            <button onClick={() => updateWeightToCloud(Number((weight + 0.1).toFixed(1)))} className="w-12 h-12 bg-zinc-800 rounded-lg text-zinc-300 font-black text-2xl hover:bg-zinc-700 active:scale-95 transition-all">+</button>
+                                            <button onClick={() => updateWeightToCloud(Math.max(40, Number((weight - 0.1).toFixed(1))))} className="w-12 h-12 bg-orange-500 rounded-lg text-black font-black text-3xl shadow-[0_0_15px_rgba(249,115,22,0.4)] active:scale-95 transition-all">-</button>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <span className="text-xs font-black uppercase tracking-[0.2em] text-blue-400">Current Weight</span>
+                                        </div>
+                                        <div className="flex items-baseline gap-1">
+                                            <input type="number" step="0.1" value={weight} onChange={(e) => updateWeightToCloud(parseFloat(e.target.value) || 0)} className="w-28 bg-transparent text-5xl font-black text-white italic tracking-tighter outline-none border-b-4 border-zinc-800 focus:border-blue-400 transition-colors" />
+                                            <span className="text-blue-400 font-bold text-base uppercase tracking-wider">KG</span>
+                                        </div>
+                                        <div className="mt-5">
+                                            <span className="bg-blue-500/20 text-blue-400 border border-blue-500/50 px-3 py-1.5 rounded-lg text-[10px] font-black uppercase tracking-widest">Performance Mode ⚡</span>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                             <div className="flex-1 flex justify-end z-10 relative mr-2">
                                 <CoolRunnerAvatar weight={weight} targetWeight={targetWeight} initialWeight={initialWeight} currentConfig={currentConfig} />
@@ -918,7 +900,7 @@
 
                         <div className="bg-zinc-900 rounded-[24px] p-6 border border-zinc-800 shadow-lg">
                             <div className="flex justify-between items-end mb-4">
-                                <h3 className="font-black text-white text-sm tracking-widest uppercase">Training Progress</h3>
+                                <h3 className="font-black text-white text-sm tracking-widest uppercase">Marathon Countdown</h3>
                                 <span className="text-2xl font-black italic text-lime-400 leading-none">{overallProgress}%</span>
                             </div>
                             <div className="relative w-full bg-zinc-950 h-5 rounded-full overflow-hidden border border-zinc-800">
@@ -933,7 +915,7 @@
                             <svg className="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg> PIT STOP
                         </button>
                         <button onClick={() => setActiveTab('plan')} className={`flex-1 py-4 px-2 rounded-[16px] font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all duration-300 ${activeTab === 'plan' ? 'bg-orange-500 text-black shadow-[0_0_20px_rgba(249,115,22,0.3)]' : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-white'}`}>
-                            <svg className="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg> PLAYBOOK
+                            <svg className="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg> PLAYBOOK
                         </button>
                         <button onClick={() => setActiveTab('leaderboard')} className={`flex-1 py-4 px-2 rounded-[16px] font-black text-xs uppercase tracking-widest flex items-center justify-center gap-2 transition-all duration-300 ${activeTab === 'leaderboard' ? 'bg-orange-500 text-black shadow-[0_0_20px_rgba(249,115,22,0.3)]' : 'bg-zinc-900 text-zinc-400 border border-zinc-800 hover:text-white'}`}>
                             <svg className="w-5 h-5 mb-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg> TEAM
@@ -1076,6 +1058,7 @@
                                     )}
                                 </section>
 
+                                {/* 📝 RUN LOGGER (ฟีเจอร์บันทึกสถิติจากนาฬิกา) */}
                                 {currentConfig.id !== 'rest' && (
                                 <section className="bg-zinc-900 rounded-[24px] p-6 border border-zinc-800 transition-all duration-500">
                                     <div className="flex items-center justify-between cursor-pointer" onClick={() => setLoggerOpen(!loggerOpen)}>
@@ -1091,13 +1074,25 @@
                                         {dailyData.runLogged ? (
                                             <div className="bg-zinc-950 p-5 rounded-[16px] border border-lime-500/50 shadow-[0_0_15px_rgba(163,230,53,0.1)] relative overflow-hidden">
                                                 <div className="flex justify-between items-start mb-4 relative z-10">
-                                                    <div><h3 className="text-lime-400 font-black tracking-widest uppercase text-sm">RUN SAVED! 🔥</h3><p className="text-zinc-400 text-xs mt-1">สถิติซ้อมวันนี้ถูกบันทึกแล้ว</p></div>
+                                                    <div>
+                                                        <h3 className="text-lime-400 font-black tracking-widest uppercase text-sm">RUN SAVED! 🔥</h3>
+                                                        <p className="text-zinc-400 text-xs mt-1">สถิติซ้อมวันนี้ถูกบันทึกแล้ว</p>
+                                                    </div>
                                                     <button onClick={() => updateDaily('runLogged', false)} className="text-zinc-500 text-[10px] font-bold underline uppercase hover:text-white">Edit</button>
                                                 </div>
                                                 <div className="grid grid-cols-3 gap-2 text-center relative z-10">
-                                                    <div className="bg-zinc-900 rounded-xl p-3 border border-zinc-800"><span className="text-[10px] text-zinc-500 font-bold block uppercase mb-1">Dist (KM)</span><span className="text-white font-black text-xl italic">{dailyData.runDistance}</span></div>
-                                                    <div className="bg-zinc-900 rounded-xl p-3 border border-zinc-800"><span className="text-[10px] text-zinc-500 font-bold block uppercase mb-1">Avg Pace</span><span className="text-white font-black text-xl italic">{dailyData.runPace}</span></div>
-                                                    <div className="bg-zinc-900 rounded-xl p-3 border border-zinc-800"><span className="text-[10px] text-zinc-500 font-bold block uppercase mb-1">Avg HR</span><span className="text-white font-black text-xl italic">{dailyData.runHR}</span></div>
+                                                    <div className="bg-zinc-900 rounded-xl p-3 border border-zinc-800">
+                                                        <span className="text-[10px] text-zinc-500 font-bold block uppercase mb-1">Dist (KM)</span>
+                                                        <span className="text-white font-black text-xl italic">{dailyData.runDistance}</span>
+                                                    </div>
+                                                    <div className="bg-zinc-900 rounded-xl p-3 border border-zinc-800">
+                                                        <span className="text-[10px] text-zinc-500 font-bold block uppercase mb-1">Avg Pace</span>
+                                                        <span className="text-white font-black text-xl italic">{dailyData.runPace}</span>
+                                                    </div>
+                                                    <div className="bg-zinc-900 rounded-xl p-3 border border-zinc-800">
+                                                        <span className="text-[10px] text-zinc-500 font-bold block uppercase mb-1">Avg HR</span>
+                                                        <span className="text-white font-black text-xl italic">{dailyData.runHR}</span>
+                                                    </div>
                                                 </div>
                                                 
                                                 {/* 🤖 กล่องข้อความจาก AI Coach */}
@@ -1122,11 +1117,23 @@
                                         ) : (
                                             <div className="space-y-4">
                                                 <div className="grid grid-cols-3 gap-3">
-                                                    <div><label className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1.5 block">Dist (KM)</label><input type="number" step="0.01" value={distanceInput} onChange={(e) => setDistanceInput(e.target.value)} placeholder="0.00" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-center text-white font-black text-lg focus:border-orange-500 outline-none transition-colors" /></div>
-                                                    <div><label className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1.5 block">Avg Pace</label><input type="text" value={paceInput} onChange={(e) => setPaceInput(e.target.value)} placeholder="0:00" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-center text-white font-black text-lg focus:border-orange-500 outline-none transition-colors" /></div>
-                                                    <div><label className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1.5 block">Avg HR</label><input type="number" value={hrInput} onChange={(e) => setHrInput(e.target.value)} placeholder="0" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-center text-white font-black text-lg focus:border-orange-500 outline-none transition-colors" /></div>
+                                                    <div>
+                                                        <label className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1.5 block">Distance (KM)</label>
+                                                        <input type="number" step="0.01" value={distanceInput} onChange={(e) => setDistanceInput(e.target.value)} placeholder="0.00" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-center text-white font-black text-lg focus:border-orange-500 outline-none transition-colors" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1.5 block">Avg Pace</label>
+                                                        <input type="text" value={paceInput} onChange={(e) => setPaceInput(e.target.value)} placeholder="0:00" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-center text-white font-black text-lg focus:border-orange-500 outline-none transition-colors" />
+                                                    </div>
+                                                    <div>
+                                                        <label className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-1.5 block">Avg HR</label>
+                                                        <input type="number" value={hrInput} onChange={(e) => setHrInput(e.target.value)} placeholder="0" className="w-full bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-center text-white font-black text-lg focus:border-orange-500 outline-none transition-colors" />
+                                                    </div>
                                                 </div>
-                                                <button onClick={saveRunLog} disabled={!distanceInput || !paceInput} className="w-full bg-orange-500 text-black font-black uppercase tracking-widest py-4 rounded-xl active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(249,115,22,0.3)]"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg> Save Run Data</button>
+                                                <button onClick={saveRunLog} disabled={!distanceInput || !paceInput} className="w-full bg-orange-500 text-black font-black uppercase tracking-widest py-4 rounded-xl active:scale-95 transition-all disabled:opacity-50 disabled:active:scale-100 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(249,115,22,0.3)]">
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+                                                    Save Run Data
+                                                </button>
                                             </div>
                                         )}
                                     </div>
@@ -1134,6 +1141,7 @@
                                 </section>
                                 )}
 
+                                {/* 🔋 BODY BATTERY (ฟีเจอร์ใหม่เช็คความล้า) */}
                                 <section className="bg-zinc-900 rounded-[24px] p-6 border border-zinc-800 transition-all duration-500">
                                     <div className="flex items-center justify-between cursor-pointer" onClick={() => setBatteryOpen(!batteryOpen)}>
                                         <div>
@@ -1145,24 +1153,58 @@
 
                                     {batteryOpen && (
                                         <div className="mt-6 space-y-6 animation-fade-in">
+                                            {/* เลือกระยะเวลาการนอน */}
                                             <div>
                                                 <h3 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-2">Sleep Duration (เมื่อคืนนอนกี่ชั่วโมง)</h3>
                                                 <div className="flex gap-2">
                                                     {['< 6 hr', '6-8 hr', '> 8 hr'].map(opt => (
-                                                        <button key={opt} onClick={() => updateDaily('sleepDuration', opt)} className={`flex-1 py-3 rounded-xl text-xs font-black uppercase transition-all ${dailyData.sleepDuration === opt ? 'bg-emerald-500 text-black shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'bg-zinc-950 text-zinc-500 border border-zinc-800 hover:border-zinc-700'}`}>{opt}</button>
+                                                        <button
+                                                            key={opt}
+                                                            onClick={() => updateDaily('sleepDuration', opt)}
+                                                            className={`flex-1 py-3 rounded-xl text-xs font-black uppercase transition-all ${dailyData.sleepDuration === opt ? 'bg-emerald-500 text-black shadow-[0_0_15px_rgba(16,185,129,0.3)]' : 'bg-zinc-950 text-zinc-500 border border-zinc-800 hover:border-zinc-700'}`}
+                                                        >
+                                                            {opt}
+                                                        </button>
                                                     ))}
                                                 </div>
                                             </div>
+
+                                            {/* เลือกสภาพร่างกายเช้านี้ */}
                                             <div>
                                                 <h3 className="text-[10px] text-zinc-500 font-bold uppercase tracking-wider mb-2">Morning Status (สภาพร่างกายเช้านี้)</h3>
                                                 <div className="flex gap-2">
-                                                    <button onClick={() => updateDaily('bodyStatus', 'fresh')} className={`flex-1 py-3 flex flex-col items-center gap-1 rounded-xl transition-all ${dailyData.bodyStatus === 'fresh' ? 'bg-lime-400/20 border-lime-400 text-lime-400' : 'bg-zinc-950 border-zinc-800 text-zinc-500'} border`}><span className="text-xl">🟢</span><span className="text-[9px] font-black uppercase tracking-wider mt-1">Fresh</span></button>
-                                                    <button onClick={() => updateDaily('bodyStatus', 'sore')} className={`flex-1 py-3 flex flex-col items-center gap-1 rounded-xl transition-all ${dailyData.bodyStatus === 'sore' ? 'bg-yellow-400/20 border-yellow-400 text-yellow-400' : 'bg-zinc-950 border-zinc-800 text-zinc-500'} border`}><span className="text-xl">🟡</span><span className="text-[9px] font-black uppercase tracking-wider mt-1">Sore</span></button>
-                                                    <button onClick={() => updateDaily('bodyStatus', 'exhausted')} className={`flex-1 py-3 flex flex-col items-center gap-1 rounded-xl transition-all ${dailyData.bodyStatus === 'exhausted' ? 'bg-red-500/20 border-red-500 text-red-500' : 'bg-zinc-950 border-zinc-800 text-zinc-500'} border`}><span className="text-xl">🔴</span><span className="text-[9px] font-black uppercase tracking-wider mt-1">Exhausted</span></button>
+                                                    <button
+                                                        onClick={() => updateDaily('bodyStatus', 'fresh')}
+                                                        className={`flex-1 py-3 flex flex-col items-center gap-1 rounded-xl transition-all ${dailyData.bodyStatus === 'fresh' ? 'bg-lime-400/20 border-lime-400 text-lime-400' : 'bg-zinc-950 border-zinc-800 text-zinc-500'} border`}
+                                                    >
+                                                        <span className="text-xl">🟢</span>
+                                                        <span className="text-[9px] font-black uppercase tracking-wider mt-1">Fresh</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => updateDaily('bodyStatus', 'sore')}
+                                                        className={`flex-1 py-3 flex flex-col items-center gap-1 rounded-xl transition-all ${dailyData.bodyStatus === 'sore' ? 'bg-yellow-400/20 border-yellow-400 text-yellow-400' : 'bg-zinc-950 border-zinc-800 text-zinc-500'} border`}
+                                                    >
+                                                        <span className="text-xl">🟡</span>
+                                                        <span className="text-[9px] font-black uppercase tracking-wider mt-1">Sore</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => updateDaily('bodyStatus', 'exhausted')}
+                                                        className={`flex-1 py-3 flex flex-col items-center gap-1 rounded-xl transition-all ${dailyData.bodyStatus === 'exhausted' ? 'bg-red-500/20 border-red-500 text-red-500' : 'bg-zinc-950 border-zinc-800 text-zinc-500'} border`}
+                                                    >
+                                                        <span className="text-xl">🔴</span>
+                                                        <span className="text-[9px] font-black uppercase tracking-wider mt-1">Exhausted</span>
+                                                    </button>
                                                 </div>
                                             </div>
+
+                                            {/* เด้งเตือนเมื่อร่างแหลก */}
                                             {dailyData.bodyStatus === 'exhausted' && (
-                                                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start gap-3"><span className="text-xl">⚠️</span><p className="text-red-400 text-xs font-bold leading-relaxed">ร่างกายเริ่มล้าสะสมแล้วลูกพี่! แนะนำให้ลดเพซการซ้อมลง 1 สเตป หรือเปลี่ยนเป็น Active Rest เพื่อเซฟกล้ามเนื้อและลดความเสี่ยงบาดเจ็บครับ!</p></div>
+                                                <div className="p-4 bg-red-500/10 border border-red-500/30 rounded-xl flex items-start gap-3">
+                                                    <span className="text-xl">⚠️</span>
+                                                    <p className="text-red-400 text-xs font-bold leading-relaxed">
+                                                        ร่างกายเริ่มล้าสะสมแล้วลูกพี่! แนะนำให้ลดเพซการซ้อมลง 1 สเตป หรือเปลี่ยนเป็น Active Rest เพื่อเซฟกล้ามเนื้อและลดความเสี่ยงบาดเจ็บครับ!
+                                                    </p>
+                                                </div>
                                             )}
                                         </div>
                                     )}
@@ -1192,9 +1234,15 @@
                                             </div>
                                         ))}
                                     </div>
+                                    
+                                    {/* 💡 ฟีเจอร์ใหม่: สูตรคำนวณโปรตีนและน้ำ เฉพาะบุคคลตามน้ำหนักตัว */}
                                     <div className="mt-6 p-5 bg-orange-900/20 rounded-[16px] text-sm font-medium text-orange-300 flex items-start gap-4 border border-orange-800/50 leading-relaxed relative z-10">
                                         <span className="text-2xl">💡</span>
-                                        <div><p className="text-white font-bold mb-1">โควตาโปรตีนของคุณ: {Math.round(weight * 1.5)} - {Math.round(weight * 1.8)} กรัม/วัน</p><p className="text-xs text-orange-400 opacity-80">(คำนวณจากน้ำหนักตัว {weight} กก. x 1.5-1.8 เพื่อซ่อมแซมกล้ามเนื้อ)</p><p className="mt-2">วันไหนซ้อม Long Run (วิ่งยาว) แนะนำให้โหลดคาร์บก่อนล่วงหน้า!</p></div>
+                                        <div>
+                                            <p className="text-white font-bold mb-1">เป้าหมายแคลอรี่: ~{nutritionGoal.calories} kcal/วัน</p>
+                                            <p className="text-white font-bold mb-1">โควตาโปรตีน: {nutritionGoal.protein} กรัม/วัน</p>
+                                            <p className="text-xs text-orange-400 opacity-80">(คำนวณเฉพาะบุคคลจากสรีระ {weight}kg, อายุ {age}, และโหมด {goalMode === 'weightloss' ? 'ลดน้ำหนัก' : 'ทำสถิติ'})</p>
+                                        </div>
                                     </div>
                                 </section>
                                 
@@ -1208,8 +1256,12 @@
                                             <p className={`text-sm font-black uppercase tracking-widest ${isRaceDay ? 'text-yellow-400' : 'text-lime-400'}`}>{currentConfig.title}</p>
                                             <p className="text-xs text-zinc-400 mb-2">{currentConfig.desc}</p>
                                             <div className="flex gap-2">
-                                                <span className="bg-zinc-900 text-white text-[11px] px-3 py-1.5 rounded font-black tracking-widest border border-zinc-700 flex items-center gap-1.5"><span className={isRaceDay ? 'text-yellow-400' : 'text-cyan-400'}>PACE (VCR{isVcrAdapted ? ' 🌟' : ''}):</span> {currentConfig.pace}</span>
-                                                <span className="bg-zinc-900 text-white text-[11px] px-3 py-1.5 rounded font-black tracking-widest border border-zinc-700 flex items-center gap-1.5"><span className="text-orange-500">HR:</span> {currentConfig.hr}</span>
+                                                <span className="bg-zinc-900 text-white text-[11px] px-3 py-1.5 rounded font-black tracking-widest border border-zinc-700 flex items-center gap-1.5">
+                                                    <span className={isRaceDay ? 'text-yellow-400' : 'text-cyan-400'}>PACE (VCR{isVcrAdapted ? ' 🌟' : ''}):</span> {currentConfig.pace}
+                                                </span>
+                                                <span className="bg-zinc-900 text-white text-[11px] px-3 py-1.5 rounded font-black tracking-widest border border-zinc-700 flex items-center gap-1.5">
+                                                    <span className="text-orange-500">HR:</span> {currentConfig.hr}
+                                                </span>
                                             </div>
                                         </div>
                                     </div>
@@ -1279,7 +1331,7 @@
                                 {/* 🗺️ Virtual Map (แผนที่วิ่งทิพย์) */}
                                 <section className="bg-zinc-900 rounded-[24px] p-6 border border-zinc-800">
                                     <h2 className="font-black text-xl text-white mb-2 uppercase tracking-widest italic">Virtual Map</h2>
-                                    <p className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-6">สะสมระยะทางสู่มาราธอนบางแสน</p>
+                                    <p className="text-xs font-bold uppercase tracking-wider text-zinc-500 mb-6">สะสมระยะทางสู่เป้าหมายของคุณ</p>
                                     
                                     <div className="relative w-full h-8 bg-zinc-950 rounded-full border border-zinc-800 overflow-visible mb-3">
                                         {/* แถบถนน */}
@@ -1360,7 +1412,9 @@
                                     <h2 className="font-black text-sm text-zinc-400 uppercase tracking-widest mb-5">Body Stats</h2>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="bg-zinc-950 p-5 rounded-[16px] border border-zinc-800 text-center"><p className="text-xs text-zinc-500 font-bold uppercase tracking-wider mb-2">Current Weight</p><p className="text-4xl font-black text-white italic">{weight.toFixed(1)} <span className="text-sm font-bold text-zinc-600 not-italic">KG</span></p></div>
-                                        <div className="bg-zinc-950 p-5 rounded-[16px] border border-orange-500/30 text-center shadow-[0_0_15px_rgba(249,115,22,0.1)]"><p className="text-xs text-orange-500 font-bold uppercase tracking-wider mb-2">To Goal</p><p className="text-4xl font-black text-lime-400 italic">{Math.max(0, weight - targetWeight).toFixed(1)} <span className="text-sm font-bold text-zinc-600 not-italic">KG</span></p></div>
+                                        {goalMode === 'weightloss' && (
+                                            <div className="bg-zinc-950 p-5 rounded-[16px] border border-orange-500/30 text-center shadow-[0_0_15px_rgba(249,115,22,0.1)]"><p className="text-xs text-orange-500 font-bold uppercase tracking-wider mb-2">To Goal</p><p className="text-4xl font-black text-lime-400 italic">{Math.max(0, weight - targetWeight).toFixed(1)} <span className="text-sm font-bold text-zinc-600 not-italic">KG</span></p></div>
+                                        )}
                                     </div>
                                 </section>
                                 <section className="bg-zinc-900 rounded-[24px] p-6 border border-zinc-800">
