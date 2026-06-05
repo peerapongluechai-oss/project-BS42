@@ -228,65 +228,81 @@
                 <div className={`w-[130px] h-[170px] relative flex items-end justify-center pb-2 ${isRunning ? '' : 'animate-breathe'}`}>
                     <svg viewBox="0 0 100 150" className="w-full h-full drop-shadow-2xl overflow-visible">
                         <style>{`
-                            @keyframes run-l { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-12px) rotate(-25deg); } }
-                            @keyframes run-r { 0%, 100% { transform: translateY(-12px) rotate(-25deg); } 50% { transform: translateY(0px) rotate(0deg); } }
-                            @keyframes arm-l { 0%, 100% { transform: rotate(-25deg); } 50% { transform: rotate(35deg); } }
-                            @keyframes arm-r { 0%, 100% { transform: rotate(35deg); } 50% { transform: rotate(-25deg); } }
-                            @keyframes head-bob { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(4px); } }
+                            @keyframes run-l { 0%, 100% { transform: translateY(0px) rotate(20deg); } 50% { transform: translateY(-8px) rotate(-30deg); } }
+                            @keyframes run-r { 0%, 100% { transform: translateY(-8px) rotate(-30deg); } 50% { transform: translateY(0px) rotate(20deg); } }
+                            @keyframes arm-l { 0%, 100% { transform: rotate(-35deg); } 50% { transform: rotate(40deg); } }
+                            @keyframes arm-r { 0%, 100% { transform: rotate(40deg); } 50% { transform: rotate(-35deg); } }
+                            @keyframes head-bob { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(3px); } }
                         `}</style>
-                        <g transform="translate(0, 15)">
-                            {/* แขนซ้าย (หลังสุด) */}
+                        <g transform="translate(0, 5)">
+                            {/* แขนซ้าย (ด้านหลัง) */}
                             <g style={{transformOrigin: '50px 35px', animation: isRunning ? 'arm-l 0.6s infinite ease-in-out' : 'none'}}>
-                                <path d="M 45 35 Q 25 55 30 75" fill="none" stroke="#d4d4d8" strokeWidth="8" strokeLinecap="round" />
-                                <circle cx="30" cy="75" r="4" fill="#d4d4d8" />
+                                <path d="M 50 35 C 35 45, 25 60, 32 80" fill="none" stroke="#d2a193" strokeWidth="8" strokeLinecap="round" />
+                                <circle cx="32" cy="80" r="4" fill="#d2a193" />
                             </g>
                             
-                            {/* ขาซ้าย */}
-                            <g style={{transformOrigin: '50px 65px', animation: isRunning ? 'run-l 0.6s infinite ease-in-out' : 'none'}}>
-                                <path d="M 46 65 Q 35 90 40 115" fill="none" stroke="#52525b" strokeWidth="9" strokeLinecap="round" />
-                                <path d="M 37 105 L 43 105 L 41 115 L 35 115 Z" fill="#18181b" /> {/* ถุงเท้า */}
-                                <path d="M 34 115 Q 40 108 48 115 L 48 122 Q 40 120 34 122 Z" fill="#bef264" /> {/* รองเท้า */}
-                                <path d="M 34 122 L 48 122 L 48 125 L 34 125 Z" fill="#ffffff" /> {/* พื้นรองเท้า */}
+                            {/* ขาซ้าย (ด้านหลัง) */}
+                            <g style={{transformOrigin: '50px 80px', animation: isRunning ? 'run-l 0.6s infinite ease-in-out' : 'none'}}>
+                                <path d="M 50 80 C 40 100, 35 110, 44 135" fill="none" stroke="#c08c7d" strokeWidth="10" strokeLinecap="round" />
+                                {/* น่องซ้าย */}
+                                <path d="M 39 105 Q 35 115, 42 125" fill="none" stroke="#c08c7d" strokeWidth="4" strokeLinecap="round" />
+                                {/* ถุงเท้าและรองเท้าซ้าย */}
+                                <path d="M 40 125 L 48 125 L 46 135 L 42 135 Z" fill="#18181b" />
+                                <path d="M 38 132 C 45 132, 52 137, 52 142 L 35 142 Z" fill="#bef264" />
+                                <path d="M 35 142 L 52 142 L 52 146 L 35 146 Z" fill="#ffffff" />
                             </g>
                             
-                            {/* ขาขวา */}
-                            <g style={{transformOrigin: '50px 65px', animation: isRunning ? 'run-r 0.6s infinite ease-in-out' : 'none'}}>
-                                <path d="M 54 65 Q 65 90 60 115" fill="none" stroke="#71717a" strokeWidth="9" strokeLinecap="round" />
-                                <path d="M 57 105 L 63 105 L 61 115 L 55 115 Z" fill="#18181b" /> {/* ถุงเท้า */}
-                                <path d="M 54 115 Q 60 108 68 115 L 68 122 Q 60 120 54 122 Z" fill="#bef264" /> {/* รองเท้า */}
-                                <path d="M 54 122 L 68 122 L 68 125 L 54 125 Z" fill="#ffffff" /> {/* พื้นรองเท้า */}
-                            </g>
-                            
-                            {/* ลำตัว */}
-                            <path d="M 40 32 Q 50 25 60 32 L 56 68 L 44 68 Z" fill="#18181b" />
-                            <path d="M 42 40 L 58 40 L 55 45 L 45 45 Z" fill="#bef264" /> {/* ลายหน้าอก */}
-                            <path d="M 44 50 L 56 50 L 54 55 L 46 55 Z" fill="#3f3f46" />
-                            
-                            {/* แขนขวา (ด้านหน้า) */}
-                            <g style={{transformOrigin: '50px 35px', animation: isRunning ? 'arm-r 0.6s infinite ease-in-out' : 'none'}}>
-                                <path d="M 55 35 Q 75 55 70 75" fill="none" stroke="#e4e4e7" strokeWidth="8" strokeLinecap="round" />
-                                <circle cx="70" cy="75" r="4" fill="#e4e4e7" />
-                                <rect x="65" y="66" width="10" height="6" fill="#000" rx="1" transform="rotate(-30 70 68)" />
-                                <circle cx="70" cy="69" r="2.5" fill="#bef264" transform="rotate(-30 70 68)" />
+                            {/* ขาขวา (ด้านหน้า) */}
+                            <g style={{transformOrigin: '50px 80px', animation: isRunning ? 'run-r 0.6s infinite ease-in-out' : 'none'}}>
+                                <path d="M 50 80 C 60 100, 65 110, 56 135" fill="none" stroke="#eebcb0" strokeWidth="11" strokeLinecap="round" />
+                                {/* น่องขวา */}
+                                <path d="M 61 105 Q 66 115, 58 125" fill="none" stroke="#eebcb0" strokeWidth="4.5" strokeLinecap="round" />
+                                {/* ถุงเท้าและรองเท้าขวา */}
+                                <path d="M 52 125 L 60 125 L 58 135 L 54 135 Z" fill="#18181b" />
+                                <path d="M 50 132 C 60 132, 68 137, 68 142 L 48 142 Z" fill="#bef264" />
+                                <path d="M 48 142 L 68 142 L 68 146 L 48 146 Z" fill="#ffffff" />
+                                <path d="M 68 142 Q 72 140, 70 138" fill="none" stroke="#27272a" strokeWidth="1.5" /> {/* Heel bevel */}
                             </g>
 
-                            {/* ใบหน้าและหัว */}
-                            <g style={{transformOrigin: '50px 20px', animation: isRunning ? 'head-bob 0.6s infinite ease-in-out' : 'none'}}>
-                                <circle cx="50" cy="18" r="12" fill="#fcd5ce" /> {/* สีผิว */}
-                                <path d="M 38 18 Q 50 2 62 18 Z" fill="#18181b" /> {/* หมวก */}
-                                <path d="M 60 15 L 75 15" stroke="#18181b" strokeWidth="3" strokeLinecap="round" /> {/* ปีกหมวก */}
-                                <path d="M 42 16 L 62 16" stroke="#bef264" strokeWidth="3" strokeLinecap="round" /> {/* แถบหมวก */}
-                                <circle cx="40" cy="20" r="2" fill="#fbc4ab" /> {/* หู */}
+                            {/* ลำตัว (Singlet) */}
+                            <path d="M 42 32 C 55 32, 62 45, 56 80 L 44 80 C 38 45, 45 35, 42 32 Z" fill="#18181b" />
+                            <path d="M 44 40 L 56 40 L 53 55 L 47 55 Z" fill="#bef264" />
+                            <text x="50" y="52" fontSize="7" fontWeight="900" textAnchor="middle" fill="#000">PRO</text>
+                            
+                            {/* กางเกงวิ่ง (Split Shorts) */}
+                            <path d="M 42 75 C 50 78, 55 78, 58 75 L 62 90 C 55 95, 45 95, 38 90 Z" fill="#27272a" />
+
+                            {/* แขนขวา (ด้านหน้า) และนาฬิกา */}
+                            <g style={{transformOrigin: '50px 35px', animation: isRunning ? 'arm-r 0.6s infinite ease-in-out' : 'none'}}>
+                                <path d="M 50 35 C 65 45, 75 60, 68 80" fill="none" stroke="#eebcb0" strokeWidth="9" strokeLinecap="round" />
+                                <circle cx="68" cy="80" r="4.5" fill="#eebcb0" />
+                                {/* นาฬิกา Suunto */}
+                                <rect x="62" y="70" width="12" height="6" fill="#000" rx="1" transform="rotate(-20 68 73)" />
+                                <circle cx="68" cy="73" r="2" fill="#bef264" transform="rotate(-20 68 73)" />
+                            </g>
+
+                            {/* ศีรษะ ใบหน้า และหมวก */}
+                            <g style={{transformOrigin: '50px 25px', animation: isRunning ? 'head-bob 0.6s infinite ease-in-out' : 'none'}}>
+                                {/* คอ */}
+                                <path d="M 46 25 L 54 25 L 54 35 L 46 35 Z" fill="#d2a193" />
+                                {/* โครงหน้า */}
+                                <path d="M 40 10 Q 40 25, 50 30 Q 60 25, 60 10 Z" fill="#eebcb0" />
+                                {/* หู */}
+                                <circle cx="41" cy="20" r="2.5" fill="#d2a193" />
+                                
+                                {/* หมวกวิ่ง (Running Cap) */}
+                                <path d="M 38 12 C 38 0, 62 0, 62 12 Z" fill="#18181b" />
+                                <path d="M 60 10 L 76 10 L 72 13 L 60 13 Z" fill="#18181b" />
+                                <path d="M 40 12 L 62 12" stroke="#bef264" strokeWidth="1.5" />
                                 
                                 {/* แว่นตาสปอร์ต */}
-                                <path d="M 48 20 L 64 20 L 62 24 L 50 24 Z" fill="#0ea5e9" opacity="0.8" />
-                                <path d="M 48 20 L 64 20 L 62 24 L 50 24 Z" fill="none" stroke="#18181b" strokeWidth="1" />
+                                <path d="M 39 12 C 45 18, 55 18, 62 14 L 62 18 C 55 22, 45 22, 39 18 Z" fill="#0ea5e9" opacity="0.85" />
                                 
-                                {/* ปาก (อ้าปากตอนวิ่ง ยิ้มตอนพัก) */}
+                                {/* ปาก */}
                                 {isRunning ? (
-                                    <ellipse cx="56" cy="28" rx="2" ry="1.5" fill="#18181b" />
+                                    <ellipse cx="52" cy="25" rx="2" ry="3" fill="#18181b" />
                                 ) : (
-                                    <path d="M 53 27 Q 56 30 59 27" fill="none" stroke="#18181b" strokeWidth="1.5" strokeLinecap="round" />
+                                    <path d="M 49 25 Q 52 28, 55 25" fill="none" stroke="#18181b" strokeWidth="1.5" strokeLinecap="round" />
                                 )}
                             </g>
                         </g>
