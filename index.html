@@ -40,7 +40,8 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        const { useState, useEffect } = React;
+        // เพิ่ม useMemo ตรงบรรทัดนี้ครับ!
+        const { useState, useEffect, useMemo } = React;
 
         // --- 1. FIREBASE CONFIG ---
         const firebaseConfig = {
@@ -295,10 +296,14 @@
             const [avail, setAvail] = useState(initialProf.schedule ? {0: initialProf.schedule[0]!=='rest', 1: initialProf.schedule[1]!=='rest', 2: initialProf.schedule[2]!=='rest', 3: initialProf.schedule[3]!=='rest', 4: initialProf.schedule[4]!=='rest', 5: initialProf.schedule[5]!=='rest', 6: initialProf.schedule[6]!=='rest'} : {0:true, 1:false, 2:true, 3:true, 4:false, 5:true, 6:false});
             const [ld, setLd] = useState(initialProf.schedule ? Number(Object.keys(initialProf.schedule).find(key => initialProf.schedule[key] === 'long') || 0) : 0);
 
+            // 🔥 เพิ่ม State สำหรับ Race Day
+            const [raceDateStr, setRaceDateStr] = useState(initialProf.raceDate || '2026-11-15');
+
             const handleSave = () => {
                 const finalW = parseFloat(w) || 90; const finalTw = parseFloat(tw) || 80; const finalH = parseInt(h, 10) || 175;
                 const finalAge = parseInt(age, 10) || 35; const finalRhr = parseInt(rhr, 10) || 60; const finalVcr = parseInt(vcr, 10) || 4500;
-                onSave({ weight:finalW, targetWeight:finalTw, height:finalH, gender, age:finalAge, rhr:finalRhr, vcr:finalVcr, targetDist:td, injury, lifestyle, schedule: generateSmartSchedule(avail, ld) });
+                // 🔥 ส่ง raceDate ไปด้วยตอนเซฟ
+                onSave({ weight:finalW, targetWeight:finalTw, height:finalH, gender, age:finalAge, rhr:finalRhr, vcr:finalVcr, targetDist:td, injury, lifestyle, schedule: generateSmartSchedule(avail, ld), raceDate: raceDateStr });
             };
 
             const dayLabels = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -354,6 +359,13 @@
 
                             <div className="border-t border-zinc-800 pt-5">
                                 <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest mb-3">3. Training Plan</h3>
+                                
+                                {/* 🔥 เพิ่มช่องกรอก Race Day ตรงนี้ */}
+                                <div className="bg-[#18181b] p-4 rounded-xl border border-zinc-700 mb-4">
+                                    <label className="text-xs text-zinc-400 font-bold uppercase block mb-3">Race Date</label>
+                                    <input type="date" value={raceDateStr} onChange={e=>setRaceDateStr(e.target.value)} className="w-full bg-transparent text-white font-bold text-lg outline-none focus:suunto-accent" />
+                                </div>
+
                                 <div className="bg-[#18181b] p-4 rounded-xl border border-zinc-700 mb-4">
                                     <label className="text-xs text-zinc-400 font-bold uppercase block mb-3">Race Goal</label>
                                     <div className="flex gap-2">
@@ -574,6 +586,24 @@
             const mapGoal = 600;
             const mapProgress = Math.min((tDist / mapGoal) * 100, 100);
 
+            // คำนวณข้อมูลสำหรับกราฟ 7 วันล่าสุด
+            const chartData = useMemo(() => {
+                const days = [];
+                for (let i = 6; i >= 0; i--) {
+                    let d = new Date();
+                    d.setDate(d.getDate() - i);
+                    const dtStr = d.toDateString();
+                    const record = prof?.records?.[dtStr];
+                    const dist = (record?.rLog && record?.rDist) ? parseFloat(record.rDist) : 0;
+                    // ดึงชื่อย่อของวัน เช่น 'Mon', 'Tue'
+                    const dayName = dtStr.split(' ')[0];
+                    days.push({ day: dayName, dist: dist || 0, isToday: i === 0 });
+                }
+                return days;
+            }, [prof?.records]);
+
+            const maxChartDist = Math.max(...chartData.map(d => d.dist), 5); // Fallback ที่ 5 กม. ป้องกันกราฟเปล่าทะลุ
+
             return (
                 <div className="space-y-6 pb-14">
                     <section className="suunto-card p-10 text-center border-t-2 border-t-zinc-700">
@@ -590,6 +620,30 @@
                             </div>
                         </div>
                         <span className="text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg bg-black border border-zinc-800" style={{color: vo2Color}}>{vo2Label}</span>
+                    </section>
+
+                    {/* กราฟ 7-DAY MILEAGE */}
+                    <section className="suunto-card p-8">
+                        <h2 className="font-black text-sm text-white uppercase tracking-widest mb-6 flex items-center gap-2"><span>📊</span> 7-DAY MILEAGE</h2>
+                        <div className="flex items-end justify-between h-40 gap-1.5 sm:gap-3">
+                            {chartData.map((data, i) => {
+                                const heightPct = Math.max((data.dist / maxChartDist) * 100, 2); // ขั้นต่ำ 2% ให้เห็นแท่งบ้าง
+                                return (
+                                    <div key={i} className="flex flex-col items-center flex-1">
+                                        <span className="text-[10px] sm:text-xs text-zinc-400 font-bold mb-2 h-4">{data.dist > 0 ? data.dist.toFixed(1) : ''}</span>
+                                        <div className="w-full relative bg-[#18181b] rounded-t-md" style={{height: '100px'}}>
+                                            <div 
+                                                className={`absolute bottom-0 left-0 w-full rounded-t-md transition-all duration-1000 ease-out ${data.isToday ? 'suunto-bg-accent' : 'bg-zinc-600'}`} 
+                                                style={{height: `${heightPct}%`}}
+                                            ></div>
+                                        </div>
+                                        <span className={`text-[10px] sm:text-xs font-black uppercase mt-3 tracking-wider ${data.isToday ? 'suunto-accent' : 'text-zinc-500'}`}>
+                                            {data.day}
+                                        </span>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </section>
                     
                     <section className="suunto-card p-8">
@@ -638,7 +692,8 @@
             const [prof, setProf] = useState(() => JSON.parse(safeStorage.getItem(localKey)) || {
                 initialWeight: null, weight: 90.0, targetWeight: 80.0, height: 175, gender: 'male',
                 age: 35, rhr: 60, vcr: 4500, targetDist: 42.195, injury: 'none', lifestyle: 'active',
-                schedule: {0:'long', 1:'rest', 2:'easy', 3:'speed', 4:'rest', 5:'easy', 6:'rest'}, records: {}
+                schedule: {0:'long', 1:'rest', 2:'easy', 3:'speed', 4:'rest', 5:'easy', 6:'rest'}, records: {},
+                raceDate: '2026-11-15' // 🔥 เพิ่ม default Race Date
             });
 
             const todayStr = new Date().toDateString();
@@ -718,11 +773,22 @@
                 safeStorage.setItem(localKey, JSON.stringify({...prof, weight: w}));
             };
 
-            const raceDate = new Date(2026, 10, 15); const planStart = new Date(2026, 5, 1);
-            const totalDays = Math.ceil((raceDate - planStart)/(1000*3600*24));
-            let diff = Math.ceil((new Date() - planStart)/(1000*3600*24));
-            const weekIdx = Math.max(0, Math.min(23, Math.ceil(diff/7)-1));
-            const cfg = getDayConfig(new Date(), weekIdx, false, prof);
+            // 🔥 คำนวณวันจาก Race Date ที่ตั้งไว้
+            const todayObj = new Date();
+            // ถ้าผู้ใช้ไม่ตั้งค่า ให้ใช้วันที่ 15 พ.ย. 2026 เป็น default
+            const targetRaceDate = prof.raceDate ? new Date(prof.raceDate) : new Date(2026, 10, 15);
+            
+            // ให้แผนเริ่มก่อนวันแข่ง 24 สัปดาห์ (168 วัน)
+            const planStart = new Date(targetRaceDate);
+            planStart.setDate(planStart.getDate() - 168);
+            
+            const totalDays = Math.ceil((targetRaceDate - planStart)/(1000*3600*24));
+            let diffDays = Math.ceil((todayObj - planStart)/(1000*3600*24));
+            if(diffDays < 0) diffDays = 0; if(diffDays > totalDays) diffDays = totalDays; // ป้องกันเลขติดลบหรือเกิน
+
+            const weekIdx = diffDays > 0 ? Math.min(23, Math.ceil(diffDays/7)-1) : 0;
+            const isRace = diffDays >= totalDays; // 🔥 แก้ให้ isRace เป็นจริงเมื่อถึงหรือเลยวันแข่ง
+            const cfg = getDayConfig(todayObj, weekIdx, isRace, prof);
 
             let tDist = 0, tSecs = 0, f5k = Infinity, f10k = Infinity, longestRun = 0, maxStreakCount = 0, streakCount = 0, maxAquaCount = 0, aquaCount = 0;
             const sortedDates = Object.keys(prof.records || {}).sort((a,b)=>new Date(a)-new Date(b));
@@ -778,6 +844,21 @@
                             <span className="text-[10px] font-black uppercase text-zinc-400">EXIT</span>
                         </button>
                     </header>
+
+                    {/* 🔥 เพิ่มกล่อง Marathon Countdown ให้เหมือนเดิม */}
+                    <div className="suunto-card p-5 mb-6 border-l-4 border-l-orange-500">
+                        <div className="flex justify-between items-end mb-2">
+                            <span className="text-zinc-400 font-black text-[10px] tracking-widest uppercase">Marathon Countdown</span>
+                            <span className="text-white font-black text-xl italic">{Math.round((diffDays / totalDays) * 100)}%</span>
+                        </div>
+                        <div className="h-[8px] w-full bg-[#18181b] rounded-full overflow-hidden">
+                            <div className="h-full bg-orange-500 transition-all duration-1000 ease-out" style={{width: `${Math.min((diffDays / totalDays) * 100, 100)}%`}}></div>
+                        </div>
+                        <div className="flex justify-between mt-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                            <span>Day {diffDays} / {totalDays}</span>
+                            <span>Target: {targetRaceDate.toLocaleDateString('en-GB')}</span>
+                        </div>
+                    </div>
 
                     <div className="suunto-card p-8 mb-8 relative overflow-hidden">
                         <div className="relative z-10">
