@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Project 80: Suunto Edition</title>
+    <title>Project 80: Suunto Edition (Kru Din Protocol)</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -40,7 +40,7 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // เพิ่ม useMemo ตรงบรรทัดนี้ครับ!
+        // *** IMPORT ครบถ้วน ไม่มีทางเด้ง Error useMemo อีกแน่นอน ***
         const { useState, useEffect, useMemo } = React;
 
         // --- 1. FIREBASE CONFIG ---
@@ -55,7 +55,7 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const appId = 'project80_github_app'; // ใช้ Key เดิมเพื่อดึงข้อมูลเก่ากลับมา
+        const appId = 'project80_github_app'; 
 
         // --- 2. UTILS & HELPERS ---
         const safeStorage = {
@@ -105,15 +105,15 @@
         };
 
         const generateFeedback = (dist, pace, hr, targetPaceStr) => {
-            if(!pace || pace === '0:00' || !targetPaceStr || targetPaceStr === '-') return "บันทึกสำเร็จ! รักษาวินัยได้เยี่ยมมากครับ 🏃‍♂️";
+            if(!pace || pace === '0:00' || !targetPaceStr || targetPaceStr === '-') return "บันทึกสถิติสำเร็จ! วินัยคือหัวใจสำคัญครับ 🏃‍♂️";
             const pSecs = parsePace(pace);
             const tSecsArr = targetPaceStr.split(' - ').map(parsePace);
             if(tSecsArr.length >= 1 && tSecsArr[0] !== Infinity) {
                 const minT = Math.min(...tSecsArr);
                 const maxT = Math.max(...tSecsArr);
-                if(pSecs < minT - 15) return "วิ่งเร็วกว่าเป้าหมาย! ⚡ พรุ่งนี้ระวังเรื่องความล้า ยืดเหยียดให้ถึงนะครับ";
-                if(pSecs > maxT + 15) return "เพซช้ากว่าเป้านิดหน่อย แต่ช่วยสร้าง Base Endurance ได้ดีครับ 🐢";
-                return "เพอร์เฟกต์! 🎯 คุมเพซได้ตรงตามแผน ร่างกายกำลังพัฒนาไปถูกทางครับ";
+                if(pSecs < minT - 15) return "วิ่งเร็วกว่าเป้าหมาย! ⚡ ครูดินบอกเสมอว่าซ้อมเร็วกว่ากำหนดระวังจะกรอบ ยืดเหยียดให้เยอะๆ ครับ";
+                if(pSecs > maxT + 15) return "เพซช้ากว่าเป้านิดหน่อย แต่ร่างกายได้สร้างความทนทาน (Endurance) ถือว่าเยี่ยมครับ 🐢";
+                return "เพอร์เฟกต์! 🎯 คุมเพซและหัวใจได้ตรงแผนเป๊ะ ร่างกายกำลังพัฒนาไปถูกทางตามหลักสูตรครับ";
             }
             return "ยอดเยี่ยมมากครับ! เก็บสะสมไมล์ไปเรื่อยๆ ความฟิตจะตามมาเอง 🏆";
         };
@@ -128,6 +128,7 @@
             return "+0 (ปกติ ทรงตัว)";
         };
 
+        // --- ระบบ AI ผสานหลักสูตรครูดิน ---
         const getDayConfig = (todayObj, weekIdx, isRace, prof) => {
             const dayIndex = todayObj.getDay(); 
             const currentTargetDist = prof.targetDist || 42.195;
@@ -141,33 +142,57 @@
                 const s = 1000/spd;
                 return `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;
             };
-            const pz = { ez: getPaceStr(80), lr: getPaceStr(85), tm: getPaceStr(95), in: getPaceStr(105) };
+            
+            // Pace Zones (อิงตามหลักสูตร)
+            const pz = { ez: getPaceStr(75), lr: getPaceStr(80), tm: getPaceStr(90), in: getPaceStr(105) };
 
+            // คำนวณระยะ Long Run
             let baseLong = 5;
             if(currentTargetDist == 42.195) baseLong = [10,12,14,10, 16,18,20,15, 22,24,26,18, 28,30,21,32, 25,35,25,30, 21,15,10, 42.195][weekIdx] || 10;
             else if(currentTargetDist == 21.1) baseLong = [5,6,7,5, 8,10,12,8, 14,16,18,10, 15,18,12,20, 15,21.1,12,15, 10,8,5, 21.1][weekIdx] || 5;
             else if(currentTargetDist == 10) baseLong = [3,4,5,3, 5,6,7,4, 6,8,9,5, 8,10,6,12, 8,10,6,8, 5,4,3, 10][weekIdx] || 3;
             else baseLong = [2,3,4,2, 3,4,5,3, 4,5,6,3, 4,6,4,7, 5,6,4,5, 3,3,2, 5][weekIdx] || 2; 
 
-            let cfg = { id:'rest', name:'Rest Day', desc:'พักฟื้นร่างกาย ยืดเหยียด', pace:'-', hr:'-', meals:{ b: 'ข้าวโอ๊ต+กล้วยหอม / แซนวิชไข่ต้ม', l: 'ข้าว 1 ทัพพี + เนื้อสัตว์ลีน + ผัก', s: 'ถั่วแระญี่ปุ่น / โยเกิร์ต', d: 'สลัดปลา / สุกี้น้ำ (ลดแป้ง)' }, ex:['💤 พักการวิ่ง (Full Rest)','Core Plank 3 เซต','กลิ้ง Foam Roller'], advice: 'วันพักคือส่วนหนึ่งของการซ้อม ให้ร่างกายได้ซ่อมแซมตัวเองครับ' };
-            cfg.detailedWorkout = { warmup: [], main: '', cooldown: [] };
+            // --- ฐานข้อมูลท่าซ้อมครูดิน (หมุนเวียนตามสัปดาห์) ---
+            const kruDinSpeed = [
+                `วิ่ง 400m x 10 เที่ยว (ความเร็ว 70-80%) สลับ เดิน 100m / Jog 100m`,
+                `วิ่ง 1K x 6 เที่ยว (เร็วกว่า Pace 10K ประมาณ 10 วิ) สลับ เดิน 100m / Jog 100m`,
+                `วิ่ง 800m x 6 เที่ยว (ความเร็ว 80%) สลับ เดิน 100m / Jog 100m`,
+                `วิ่ง 200m สลับ Jog 100m x 15 เที่ยว (ความเร็ว 70%)`
+            ];
+            const kruDinEasy = [
+                `วิ่งบนหญ้า หรือ ว่ายน้ำตีขาในน้ำเบาๆ 40-50 นาที (เซฟข้อต่อ)`,
+                `เต้นแอโรบิก 50 นาที (หรือทำท่า Drills ต่อเนื่อง)`,
+                `วิ่งสบายๆ หายใจหอบเหนื่อยเบาๆ 50 นาที เน้นกายบริหาร`,
+                `วิ่งขึ้นที่สูง (เนิน/สะพาน) 40 นาที สลับเดินเมื่อเหนื่อย`
+            ];
 
-            if(isRace) {
-                cfg = { id:'long', name:`RACE DAY!`, desc:'ถึงเวลาโชว์ผลการซ้อม!', pace:'Target Pace', hr:getHrZone(0.7,0.88, prof.age, prof.rhr), meals:{b:'ขนมปังแยม+กาแฟ',l:'ฉลองหลังเข้าเส้นชัย!',s:'เกลือแร่',d:'ปาร์ตี้หมูกระทะ'}, ex:['🏃‍♂️ ลุยให้เต็มที่ ดื่มน้ำทุกจุด','แช่น้ำเย็น Recovery','ยืดเหยียดเบาๆ'], advice: 'ออกตัวช้าๆ อย่าวิ่งตามคนอื่น คุมเพซตัวเองให้ดีครับ' };
-                cfg.detailedWorkout = { warmup: ['วอร์มอัพเบาๆ 10 นาที'], main: `วิ่ง ${currentTargetDist}K อย่างมั่นใจ`, cooldown: ['เดินรับเหรียญ 10 นาที'] };
-            } else if(dayType === 'long') {
-                cfg = { id:'long', name:'Long Run', desc:`วิ่งยาว ${baseLong} กม. เน้นความอึด`, pace:`${pz.lr} - ${pz.ez}`, hr:getHrZone(0.65,0.75, prof.age, prof.rhr), meals:{...cfg.meals, b:'โหลดคาร์บ ขนมปัง 2-3 แผ่น'}, ex:[`🏃‍♂️ วิ่งระยะ ${baseLong} กม.`,'ฝึกกินเจลระหว่างวิ่ง','ยืดเหยียดชุดใหญ่'], advice: 'เน้นเวลาที่อยู่บนเท้า ไม่ต้องสนใจเพซ คุมโซนหัวใจให้ดีครับ' };
-                cfg.detailedWorkout = { warmup: ['เดินเร็ว 5 นาที', 'Drills 5 นาที'], main: `วิ่ง ${baseLong} กม. คุมโซน Z2-Z3`, cooldown: ['เดินคลายกรด 10 นาที'] };
-            } else if(dayType === 'speed') {
-                cfg = { id:'speed', name:'Speed / Tempo', desc:'ฝึกความเร็วรอบขา 30-45 นาที', pace:`${pz.in} - ${pz.tm}`, hr:getHrZone(0.8,0.88, prof.age, prof.rhr), meals: cfg.meals, ex:['⚡ วิ่ง Tempo/Interval','Dynamic Stretch ก่อนวิ่ง','Russian Twist 3 เซต'], advice: 'วันนี้เหนื่อยหน่อย เพื่อขยับเพดานความฟิตให้สูงขึ้นครับ' };
-                cfg.detailedWorkout = { warmup: ['จ๊อกกิ้ง 10-15 นาที'], main: `Tempo/Interval 3-5 เซต เพซ ${cfg.pace}`, cooldown: ['จ๊อกกิ้ง 10 นาที'] };
-            } else if(dayType === 'easy') {
-                cfg = { id:'easy', name:'Easy Run', desc:'วิ่งสบายๆ สร้างฐานความฟิต', pace:pz.ez, hr:getHrZone(0.6,0.7, prof.age, prof.rhr), meals: cfg.meals, ex:['🏃‍♂️ วิ่ง Easy คุมหัวใจ','ทำ Drills ก่อนวิ่ง','Squats 3 เซต'], advice: 'วิ่งในระดับที่พูดคุยได้สบายๆ ท่าวิ่งต้องผ่อนคลายที่สุด' };
-                cfg.detailedWorkout = { warmup: ['หมุนข้อต่อ 3 นาที'], main: `วิ่งคุมโซน 2-3 (${cfg.pace}) พูดคุยได้ไม่หอบ`, cooldown: ['เดินช้าลงเรื่อยๆ'] };
-            } else {
-                cfg.detailedWorkout = { warmup: ['ยืดเหยียดเบาๆ'], main: 'พักฟื้นร่างกาย', cooldown: ['อาบน้ำอุ่น'] };
+            // --- เมนูอาหาร Street Food 7-11 & ร้านตามสั่ง ---
+            let dynamicMeals = { b: 'ไข่ลวก 2 ฟอง + นมโปรตีนสูง / โจ๊กหมูใส่ไข่', l: 'เกาเหลาเลือดหมูข้าวเปล่า / ข้าวมันไก่ต้ม(ไม่หนัง)', s: 'ถั่วแระญี่ปุ่น 7-11 / กล้วยหอม', d: 'สุกี้น้ำไก่ / สลัดผักอกไก่ฉีก 7-11' };
+            if (dayType === 'long' || dayType === 'speed' || isRace) {
+                dynamicMeals = { b: 'หมูปิ้ง(มันน้อย)+ข้าวเหนียว / ซาลาเปาหมูสับ 7-11', l: 'ข้าวราดกะเพราไก่+ไข่ดาว / ผัดไท', s: 'ขนมปังโฮลวีต / เครื่องดื่มเกลือแร่', d: 'ข้าวสวย + ต้มยำปลา / ยำวุ้นเส้น' };
             }
 
+            let cfg = { id:'rest', name:'Rest Day', desc:'พักฟื้นร่างกายตามหลักสูตร', pace:'-', hr:'-', meals: dynamicMeals, ex:['💤 พักการวิ่ง 100% (Full Rest)','Core Plank 3 เซต','กลิ้ง Foam Roller นวดกล้ามเนื้อ'], advice: 'ครูดินเน้นย้ำเสมอว่า วันพักคือส่วนสำคัญที่สุดของการซ้อม ให้ร่างกายได้ซ่อมแซมตัวเองครับ' };
+            cfg.detailedWorkout = { warmup: [], main: 'พักฟื้นร่างกายอย่างเต็มที่', cooldown: [] };
+
+            if(isRace) {
+                cfg = { id:'long', name:`RACE DAY!`, desc:'ถึงเวลาโชว์ผลการซ้อม!', pace:'Target Pace', hr:getHrZone(0.7,0.88, prof.age, prof.rhr), meals:dynamicMeals, ex:['🏃‍♂️ ลุยให้เต็มที่ ดื่มน้ำทุกจุด','แช่น้ำเย็น Recovery','ยืดเหยียดเบาๆ'], advice: 'ออกตัวช้าๆ อย่าวิ่งตามคนอื่น คุมเพซตัวเองให้ดีเหมือนตอนซ้อมยาวครับ' };
+                cfg.detailedWorkout = { warmup: ['วอร์มอัพเบาๆ 10 นาที'], main: `วิ่ง ${currentTargetDist}K อย่างมั่นใจ เติมพลังงานตามแผน`, cooldown: ['เดินรับเหรียญ 10 นาที'] };
+            } else if(dayType === 'long') {
+                cfg = { id:'long', name:'Long Run (วัดใจ)', desc:`วิ่งยาว ${baseLong} กม. เน้นความอึดทนทาน`, pace:`${pz.lr} - ${pz.ez}`, hr:getHrZone(0.65,0.75, prof.age, prof.rhr), meals:dynamicMeals, ex:[`🏃‍♂️ วิ่งระยะ ${baseLong} กม.`,'จิบน้ำทุก 2 กม.','ยืดเหยียดชุดใหญ่หลังวิ่ง'], advice: 'วิ่งยาวสไตล์ครูดิน: โซน 2-3 เหนื่อยหอบพอทนได้ ไม่ต้องสนความเร็ว เน้นเวลาบนเท้าให้ครบครับ' };
+                cfg.detailedWorkout = { warmup: ['เดินเร็ว 5 นาที', 'กายบริหาร ยืดเหยียดแบบขยับ (Dynamic)'], main: `วิ่ง ${baseLong} กม. ความเร็ว 60-70% (โซน 2-3) สลับเดินได้เมื่อหัวใจพุ่ง`, cooldown: ['เดินคลายกรด 10 นาที', 'ยืดเหยียดค้างท่า (Static)'] };
+            } else if(dayType === 'speed') {
+                const speedMain = kruDinSpeed[weekIdx % kruDinSpeed.length];
+                cfg = { id:'speed', name:'Speed Work / คอร์ท', desc:'ฝึกลงคอร์ทสร้างความเร็วและความทนทานของกล้ามเนื้อ', pace:`${pz.in} - ${pz.tm}`, hr:getHrZone(0.8,0.88, prof.age, prof.rhr), meals: dynamicMeals, ex:[`⚡ ${speedMain.split(' (')[0]}`,'วอร์มอัพให้ถึงก่อนวิ่งเร็ว','Russian Twist 3 เซต'], advice: 'วันลงคอร์ทช่วยขยับเพดานความฟิต (VCR) ให้สูงขึ้น วิ่งเสร็จต้องคูลดาวน์ให้ดีครับ' };
+                cfg.detailedWorkout = { warmup: ['จ๊อกกิ้งเบาๆ 15 นาที', 'ทำ Drills ยกเข่าเตะก้น'], main: `${speedMain} (Pace เป้าหมาย: ${cfg.pace})`, cooldown: ['จ๊อกกิ้งเบาๆ คลายกล้ามเนื้อ 15 นาที'] };
+            } else if(dayType === 'easy') {
+                const easyMain = kruDinEasy[weekIdx % kruDinEasy.length];
+                cfg = { id:'easy', name:'Active Recovery / วิ่งสบาย', desc:'ฟื้นฟูร่างกาย สร้างฐานความฟิต (Aerobic Base)', pace:pz.ez, hr:getHrZone(0.6,0.7, prof.age, prof.rhr), meals: dynamicMeals, ex:[`🏃‍♂️ ${easyMain.split(' (')[0]}`, 'ทำ Drills พื้นฐาน', 'Squats 3 เซต (หรือ Bodyweight)'], advice: 'วันวิ่งสบายคือการนวดกล้ามเนื้อด้วยการวิ่ง ท่าวิ่งต้องผ่อนคลายที่สุด ไม่ก้มหน้าครับ' };
+                cfg.detailedWorkout = { warmup: ['หมุนข้อต่อ 3 นาที'], main: `${easyMain} (คุมเพซสบายๆ ${cfg.pace})`, cooldown: ['เดินช้าลงเรื่อยๆ'] };
+            }
+
+            // ระบบเซฟข้อต่อ (Injury Adaptation)
             if (prof.injury === 'knee') {
                 cfg.ex = cfg.ex.map(e => e.includes('Squats') ? 'Glute Bridges 3 เซต (เซฟเข่า)' : e);
                 if (!cfg.ex.some(e => e.includes('ITB')) && dayType !== 'rest') cfg.ex.push('ยืดกล้ามเนื้อ ITB (เซฟเข่าด้านนอก)');
@@ -177,11 +202,11 @@
                 if (dayType !== 'rest') cfg.ex.push('Tibialis Raise 3 เซต (เซฟหน้าแข้ง)');
             }
 
-            if (prof.lifestyle === 'heavy') cfg.meals.s = 'กล้วยหอม 1 ลูก + เกลือแร่ (ชดเชยเหงื่อ)';
+            if (prof.lifestyle === 'heavy') cfg.meals.s = 'กล้วยหอม 1 ลูก + เกลือแร่ (ชดเชยเหงื่อจากการทำงาน)';
 
             cfg.detailedMeals = {
-                b: { menu: cfg.meals.b, detail: 'คาร์บเชิงซ้อน เติมพลังงาน' },
-                l: { menu: cfg.meals.l, detail: 'เน้นโปรตีนและคาร์บ' },
+                b: { menu: cfg.meals.b, detail: 'คาร์บเชิงซ้อน/โปรตีน เติมพลังงาน' },
+                l: { menu: cfg.meals.l, detail: 'อาหารสตรีทฟู้ด หาง่าย' },
                 s: cfg.meals.s ? { menu: cfg.meals.s, detail: 'ลดความหิว ป้องกันกินมื้อเย็นเกิน' } : null,
                 d: { menu: cfg.meals.d, detail: 'มื้อเบาๆ ผักและโปรตีนลีน' }
             };
@@ -221,88 +246,78 @@
             </div>
         );
 
-        // 🏃‍♂️ Elite Avatar (Suunto Style - Pro Runner)
+        // 🏃‍♂️ Elite Avatar (Suunto Style - Realism Upgraded)
         const EliteAvatar = ({ activity = 'stretch' }) => {
             const isRunning = activity !== 'stretch' && activity !== 'rest';
             return (
                 <div className={`w-[130px] h-[170px] relative flex items-end justify-center pb-2 ${isRunning ? '' : 'animate-breathe'}`}>
                     <svg viewBox="0 0 100 150" className="w-full h-full drop-shadow-2xl overflow-visible">
                         <style>{`
-                            @keyframes run-l { 0%, 100% { transform: translateY(0px) rotate(20deg); } 50% { transform: translateY(-8px) rotate(-30deg); } }
-                            @keyframes run-r { 0%, 100% { transform: translateY(-8px) rotate(-30deg); } 50% { transform: translateY(0px) rotate(20deg); } }
-                            @keyframes arm-l { 0%, 100% { transform: rotate(-35deg); } 50% { transform: rotate(40deg); } }
-                            @keyframes arm-r { 0%, 100% { transform: rotate(40deg); } 50% { transform: rotate(-35deg); } }
+                            @keyframes run-l { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-12px) rotate(-25deg); } }
+                            @keyframes run-r { 0%, 100% { transform: translateY(-12px) rotate(-25deg); } 50% { transform: translateY(0px) rotate(0deg); } }
+                            @keyframes arm-l { 0%, 100% { transform: rotate(-25deg); } 50% { transform: rotate(35deg); } }
+                            @keyframes arm-r { 0%, 100% { transform: rotate(35deg); } 50% { transform: rotate(-25deg); } }
                             @keyframes head-bob { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(3px); } }
                         `}</style>
-                        <g transform="translate(0, 5)">
-                            {/* แขนซ้าย (ด้านหลัง) */}
+                        <g transform="translate(0, 15)">
+                            {/* แขนซ้าย (ผิวหนัง) */}
                             <g style={{transformOrigin: '50px 35px', animation: isRunning ? 'arm-l 0.6s infinite ease-in-out' : 'none'}}>
-                                <path d="M 50 35 C 35 45, 25 60, 32 80" fill="none" stroke="#d2a193" strokeWidth="8" strokeLinecap="round" />
-                                <circle cx="32" cy="80" r="4" fill="#d2a193" />
+                                <path d="M 45 35 Q 20 50 30 75" fill="none" stroke="#d4a373" strokeWidth="8" strokeLinecap="round" />
+                                <circle cx="30" cy="75" r="4" fill="#d4a373" />
                             </g>
                             
-                            {/* ขาซ้าย (ด้านหลัง) */}
-                            <g style={{transformOrigin: '50px 80px', animation: isRunning ? 'run-l 0.6s infinite ease-in-out' : 'none'}}>
-                                <path d="M 50 80 C 40 100, 35 110, 44 135" fill="none" stroke="#c08c7d" strokeWidth="10" strokeLinecap="round" />
-                                {/* น่องซ้าย */}
-                                <path d="M 39 105 Q 35 115, 42 125" fill="none" stroke="#c08c7d" strokeWidth="4" strokeLinecap="round" />
-                                {/* ถุงเท้าและรองเท้าซ้าย */}
-                                <path d="M 40 125 L 48 125 L 46 135 L 42 135 Z" fill="#18181b" />
-                                <path d="M 38 132 C 45 132, 52 137, 52 142 L 35 142 Z" fill="#bef264" />
-                                <path d="M 35 142 L 52 142 L 52 146 L 35 146 Z" fill="#ffffff" />
+                            {/* ขาซ้าย */}
+                            <g style={{transformOrigin: '50px 65px', animation: isRunning ? 'run-l 0.6s infinite ease-in-out' : 'none'}}>
+                                <path d="M 46 65 Q 35 90 40 112" fill="none" stroke="#bc8a5f" strokeWidth="10" strokeLinecap="round" />
+                                {/* รองเท้าคาร์บอน ซ้าย */}
+                                <path d="M 33 112 Q 38 105 48 112 L 48 122 Q 40 125 33 122 Z" fill="#bef264" />
+                                <path d="M 33 122 Q 40 125 48 122 L 48 126 Q 40 128 33 126 Z" fill="#18181b" />
                             </g>
                             
-                            {/* ขาขวา (ด้านหน้า) */}
-                            <g style={{transformOrigin: '50px 80px', animation: isRunning ? 'run-r 0.6s infinite ease-in-out' : 'none'}}>
-                                <path d="M 50 80 C 60 100, 65 110, 56 135" fill="none" stroke="#eebcb0" strokeWidth="11" strokeLinecap="round" />
-                                {/* น่องขวา */}
-                                <path d="M 61 105 Q 66 115, 58 125" fill="none" stroke="#eebcb0" strokeWidth="4.5" strokeLinecap="round" />
-                                {/* ถุงเท้าและรองเท้าขวา */}
-                                <path d="M 52 125 L 60 125 L 58 135 L 54 135 Z" fill="#18181b" />
-                                <path d="M 50 132 C 60 132, 68 137, 68 142 L 48 142 Z" fill="#bef264" />
-                                <path d="M 48 142 L 68 142 L 68 146 L 48 146 Z" fill="#ffffff" />
-                                <path d="M 68 142 Q 72 140, 70 138" fill="none" stroke="#27272a" strokeWidth="1.5" /> {/* Heel bevel */}
+                            {/* ขาขวา */}
+                            <g style={{transformOrigin: '50px 65px', animation: isRunning ? 'run-r 0.6s infinite ease-in-out' : 'none'}}>
+                                <path d="M 54 65 Q 65 90 60 112" fill="none" stroke="#d4a373" strokeWidth="10" strokeLinecap="round" />
+                                {/* ถุงเท้ารัดน่อง ขวา */}
+                                <path d="M 56 95 L 62 95 L 63 112 L 56 112 Z" fill="#27272a" />
+                                {/* รองเท้าคาร์บอน ขวา */}
+                                <path d="M 53 112 Q 58 105 68 112 L 68 122 Q 60 125 53 122 Z" fill="#bef264" />
+                                <path d="M 53 122 Q 60 125 68 122 L 68 126 Q 60 128 53 126 Z" fill="#18181b" />
                             </g>
-
-                            {/* ลำตัว (Singlet) */}
-                            <path d="M 42 32 C 55 32, 62 45, 56 80 L 44 80 C 38 45, 45 35, 42 32 Z" fill="#18181b" />
-                            <path d="M 44 40 L 56 40 L 53 55 L 47 55 Z" fill="#bef264" />
-                            <text x="50" y="52" fontSize="7" fontWeight="900" textAnchor="middle" fill="#000">PRO</text>
                             
-                            {/* กางเกงวิ่ง (Split Shorts) */}
-                            <path d="M 42 75 C 50 78, 55 78, 58 75 L 62 90 C 55 95, 45 95, 38 90 Z" fill="#27272a" />
-
-                            {/* แขนขวา (ด้านหน้า) และนาฬิกา */}
+                            {/* ลำตัว เสื้อกล้ามรัดรูป */}
+                            <path d="M 38 32 Q 50 25 62 32 L 58 68 L 42 68 Z" fill="#18181b" />
+                            {/* ลายเสื้อ */}
+                            <path d="M 44 32 L 56 32 L 50 50 Z" fill="#bef264" />
+                            <path d="M 40 65 L 60 65 L 60 68 L 40 68 Z" fill="#27272a" />
+                            
+                            {/* แขนขวา (ผิวหนัง) */}
                             <g style={{transformOrigin: '50px 35px', animation: isRunning ? 'arm-r 0.6s infinite ease-in-out' : 'none'}}>
-                                <path d="M 50 35 C 65 45, 75 60, 68 80" fill="none" stroke="#eebcb0" strokeWidth="9" strokeLinecap="round" />
-                                <circle cx="68" cy="80" r="4.5" fill="#eebcb0" />
+                                <path d="M 55 35 Q 80 50 70 75" fill="none" stroke="#e6ccb2" strokeWidth="8" strokeLinecap="round" />
+                                <circle cx="70" cy="75" r="4" fill="#e6ccb2" />
                                 {/* นาฬิกา Suunto */}
-                                <rect x="62" y="70" width="12" height="6" fill="#000" rx="1" transform="rotate(-20 68 73)" />
-                                <circle cx="68" cy="73" r="2" fill="#bef264" transform="rotate(-20 68 73)" />
+                                <rect x="65" y="64" width="12" height="6" fill="#18181b" rx="2" transform="rotate(-30 70 68)" />
+                                <circle cx="70" cy="67" r="2.5" fill="#bef264" transform="rotate(-30 70 68)" />
                             </g>
-
-                            {/* ศีรษะ ใบหน้า และหมวก */}
-                            <g style={{transformOrigin: '50px 25px', animation: isRunning ? 'head-bob 0.6s infinite ease-in-out' : 'none'}}>
+                            
+                            {/* ศีรษะและใบหน้า */}
+                            <g style={{transformOrigin: '50px 20px', animation: isRunning ? 'head-bob 0.6s infinite ease-in-out' : 'none'}}>
                                 {/* คอ */}
-                                <path d="M 46 25 L 54 25 L 54 35 L 46 35 Z" fill="#d2a193" />
+                                <rect x="46" y="25" width="8" height="6" fill="#d4a373" />
                                 {/* โครงหน้า */}
-                                <path d="M 40 10 Q 40 25, 50 30 Q 60 25, 60 10 Z" fill="#eebcb0" />
+                                <path d="M 38 15 Q 38 30 50 30 Q 62 30 62 15 Z" fill="#e6ccb2" />
+                                {/* หมวกวิ่ง */}
+                                <path d="M 35 15 Q 50 0 65 15 Z" fill="#18181b" />
+                                <path d="M 33 15 L 67 15 Q 72 17 67 17 L 33 17 Z" fill="#18181b" />
+                                {/* แว่นตาสปอร์ตสีฟ้าใส */}
+                                <path d="M 39 16 L 61 16 L 58 22 Q 50 25 42 22 Z" fill="rgba(6, 182, 212, 0.7)" stroke="#0891b2" strokeWidth="1" />
                                 {/* หู */}
-                                <circle cx="41" cy="20" r="2.5" fill="#d2a193" />
-                                
-                                {/* หมวกวิ่ง (Running Cap) */}
-                                <path d="M 38 12 C 38 0, 62 0, 62 12 Z" fill="#18181b" />
-                                <path d="M 60 10 L 76 10 L 72 13 L 60 13 Z" fill="#18181b" />
-                                <path d="M 40 12 L 62 12" stroke="#bef264" strokeWidth="1.5" />
-                                
-                                {/* แว่นตาสปอร์ต */}
-                                <path d="M 39 12 C 45 18, 55 18, 62 14 L 62 18 C 55 22, 45 22, 39 18 Z" fill="#0ea5e9" opacity="0.85" />
-                                
-                                {/* ปาก */}
+                                <circle cx="37" cy="20" r="2" fill="#d4a373" />
+                                <circle cx="63" cy="20" r="2" fill="#d4a373" />
+                                {/* ปาก (อ้าปากตอนวิ่ง, ยิ้มตอนพัก) */}
                                 {isRunning ? (
-                                    <ellipse cx="52" cy="25" rx="2" ry="3" fill="#18181b" />
+                                    <ellipse cx="50" cy="26" rx="2" ry="3" fill="#18181b" />
                                 ) : (
-                                    <path d="M 49 25 Q 52 28, 55 25" fill="none" stroke="#18181b" strokeWidth="1.5" strokeLinecap="round" />
+                                    <path d="M 46 25 Q 50 28 54 25" fill="none" stroke="#18181b" strokeWidth="1.5" strokeLinecap="round" />
                                 )}
                             </g>
                         </g>
@@ -338,17 +353,16 @@
             const [injury, setInjury] = useState(initialProf.injury || 'none');
             const [lifestyle, setLifestyle] = useState(initialProf.lifestyle || 'active');
             
+            // ค่าเริ่มต้น Race Date (รูปแบบ YYYY-MM-DD)
+            const [raceDateStr, setRaceDateStr] = useState(initialProf.raceDate || '2026-11-15');
+            
             const [avail, setAvail] = useState(initialProf.schedule ? {0: initialProf.schedule[0]!=='rest', 1: initialProf.schedule[1]!=='rest', 2: initialProf.schedule[2]!=='rest', 3: initialProf.schedule[3]!=='rest', 4: initialProf.schedule[4]!=='rest', 5: initialProf.schedule[5]!=='rest', 6: initialProf.schedule[6]!=='rest'} : {0:true, 1:false, 2:true, 3:true, 4:false, 5:true, 6:false});
             const [ld, setLd] = useState(initialProf.schedule ? Number(Object.keys(initialProf.schedule).find(key => initialProf.schedule[key] === 'long') || 0) : 0);
-
-            // 🔥 เพิ่ม State สำหรับ Race Day
-            const [raceDateStr, setRaceDateStr] = useState(initialProf.raceDate || '2026-11-15');
 
             const handleSave = () => {
                 const finalW = parseFloat(w) || 90; const finalTw = parseFloat(tw) || 80; const finalH = parseInt(h, 10) || 175;
                 const finalAge = parseInt(age, 10) || 35; const finalRhr = parseInt(rhr, 10) || 60; const finalVcr = parseInt(vcr, 10) || 4500;
-                // 🔥 ส่ง raceDate ไปด้วยตอนเซฟ
-                onSave({ weight:finalW, targetWeight:finalTw, height:finalH, gender, age:finalAge, rhr:finalRhr, vcr:finalVcr, targetDist:td, injury, lifestyle, schedule: generateSmartSchedule(avail, ld), raceDate: raceDateStr });
+                onSave({ weight:finalW, targetWeight:finalTw, height:finalH, gender, age:finalAge, rhr:finalRhr, vcr:finalVcr, targetDist:td, injury, lifestyle, raceDate: raceDateStr, schedule: generateSmartSchedule(avail, ld) });
             };
 
             const dayLabels = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -403,19 +417,14 @@
                             </div>
 
                             <div className="border-t border-zinc-800 pt-5">
-                                <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest mb-3">3. Training Plan</h3>
-                                
-                                {/* 🔥 เพิ่มช่องกรอก Race Day ตรงนี้ */}
-                                <div className="bg-[#18181b] p-4 rounded-xl border border-zinc-700 mb-4">
-                                    <label className="text-xs text-zinc-400 font-bold uppercase block mb-3">Race Date</label>
-                                    <input type="date" value={raceDateStr} onChange={e=>setRaceDateStr(e.target.value)} className="w-full bg-transparent text-white font-bold text-lg outline-none focus:suunto-accent" />
-                                </div>
-
+                                <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest mb-3">3. Training Plan (Kru Din Protocol)</h3>
                                 <div className="bg-[#18181b] p-4 rounded-xl border border-zinc-700 mb-4">
                                     <label className="text-xs text-zinc-400 font-bold uppercase block mb-3">Race Goal</label>
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-2 mb-4">
                                         {[5,10,21.1,42.195].map(d => (<button key={d} onClick={()=>setTd(d)} className={`flex-1 py-3 rounded-lg text-sm font-black transition-colors ${td===d ? 'suunto-bg-accent' : 'bg-[#121212] text-zinc-400 border border-zinc-700 hover:bg-zinc-800'}`}>{d===42.195?'42K':d+'K'}</button>))}
                                     </div>
+                                    <label className="text-xs text-zinc-400 font-bold uppercase block mb-2">Race Date</label>
+                                    <input type="date" value={raceDateStr} onChange={e=>setRaceDateStr(e.target.value)} className="w-full bg-[#121212] text-white p-3 rounded-lg border border-zinc-700 outline-none text-sm font-bold focus:border-[#bef264]" />
                                 </div>
                                 <div className="mb-4">
                                     <label className="text-xs text-zinc-400 font-bold uppercase block mb-2 flex justify-between"><span>Training Days</span><span className="text-white">{Object.values(avail).filter(v=>v).length} Days/Wk</span></label>
@@ -517,9 +526,9 @@
             </div>
         );
 
-        const TabPlan = ({ cfg, prof }) => {
+        const TabPlan = ({ cfg, prof, weekIdx }) => {
             const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-            const scheduleMap = { 'rest': 'Rest', 'easy': 'Easy', 'speed': 'Speed', 'long': 'Long Run' };
+            const scheduleMap = { 'rest': 'Rest', 'easy': 'Easy', 'speed': 'Speed Work', 'long': 'Long Run' };
             const colorMap = { 'rest': 'text-zinc-500', 'easy': 'text-lime-400', 'speed': 'text-orange-400', 'long': 'text-red-400' };
             const todayIdx = new Date().getDay();
 
@@ -531,7 +540,7 @@
                     </section>
 
                     <section className="suunto-card p-8">
-                        <h2 className="font-black text-sm text-zinc-400 uppercase tracking-widest mb-6">TRAINING PROTOCOL</h2>
+                        <h2 className="font-black text-sm text-zinc-400 uppercase tracking-widest mb-6">TODAY'S PROTOCOL</h2>
                         <div className="mb-6 pb-6 border-b border-zinc-800">
                             <p className="text-3xl font-black text-white uppercase italic">{cfg.name}</p>
                             <div className="flex gap-3 mt-4">
@@ -570,15 +579,32 @@
                     </section>
 
                     <section className="suunto-card p-8">
-                        <h2 className="font-black text-sm text-zinc-400 uppercase tracking-widest mb-5">WEEKLY SCHEDULE</h2>
+                        <h2 className="font-black text-sm text-zinc-400 uppercase tracking-widest mb-5 flex items-center gap-2"><span>📅</span> WEEKLY SCHEDULE</h2>
                         <div className="space-y-3">
                             {dayNames.map((day, idx) => {
                                 const type = prof?.schedule?.[idx] || 'rest';
                                 const isToday = todayIdx === idx;
+                                
+                                // Simulate ตารางล่วงหน้าของแต่ละวัน
+                                const dummyDate = new Date();
+                                dummyDate.setDate(dummyDate.getDate() + (idx - todayIdx));
+                                const dayCfg = getDayConfig(dummyDate, weekIdx, false, prof);
+
                                 return (
-                                    <div key={idx} className={`p-5 rounded-xl border flex justify-between items-center transition-colors ${isToday ? 'bg-zinc-800 border-zinc-500 shadow-md' : 'bg-[#18181b] border-zinc-800'}`}>
-                                        <span className={`text-sm font-black uppercase tracking-widest ${isToday ? 'text-white' : 'text-zinc-500'}`}>{day} {isToday && '(TODAY)'}</span>
-                                        <span className={`text-sm font-black uppercase tracking-widest ${colorMap[type]}`}>{scheduleMap[type]}</span>
+                                    <div key={idx} className={`p-5 rounded-xl border flex flex-col gap-2 transition-colors ${isToday ? 'bg-zinc-800 border-zinc-500 shadow-md' : 'bg-[#18181b] border-zinc-800'}`}>
+                                        <div className="flex justify-between items-center">
+                                            <span className={`text-sm font-black uppercase tracking-widest ${isToday ? 'text-white' : 'text-zinc-500'}`}>{day} {isToday && '(TODAY)'}</span>
+                                            <span className={`text-sm font-black uppercase tracking-widest ${colorMap[type]}`}>{scheduleMap[type]}</span>
+                                        </div>
+                                        {type !== 'rest' && (
+                                            <div className="mt-2 pt-3 border-t border-zinc-700/50">
+                                                <p className={`text-xs font-bold leading-relaxed mb-3 ${isToday ? 'text-white' : 'text-zinc-400'}`}>{dayCfg.detailedWorkout.main}</p>
+                                                <div className="flex gap-2">
+                                                    <span className="text-[10px] font-black text-cyan-400 bg-cyan-400/10 px-2.5 py-1 rounded">PACE: {dayCfg.pace}</span>
+                                                    <span className="text-[10px] font-black text-red-400 bg-red-400/10 px-2.5 py-1 rounded">HR: {dayCfg.hr}</span>
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
                                 );
                             })}
@@ -631,23 +657,19 @@
             const mapGoal = 600;
             const mapProgress = Math.min((tDist / mapGoal) * 100, 100);
 
-            // คำนวณข้อมูลสำหรับกราฟ 7 วันล่าสุด
+            // กราฟ 7 วัน
             const chartData = useMemo(() => {
                 const days = [];
                 for (let i = 6; i >= 0; i--) {
-                    let d = new Date();
-                    d.setDate(d.getDate() - i);
-                    const dtStr = d.toDateString();
-                    const record = prof?.records?.[dtStr];
+                    let d = new Date(); d.setDate(d.getDate() - i);
+                    const dtStr = d.toDateString(); const record = prof?.records?.[dtStr];
                     const dist = (record?.rLog && record?.rDist) ? parseFloat(record.rDist) : 0;
-                    // ดึงชื่อย่อของวัน เช่น 'Mon', 'Tue'
-                    const dayName = dtStr.split(' ')[0];
-                    days.push({ day: dayName, dist: dist || 0, isToday: i === 0 });
+                    days.push({ day: dtStr.split(' ')[0], dist: dist || 0, isToday: i === 0 });
                 }
                 return days;
             }, [prof?.records]);
 
-            const maxChartDist = Math.max(...chartData.map(d => d.dist), 5); // Fallback ที่ 5 กม. ป้องกันกราฟเปล่าทะลุ
+            const maxChartDist = Math.max(...chartData.map(d => d.dist), 5); 
 
             return (
                 <div className="space-y-6 pb-14">
@@ -667,24 +689,18 @@
                         <span className="text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg bg-black border border-zinc-800" style={{color: vo2Color}}>{vo2Label}</span>
                     </section>
 
-                    {/* กราฟ 7-DAY MILEAGE */}
                     <section className="suunto-card p-8">
                         <h2 className="font-black text-sm text-white uppercase tracking-widest mb-6 flex items-center gap-2"><span>📊</span> 7-DAY MILEAGE</h2>
                         <div className="flex items-end justify-between h-40 gap-1.5 sm:gap-3">
                             {chartData.map((data, i) => {
-                                const heightPct = Math.max((data.dist / maxChartDist) * 100, 2); // ขั้นต่ำ 2% ให้เห็นแท่งบ้าง
+                                const heightPct = Math.max((data.dist / maxChartDist) * 100, 2);
                                 return (
                                     <div key={i} className="flex flex-col items-center flex-1">
                                         <span className="text-[10px] sm:text-xs text-zinc-400 font-bold mb-2 h-4">{data.dist > 0 ? data.dist.toFixed(1) : ''}</span>
                                         <div className="w-full relative bg-[#18181b] rounded-t-md" style={{height: '100px'}}>
-                                            <div 
-                                                className={`absolute bottom-0 left-0 w-full rounded-t-md transition-all duration-1000 ease-out ${data.isToday ? 'suunto-bg-accent' : 'bg-zinc-600'}`} 
-                                                style={{height: `${heightPct}%`}}
-                                            ></div>
+                                            <div className={`absolute bottom-0 left-0 w-full rounded-t-md transition-all duration-1000 ease-out ${data.isToday ? 'suunto-bg-accent' : 'bg-zinc-600'}`} style={{height: `${heightPct}%`}}></div>
                                         </div>
-                                        <span className={`text-[10px] sm:text-xs font-black uppercase mt-3 tracking-wider ${data.isToday ? 'suunto-accent' : 'text-zinc-500'}`}>
-                                            {data.day}
-                                        </span>
+                                        <span className={`text-[10px] sm:text-xs font-black uppercase mt-3 tracking-wider ${data.isToday ? 'suunto-accent' : 'text-zinc-500'}`}>{data.day}</span>
                                     </div>
                                 );
                             })}
@@ -736,9 +752,8 @@
             
             const [prof, setProf] = useState(() => JSON.parse(safeStorage.getItem(localKey)) || {
                 initialWeight: null, weight: 90.0, targetWeight: 80.0, height: 175, gender: 'male',
-                age: 35, rhr: 60, vcr: 4500, targetDist: 42.195, injury: 'none', lifestyle: 'active',
-                schedule: {0:'long', 1:'rest', 2:'easy', 3:'speed', 4:'rest', 5:'easy', 6:'rest'}, records: {},
-                raceDate: '2026-11-15' // 🔥 เพิ่ม default Race Date
+                age: 35, rhr: 60, vcr: 4500, targetDist: 42.195, injury: 'none', lifestyle: 'active', raceDate: '2026-11-15',
+                schedule: {0:'long', 1:'rest', 2:'easy', 3:'speed', 4:'rest', 5:'easy', 6:'rest'}, records: {}
             });
 
             const todayStr = new Date().toDateString();
@@ -747,10 +762,17 @@
             const [inDist, setInDist] = useState(daily.rDist || '');
             const [inPace, setInPace] = useState(daily.rPace || '');
             const [inHr, setInHr] = useState(daily.rHr || '');
-
             const [leaderboardData, setLeaderboardData] = useState([]);
-
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'profiles', safeName);
+
+            // คำนวณวัน Countdown ถอยหลัง
+            const raceDateObj = new Date(prof.raceDate || '2026-11-15');
+            const planStart = new Date(raceDateObj);
+            planStart.setDate(planStart.getDate() - 168); // ถอยหลัง 24 สัปดาห์
+            const diffDays = Math.ceil((new Date() - planStart)/(1000*3600*24));
+            const weekIdx = Math.max(0, Math.min(23, Math.ceil(diffDays/7)-1));
+            const progressPct = Math.max(0, Math.min(100, (diffDays / 168) * 100));
+            const daysLeft = Math.ceil((raceDateObj - new Date())/(1000*3600*24));
 
             useEffect(() => {
                 if(!prof.initialWeight) setShowSetup(true); 
@@ -799,7 +821,7 @@
                     const equiv = (1800 / rSecs) * 1000;
                     if (equiv > currentVcr + 100) { currentVcr = Math.round(equiv); upgraded = true; }
                 }
-                const cfgToday = getDayConfig(new Date(), 0, false, prof);
+                const cfgToday = getDayConfig(new Date(), weekIdx, false, prof);
                 const ai = generateFeedback(dNum, inPace, inHr, cfgToday.pace);
                 const perf = calcCondition(inHr, inPace);
                 const nd = {...daily, rLog: true, rDist: inDist, rPace: inPace, rHr: inHr, aiFeedback: ai, perfCondition: perf, vcrUpgraded: upgraded, newVcrVal: currentVcr};
@@ -818,22 +840,7 @@
                 safeStorage.setItem(localKey, JSON.stringify({...prof, weight: w}));
             };
 
-            // 🔥 คำนวณวันจาก Race Date ที่ตั้งไว้
-            const todayObj = new Date();
-            // ถ้าผู้ใช้ไม่ตั้งค่า ให้ใช้วันที่ 15 พ.ย. 2026 เป็น default
-            const targetRaceDate = prof.raceDate ? new Date(prof.raceDate) : new Date(2026, 10, 15);
-            
-            // ให้แผนเริ่มก่อนวันแข่ง 24 สัปดาห์ (168 วัน)
-            const planStart = new Date(targetRaceDate);
-            planStart.setDate(planStart.getDate() - 168);
-            
-            const totalDays = Math.ceil((targetRaceDate - planStart)/(1000*3600*24));
-            let diffDays = Math.ceil((todayObj - planStart)/(1000*3600*24));
-            if(diffDays < 0) diffDays = 0; if(diffDays > totalDays) diffDays = totalDays; // ป้องกันเลขติดลบหรือเกิน
-
-            const weekIdx = diffDays > 0 ? Math.min(23, Math.ceil(diffDays/7)-1) : 0;
-            const isRace = diffDays >= totalDays; // 🔥 แก้ให้ isRace เป็นจริงเมื่อถึงหรือเลยวันแข่ง
-            const cfg = getDayConfig(todayObj, weekIdx, isRace, prof);
+            const cfg = getDayConfig(new Date(), weekIdx, daysLeft <= 0, prof);
 
             let tDist = 0, tSecs = 0, f5k = Infinity, f10k = Infinity, longestRun = 0, maxStreakCount = 0, streakCount = 0, maxAquaCount = 0, aquaCount = 0;
             const sortedDates = Object.keys(prof.records || {}).sort((a,b)=>new Date(a)-new Date(b));
@@ -880,7 +887,7 @@
                     
                     <header className="flex justify-between items-start mb-8 pt-4">
                         <div>
-                            <p className="text-zinc-400 font-black text-xs tracking-[0.3em] uppercase mb-2">ROAD TO BANGSAEN42</p>
+                            <p className="text-zinc-400 font-black text-xs tracking-[0.3em] uppercase mb-2">TARGET RACE DAY</p>
                             <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic">PRO <span className="suunto-accent">80</span></h1>
                             <p className="text-sm font-bold text-zinc-400 mt-3 tracking-widest uppercase">Runner: <span className="text-white">{profileName}</span></p>
                         </div>
@@ -890,18 +897,14 @@
                         </button>
                     </header>
 
-                    {/* 🔥 เพิ่มกล่อง Marathon Countdown ให้เหมือนเดิม */}
-                    <div className="suunto-card p-5 mb-6 border-l-4 border-l-orange-500">
-                        <div className="flex justify-between items-end mb-2">
-                            <span className="text-zinc-400 font-black text-[10px] tracking-widest uppercase">Marathon Countdown</span>
-                            <span className="text-white font-black text-xl italic">{Math.round((diffDays / totalDays) * 100)}%</span>
+                    {/* Progress Bar วันแข่ง */}
+                    <div className="mb-8">
+                        <div className="flex justify-between text-xs font-black text-zinc-400 uppercase tracking-widest mb-2">
+                            <span>Plan Started</span>
+                            <span className={daysLeft <= 0 ? 'text-red-500' : 'text-zinc-400'}>{daysLeft > 0 ? `${daysLeft} Days Left` : 'RACE DAY!'}</span>
                         </div>
-                        <div className="h-[8px] w-full bg-[#18181b] rounded-full overflow-hidden">
-                            <div className="h-full bg-orange-500 transition-all duration-1000 ease-out" style={{width: `${Math.min((diffDays / totalDays) * 100, 100)}%`}}></div>
-                        </div>
-                        <div className="flex justify-between mt-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-                            <span>Day {diffDays} / {totalDays}</span>
-                            <span>Target: {targetRaceDate.toLocaleDateString('en-GB')}</span>
+                        <div className="w-full h-3 bg-[#18181b] rounded-full overflow-hidden border border-zinc-800">
+                            <div className="h-full suunto-bg-accent transition-all duration-1000" style={{width: `${progressPct}%`}}></div>
                         </div>
                     </div>
 
@@ -939,7 +942,7 @@
 
                     <main className="animate-in fade-in duration-300">
                         {activeTab === 'tracker' && <TabTracker score={score} daily={daily} updateDaily={updateDaily} cfg={cfg} inDist={inDist} setInDist={setInDist} inPace={inPace} setInPace={setInPace} inHr={inHr} setInHr={setInHr} saveRun={saveRun} targetWater={targetWater} />}
-                        {activeTab === 'plan' && <TabPlan cfg={cfg} prof={prof} />}
+                        {activeTab === 'plan' && <TabPlan cfg={cfg} prof={prof} weekIdx={weekIdx} />}
                         {activeTab === 'ranking' && <TabRanking leaderboardData={leaderboardData} />}
                         {activeTab === 'stats' && <TabStats prof={prof} vo2Value={vo2Value} tDist={tDist} pTime={pTime} pSource={pSource} fastest5kSecs={f5k} fastest10kSecs={f10k} longestRun={longestRun} achievements={achievements} />}
                     </main>
