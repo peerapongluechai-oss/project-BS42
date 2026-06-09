@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Project 80: Suunto Edition (Kru Din + AI Vision)</title>
+    <title>ULTIMATE PACE - Elite Runner Protocol</title>
     
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -103,26 +103,39 @@
             return `${Math.round(hrr*min)+Number(rhr||60)}-${Math.round(hrr*max)+Number(rhr||60)} bpm`;
         };
 
-        const generateFeedback = (dist, pace, hr, targetPaceStr, actType = 'Run') => {
-            if(!pace || pace === '0:00') return "บันทึกสถิติสำเร็จ! วินัยคือหัวใจสำคัญครับ 🏃‍♂️";
+        // 🛠️ อัปเดต: เพิ่มการรับพารามิเตอร์ cadence เพื่อวิเคราะห์รอบขา
+        const generateFeedback = (dist, pace, hr, targetPaceStr, actType = 'Run', cadence = '') => {
+            let cadenceFeedback = "";
+            if (actType === 'Run' && cadence) {
+                const spm = Number(cadence);
+                if (spm > 0 && spm < 160) {
+                    cadenceFeedback = ` ⚠️ รอบขาของคุณค่อนข้างต่ำ (${spm} SPM) ระวัง Overstride และอาการเจ็บเข่านะครับ ลองซอยเท้าให้ถี่ขึ้นแตะ 170+ SPM ครับ`;
+                } else if (spm >= 170) {
+                    cadenceFeedback = ` 🏃‍♂️ รอบขาเยี่ยมมาก (${spm} SPM) พับเข่าและดึงเท้าได้ดีครับ เซฟข้อต่อได้เยอะเลย!`;
+                } else if (spm > 0) {
+                    cadenceFeedback = ` 👍 รอบขาอยู่ในเกณฑ์กำลังดี (${spm} SPM) คุมให้สม่ำเสมอนะครับ`;
+                }
+            }
+
+            if(!pace || pace === '0:00') return "บันทึกสถิติสำเร็จ! วินัยคือหัวใจสำคัญครับ 🏃‍♂️" + cadenceFeedback;
             
-            // ถ้าเป็นกีฬาประเภทอื่น (ไม่ใช่การวิ่งถนน) AI จะให้คำแนะนำแบบเฉพาะเจาะจง
-            if (actType === 'Trail') return "⛰️ ลุยเทรลมาใช่ไหมครับ! เพซเทรลจะช้ากว่าถนนปกติเพราะความชัน AI จะไม่นำเพซนี้ไปฉุด VCR ของคุณลง ถือว่าได้ฝึกความแข็งแรงกล้ามเนื้อและระบบหายใจแบบเต็มๆ ครับ!";
+            if (actType === 'Trail') return "⛰️ ลุยเทรลมาใช่ไหมครับ! เพซเทรลจะช้ากว่าถนนปกติ AI จะไม่นำเพซนี้ไปฉุด VCR ของคุณลง ถือว่าได้ฝึกความแข็งแรงกล้ามเนื้อแบบเต็มๆ ครับ!" + cadenceFeedback;
             if (actType === 'Swim') return "🏊‍♂️ ว่ายน้ำเป็นการ Cross-Training (เซฟข้อต่อ) ที่ยอดเยี่ยมตามหลักสูตรครูดินครับ! AI บันทึกสะสมไมล์ให้โดยไม่กระทบสถิติเพซวิ่งครับ";
             if (actType === 'Bike') return "🚴‍♂️ ปั่นจักรยานช่วยสลับการใช้กล้ามเนื้อและสร้าง Aerobic Base ได้ดีมาก AI บันทึกผลให้เรียบร้อยครับ!";
             if (actType === 'Other') return "🏋️‍♂️ ยอดเยี่ยมครับ! การเสริมสร้างความแข็งแรง (Strength) จะช่วยให้การวิ่งมาราธอนของคุณทนทานขึ้นครับ";
 
-            if(!targetPaceStr || targetPaceStr === '-') return "บันทึกสถิติสำเร็จ! วินัยคือหัวใจสำคัญครับ 🏃‍♂️";
+            if(!targetPaceStr || targetPaceStr === '-') return "บันึกสถิติสำเร็จ! วินัยคือหัวใจสำคัญครับ 🏃‍♂️" + cadenceFeedback;
+            
             const pSecs = parsePace(pace);
             const tSecsArr = targetPaceStr.split(' - ').map(parsePace);
             if(tSecsArr.length >= 1 && tSecsArr[0] !== Infinity) {
                 const minT = Math.min(...tSecsArr);
                 const maxT = Math.max(...tSecsArr);
-                if(pSecs < minT - 15) return "วิ่งเร็วกว่าเป้าหมาย! ⚡ ครูดินบอกเสมอว่าซ้อมเร็วกว่ากำหนดระวังจะกรอบ ยืดเหยียดให้เยอะๆ ครับ";
-                if(pSecs > maxT + 15) return "เพซช้ากว่าเป้านิดหน่อย แต่ร่างกายได้สร้างความทนทาน (Endurance) ถือว่าเยี่ยมครับ 🐢";
-                return "เพอร์เฟกต์! 🎯 คุมเพซและหัวใจได้ตรงแผนเป๊ะ ร่างกายกำลังพัฒนาไปถูกทางตามหลักสูตรครับ";
+                if(pSecs < minT - 15) return "วิ่งเร็วกว่าเป้าหมาย! ⚡ ครูดินบอกเสมอว่าซ้อมเร็วกว่ากำหนดระวังจะกรอบ ยืดเหยียดให้เยอะๆ ครับ" + cadenceFeedback;
+                if(pSecs > maxT + 15) return "เพซช้ากว่าเป้านิดหน่อย แต่ร่างกายได้สร้างความทนทาน (Endurance) ถือว่าเยี่ยมครับ 🐢" + cadenceFeedback;
+                return "เพอร์เฟกต์! 🎯 คุมเพซและหัวใจได้ตรงแผนเป๊ะ ร่างกายกำลังพัฒนาไปถูกทางตามหลักสูตรครับ" + cadenceFeedback;
             }
-            return "ยอดเยี่ยมมากครับ! เก็บสะสมไมล์ไปเรื่อยๆ ความฟิตจะตามมาเอง 🏆";
+            return "ยอดเยี่ยมมากครับ! เก็บสะสมไมล์ไปเรื่อยๆ ความฟิตจะตามมาเอง 🏆" + cadenceFeedback;
         };
 
         const calcCondition = (hr, pace) => {
@@ -136,22 +149,28 @@
         };
 
         // --- ระบบ AI ผสานหลักสูตรครูดิน (อัปเกรดฐานข้อมูลจาก Master Plan รุ่น 15 ปี 2026) ---
-        const getDayConfig = (todayObj, weekIdx, isRace, prof) => {
+        // 🛠️ อัปเดต: รับค่า isHot เพื่อคำนวณปรับเพซสู้แดด และ needRecovery (กรณีเพิ่งกดป่วย/พักซ้อมมา)
+        const getDayConfig = (todayObj, weekIdx, isRace, prof, isHot = false, needRecovery = false) => {
             const dayIndex = todayObj.getDay(); 
             const currentTargetDist = prof.targetDist || 42.195;
             
-            // ปรับตารางหลักให้อิงตามคัมภีร์ครูดิน: จันทร์(พัก), อังคาร(คอร์ท/Speed), พุธ(หญ้า/Easy), พฤหัส(Aerobic/Fartlek), ศุกร์(ไหล/Drill), เสาร์(Long Run), อาทิตย์(ว่ายน้ำ/Recovery)
             const currentSchedule = prof.schedule || {0:'easy', 1:'rest', 2:'speed', 3:'easy', 4:'easy', 5:'speed', 6:'long'}; 
-            const dayType = currentSchedule[dayIndex] || 'rest';
+            // 🛠️ ถ้าต้องการ Recovery ให้เปลี่ยนวันที่ซ้อมหนัก (speed/long) ให้กลายเป็น easy แทน
+            let dayType = currentSchedule[dayIndex] || 'rest';
+            if (needRecovery && (dayType === 'speed' || dayType === 'long')) {
+                dayType = 'easy';
+            }
 
             const vcrSpeed = (prof.vcr || 4500) / 1800; // m/s
-            // ฟังก์ชันคำนวณ Pace แบบช่วง (Range) เพื่อความยืดหยุ่นในการซ้อม
+            
+            // 🛠️ ฟังก์ชันคำนวณ Pace แบบช่วง (Range) + ปรับสู้อากาศร้อน
             const getPaceRange = (pct) => {
                 const spd = vcrSpeed * (pct/100);
                 if(spd<=0) return "0:00";
-                const baseSecs = Math.round(1000/spd);
+                let baseSecs = Math.round(1000/spd);
                 
-                // กำหนดช่วงบวกลบ (Buffer) ให้เหมาะกับความเหนื่อย
+                if (isHot) baseSecs += 15; // ☀️ อากาศร้อน: ปรับเป้าหมายเพซให้ช้าลง 15 วินาที/กม. อัตโนมัติ
+                
                 let fastSecs = baseSecs - 10; 
                 let slowSecs = baseSecs + 15;
                 if(pct >= 85) { fastSecs = baseSecs - 5; slowSecs = baseSecs + 10; } // คอร์ท/Speed บีบช่วงให้แคบ
@@ -190,7 +209,6 @@
 
             const currentWeekData = masterPlan[Math.min(weekIdx, 19)] || masterPlan[0];
 
-            // --- เมนูอาหาร Street Food 7-11 & ร้านตามสั่ง ---
             let dynamicMeals = { b: 'ไข่ลวก 2 ฟอง + นมโปรตีนสูง / โจ๊กหมูใส่ไข่', l: 'เกาเหลาเลือดหมูข้าวเปล่า / ข้าวมันไก่ต้ม(ไม่หนัง)', s: 'ถั่วแระญี่ปุ่น 7-11 / กล้วยหอม', d: 'สุกี้น้ำไก่ / สลัดผักอกไก่ฉีก 7-11' };
             if (dayType === 'long' || dayType === 'speed' || isRace) {
                 dynamicMeals = { b: 'หมูปิ้ง(มันน้อย)+ข้าวเหนียว / ซาลาเปาหมูสับ 7-11', l: 'ข้าวราดกะเพราไก่+ไข่ดาว / ผัดไท', s: 'ขนมปังโฮลวีต / เครื่องดื่มเกลือแร่', d: 'ข้าวสวย + ต้มยำปลา / ยำวุ้นเส้น' };
@@ -208,24 +226,21 @@
                 cfg = { id:'long', name:'Long Run (วัดใจ)', desc:`วิ่งยาว ${currentWeekData.long} ตามโปรแกรม`, pace:`${targetPace}`, hr:targetHr, meals:dynamicMeals, ex:[`🏃‍♂️ วิ่ง ${currentWeekData.long}`,'จิบน้ำทุก 2 กม.','ยืดเหยียดชุดใหญ่หลังวิ่ง'], advice: `เป้าหมายสัปดาห์นี้คือ ${currentWeekData.long} (${currentWeekData.lZone}) ไม่ต้องสนความเร็ว เน้นเวลาบนเท้าให้ครบครับ` };
                 cfg.detailedWorkout = { warmup: ['เดินเร็ว 5 นาที', 'กายบริหารแบบขยับ (Dynamic)'], main: `วิ่ง ${currentWeekData.long} คุมความเหนื่อยระดับ ${currentWeekData.lZone}`, cooldown: ['เดินคลายกรด 10 นาที', 'ยืดเหยียดค้างท่า (Static)'] };
             } else if(dayType === 'speed') {
-                // คำนวณ Pace จากข้อมูลที่สกัดมา
                 let sPace = pz.in;
                 if(currentWeekData.sZone === '70%') sPace = getPaceRange(70);
                 else if(currentWeekData.sZone === '80%') sPace = getPaceRange(80);
                 else if(currentWeekData.sZone === '60%') sPace = getPaceRange(60);
-                else if(currentWeekData.sZone === 'Pace10K') sPace = getPaceRange(90); // ประเมิน Pace 10k อยู่ที่ 90% VCR
+                else if(currentWeekData.sZone === 'Pace10K') sPace = getPaceRange(90);
                 
                 cfg = { id:'speed', name:'Quality Work / ลงคอร์ท', desc:currentWeekData.speed, pace:`${sPace}`, hr:getHrZone(0.8,0.9, prof.age, prof.rhr), meals: dynamicMeals, ex:[`⚡ ${currentWeekData.speed.split(' ')[0]}`,'วอร์มอัพให้ถึงก่อนวิ่งเร็ว','Russian Twist 3 เซต'], advice: 'ตารางวันนี้ช่วยขยับเพดานความฟิต (VCR) ให้สูงขึ้น วิ่งเสร็จต้องคูลดาวน์ให้ดีครับ' };
                 cfg.detailedWorkout = { warmup: ['จ๊อกกิ้งเบาๆ 15 นาที', 'ทำ Drills ยกเข่าเตะก้น'], main: `${currentWeekData.speed} (เป้าหมาย: ${sPace})`, cooldown: ['จ๊อกกิ้งเบาๆ คลายกล้ามเนื้อ 15 นาที'] };
             } else if(dayType === 'easy') {
-                // วันพุธ หรือ วันอาทิตย์ มักจะเป็นหญ้า หรือ ว่ายน้ำ
-                const isSwimDay = dayIndex === 0; // วันอาทิตย์ให้เป็นว่ายน้ำ
+                const isSwimDay = dayIndex === 0; 
                 const easyTask = isSwimDay ? currentWeekData.easy : currentWeekData.drill;
-                cfg = { id:'easy', name:'Active Recovery', desc:easyTask, pace:pz.ez, hr:getHrZone(0.6,0.7, prof.age, prof.rhr), meals: dynamicMeals, ex:[`🏃‍♂️ ${easyTask.substring(0,20)}...`, 'ทำ Drills พื้นฐาน', 'Squats 3 เซต (หรือ Bodyweight)'], advice: 'วันวิ่งสบายคือการนวดกล้ามเนื้อด้วยการวิ่ง ท่าวิ่งต้องผ่อนคลายที่สุด ไม่ก้มหน้าครับ' };
+                cfg = { id:'easy', name: needRecovery ? 'Recovery Run (ชดเชยการป่วย)' : 'Active Recovery', desc:easyTask, pace:pz.ez, hr:getHrZone(0.6,0.7, prof.age, prof.rhr), meals: dynamicMeals, ex:[`🏃‍♂️ ${easyTask.substring(0,20)}...`, 'ทำ Drills พื้นฐาน', 'Squats 3 เซต (หรือ Bodyweight)'], advice: needRecovery ? 'วันนี้ให้วิ่งเบาๆ ประคองร่างกายหลังจากพักป่วย/พักซ้อมมานะครับ ห้ามเร่งเด็ดขาด' : 'วันวิ่งสบายคือการนวดกล้ามเนื้อด้วยการวิ่ง ท่าวิ่งต้องผ่อนคลายที่สุด ไม่ก้มหน้าครับ' };
                 cfg.detailedWorkout = { warmup: ['หมุนข้อต่อ 3 นาที'], main: `${easyTask}`, cooldown: ['เดินช้าลงเรื่อยๆ'] };
             }
 
-            // ระบบเซฟข้อต่อ (Injury Adaptation)
             if (prof.injury === 'knee') {
                 cfg.ex = cfg.ex.map(e => e.includes('Squats') ? 'Glute Bridges 3 เซต (เซฟเข่า)' : e);
                 if (!cfg.ex.some(e => e.includes('ITB')) && dayType !== 'rest') cfg.ex.push('ยืดกล้ามเนื้อ ITB (เซฟเข่าด้านนอก)');
@@ -365,7 +380,7 @@
                 <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-6">
                     <div className="w-full max-w-sm suunto-card p-10 text-center">
                         <h2 className="text-zinc-400 font-black tracking-[0.3em] text-sm uppercase mb-3">PERFORMANCE METRICS</h2>
-                        <h1 className="text-6xl font-black text-white tracking-tighter mb-10 uppercase italic">PRO <span className="suunto-accent">80</span></h1>
+                        <h1 className="text-6xl font-black text-white tracking-tighter mb-10 uppercase italic">ULTIMATE <span className="suunto-accent">PACE</span></h1>
                         <input type="text" value={name} onChange={e=>setName(e.target.value.toUpperCase())} placeholder="RUNNER ID" className="w-full bg-[#18181b] border border-zinc-700 rounded-xl p-5 text-center font-bold text-white focus:border-[#bef264] outline-none mb-8 uppercase text-xl tracking-widest" />
                         <button onClick={()=>name.trim() && onLogin(name.trim())} className="w-full suunto-bg-accent py-5 rounded-xl uppercase tracking-widest text-base font-black active:scale-95 transition-all">SYNC DEVICE</button>
                     </div>
@@ -386,7 +401,6 @@
             const [injury, setInjury] = useState(initialProf.injury || 'none');
             const [lifestyle, setLifestyle] = useState(initialProf.lifestyle || 'active');
             
-            // ค่าเริ่มต้น Race Date (รูปแบบ YYYY-MM-DD)
             const [raceDateStr, setRaceDateStr] = useState(initialProf.raceDate || '2026-11-15');
             
             const [avail, setAvail] = useState(initialProf.schedule ? {0: initialProf.schedule[0]!=='rest', 1: initialProf.schedule[1]!=='rest', 2: initialProf.schedule[2]!=='rest', 3: initialProf.schedule[3]!=='rest', 4: initialProf.schedule[4]!=='rest', 5: initialProf.schedule[5]!=='rest', 6: initialProf.schedule[6]!=='rest'} : {0:true, 1:false, 2:true, 3:true, 4:false, 5:true, 6:false});
@@ -483,14 +497,12 @@
             );
         };
 
-        // 🛠️ อัปเดต fetchWithRetry ให้ดึง Error จาก Google มาโชว์ชัดๆ
         const fetchWithRetry = async (url, options, retries = 5) => {
             const delays = [1000, 2000, 4000, 8000, 16000];
             for (let i = 0; i < retries; i++) {
                 try {
                     const response = await fetch(url, options);
                     if (!response.ok) {
-                        // ดึงข้อความ Error จริงๆ จาก Google ทะลุออกมาเลย
                         const errData = await response.json().catch(() => ({}));
                         const errMsg = errData?.error?.message || `HTTP error! status: ${response.status}`;
                         throw new Error(errMsg);
@@ -503,11 +515,10 @@
             }
         };
 
-        const TabTracker = ({ score, daily, updateDaily, cfg, inDist, setInDist, inPace, setInPace, inHr, setInHr, inAct, setInAct, saveRun, targetWater }) => {
+        const TabTracker = ({ score, daily, updateDaily, cfg, inDist, setInDist, inPace, setInPace, inHr, setInHr, inCadence, setInCadence, inAct, setInAct, saveRun, targetWater, isHotWeather, setIsHotWeather }) => {
             const [isScanning, setIsScanning] = useState(false);
             const [scanError, setScanError] = useState('');
 
-            // ฟังก์ชัน AI สแกนภาพ (ระบบ Auto-Discover และซ่อนรหัสแบบนินจา)
             const handleScanImage = async (e) => {
                 const file = e.target.files[0];
                 if(!file) return;
@@ -515,8 +526,6 @@
                 setIsScanning(true);
                 setScanError('กำลังเตรียมระบบ AI Vision...');
 
-                // 🥷 วิธีซ่อน API Key แบบนินจา (หลบ GitHub สแกนเนอร์ โดยการหั่นรหัสเป็นท่อนๆ)
-                // เพื่อนๆ ที่ใช้แอปจะไม่ต้องกรอกรหัสเองอีกต่อไป โค้ดจะต่อรหัสให้อัตโนมัติ!
                 const p1 = "AQ.Ab8RN6Jj";
                 const p2 = "-wpm6y7RCka";
                 const p3 = "hetHf7nVPq2w";
@@ -530,7 +539,6 @@
                     try {
                         const base64Data = reader.result.split(',')[1];
                         
-                        // 🛠️ ระบบ Auto-Discover: ยิงไปถาม Google ว่า Key นี้ใช้ Model ไหนได้บ้าง
                         let targetModel = '';
                         try {
                             const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${secretKey}`);
@@ -539,9 +547,7 @@
                             if (listData.error) throw new Error(listData.error.message);
                             
                             if (listData.models) {
-                                // กรองเอารุ่นที่ใช้เจนข้อความ/รูปภาพได้
                                 const valid = listData.models.filter(m => m.supportedGenerationMethods?.includes('generateContent'));
-                                // เลือกรุ่นที่ดีที่สุดตามลำดับ
                                 const best = valid.find(m => m.name.includes('gemini-1.5-flash')) || 
                                              valid.find(m => m.name.includes('gemini-2.5-flash')) ||
                                              valid.find(m => m.name.includes('gemini-1.5-pro')) || 
@@ -568,7 +574,7 @@
                             contents: [{
                                 role: "user",
                                 parts: [
-                                    { text: "Extract workout data from this fitness app screenshot (e.g., Zepp, Garmin, Strava). The UI is likely in Thai. Map Thai words correctly (e.g., 'ระยะทาง' = distance, 'ฝีเท้าเฉลี่ย' = pace, 'อัตราการเต้นหัวใจ' = hr). Return ONLY a valid JSON object without markdown. Keys needed: 'distance' (number, MUST be in kilometers. If image shows meters like 1550 ม., convert to 1.55), 'pace' (string, average pace MM:SS), 'hr' (number, average heart rate bpm), 'type' (string: strictly guess from 'Run', 'Trail', 'Swim', 'Bike', or 'Other' based on context like การวิ่งเทรล, ว่ายน้ำ). If unable to find a value, leave it empty." },
+                                    { text: "Extract workout data from this fitness app screenshot (e.g., Zepp, Garmin, Strava). The UI is likely in Thai. Map Thai words correctly (e.g., 'ระยะทาง' = distance, 'ฝีเท้าเฉลี่ย' = pace, 'อัตราการเต้นหัวใจ' = hr, 'รอบขา' or 'ก้าว/นาที' or 'spm' = cadence). Return ONLY a valid JSON object without markdown. Keys needed: 'distance' (number, MUST be in kilometers. If image shows meters like 1550 ม., convert to 1.55), 'pace' (string, average pace MM:SS), 'hr' (number, average heart rate bpm), 'cadence' (number, average steps per minute or cadence. Usually between 140-200. E.g., if it says 165 spm, return 165), 'type' (string: strictly guess from 'Run', 'Trail', 'Swim', 'Bike', or 'Other' based on context like การวิ่งเทรล, ว่ายน้ำ). If unable to find a value, leave it empty." },
                                     { inlineData: { mimeType: file.type, data: base64Data } }
                                 ]
                             }],
@@ -580,6 +586,7 @@
                                         distance: { type: "NUMBER" },
                                         pace: { type: "STRING" },
                                         hr: { type: "NUMBER" },
+                                        cadence: { type: "NUMBER" },
                                         type: { type: "STRING" }
                                     }
                                 }
@@ -599,6 +606,7 @@
                             if(data.distance) setInDist(data.distance.toString());
                             if(data.pace) setInPace(data.pace.toString());
                             if(data.hr) setInHr(data.hr.toString());
+                            if(data.cadence) setInCadence(data.cadence.toString());
                             if(data.type) setInAct(data.type.toString());
                             setScanError(''); 
                         } else {
@@ -639,7 +647,12 @@
                     </section>
                     
                     <section className="suunto-card p-6">
-                        <h3 className="font-black text-base uppercase suunto-accent mb-3 tracking-widest">🏃‍♂️ {cfg.name}</h3>
+                        <div className="flex justify-between items-center mb-3">
+                            <h3 className="font-black text-base uppercase suunto-accent tracking-widest flex-1">🏃‍♂️ {cfg.name}</h3>
+                            <button onClick={() => setIsHotWeather(!isHotWeather)} className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all flex items-center gap-1.5 border ${isHotWeather ? 'bg-orange-500/20 text-orange-400 border-orange-500/50 shadow-[0_0_10px_rgba(249,115,22,0.2)]' : 'bg-[#18181b] text-zinc-500 border-zinc-700 hover:text-zinc-300'}`}>
+                                <span>☀️</span> {isHotWeather ? 'อากาศร้อน (ปรับเพซลง 15 วิ)' : 'สู้แดด (ปรับเพซลง)'}
+                            </button>
+                        </div>
                         <p className="text-base text-zinc-300 mb-6 leading-relaxed font-medium">{cfg.desc}</p>
                         <div className="space-y-4 mb-8">
                             {cfg.ex.map((ex, i) => (
@@ -654,7 +667,6 @@
                             <div className="bg-[#18181b] p-6 rounded-xl border border-zinc-700">
                                 <p className="text-xs font-black text-zinc-400 uppercase tracking-widest mb-4">ACTIVITY LOGGER (MANUAL & AI SCAN)</p>
                                 
-                                {/* ส่วนเลือกกีฬา & ปุ่มสแกน AI */}
                                 <div className="flex gap-2 mb-4">
                                     <select value={inAct} onChange={e=>setInAct(e.target.value)} className="bg-black p-4 rounded-xl border border-zinc-700 text-center font-bold text-xs text-white outline-none focus:border-[#bef264] flex-1">
                                         <option value="Run">🏃‍♂️ Run</option>
@@ -669,10 +681,11 @@
                                 </div>
                                 {scanError && <p className="text-red-400 text-xs font-bold text-center mb-4 bg-red-500/10 p-2 rounded-lg border border-red-500/20">{scanError}</p>}
 
-                                <div className="grid grid-cols-3 gap-3 mb-6">
-                                    <input type="number" value={inDist} onChange={e=>setInDist(e.target.value)} className="bg-black p-4 rounded-xl border border-zinc-700 text-center font-bold text-lg text-white outline-none focus:border-[#bef264]" placeholder="KM"/>
-                                    <input type="text" value={inPace} onChange={e=>setInPace(e.target.value)} className="bg-black p-4 rounded-xl border border-zinc-700 text-center font-bold text-lg text-white outline-none focus:border-[#bef264]" placeholder="PACE"/>
-                                    <input type="number" value={inHr} onChange={e=>setInHr(e.target.value)} className="bg-black p-4 rounded-xl border border-zinc-700 text-center font-bold text-lg text-white outline-none focus:border-[#bef264]" placeholder="HR"/>
+                                <div className="grid grid-cols-4 gap-2 mb-6">
+                                    <input type="number" value={inDist} onChange={e=>setInDist(e.target.value)} className="bg-black p-3 rounded-xl border border-zinc-700 text-center font-bold text-sm md:text-lg text-white outline-none focus:border-[#bef264]" placeholder="KM"/>
+                                    <input type="text" value={inPace} onChange={e=>setInPace(e.target.value)} className="bg-black p-3 rounded-xl border border-zinc-700 text-center font-bold text-sm md:text-lg text-white outline-none focus:border-[#bef264]" placeholder="PACE"/>
+                                    <input type="number" value={inHr} onChange={e=>setInHr(e.target.value)} className="bg-black p-3 rounded-xl border border-zinc-700 text-center font-bold text-sm md:text-lg text-white outline-none focus:border-[#bef264]" placeholder="HR"/>
+                                    <input type="number" value={inCadence} onChange={e=>setInCadence(e.target.value)} className="bg-black p-3 rounded-xl border border-zinc-700 text-center font-bold text-sm md:text-lg text-white outline-none focus:border-[#bef264]" placeholder="SPM"/>
                                 </div>
                                 <button onClick={saveRun} disabled={!inDist || !inPace} className="w-full suunto-bg-accent py-5 rounded-xl uppercase tracking-widest text-sm font-black disabled:opacity-30 disabled:grayscale transition-all active:scale-95 shadow-[0_0_15px_rgba(190,242,100,0.1)]">SAVE ACTIVITY</button>
                             </div>
@@ -684,11 +697,12 @@
                                     <p className="suunto-accent font-black text-sm uppercase tracking-widest">ACTIVITY LOGGED</p>
                                     <button onClick={()=>updateDaily('rLog', false)} className="text-xs text-zinc-400 uppercase font-bold hover:text-white underline">EDIT</button>
                                 </div>
-                                <div className="bg-black p-4 rounded-xl border border-zinc-800 mb-6 grid grid-cols-4 text-center gap-2">
-                                    <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">TYPE</p><p className="text-white font-black text-lg italic">{daily.rType === 'Run' ? '🏃‍♂️' : daily.rType === 'Trail' ? '⛰️' : daily.rType === 'Swim' ? '🏊‍♂️' : daily.rType === 'Bike' ? '🚴‍♂️' : '🏋️‍♂️'}</p></div>
-                                    <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">DIST</p><p className="text-white font-black text-lg italic">{daily.rDist} <span className="text-[10px] font-normal text-zinc-500">km</span></p></div>
-                                    <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">PACE</p><p className="text-white font-black text-lg italic">{daily.rPace}</p></div>
-                                    <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">HR</p><p className="text-white font-black text-lg italic">{daily.rHr}</p></div>
+                                <div className="bg-black p-4 rounded-xl border border-zinc-800 mb-6 grid grid-cols-5 text-center gap-1">
+                                    <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">TYPE</p><p className="text-white font-black text-sm md:text-lg italic">{daily.rType === 'Run' ? '🏃‍♂️' : daily.rType === 'Trail' ? '⛰️' : daily.rType === 'Swim' ? '🏊‍♂️' : daily.rType === 'Bike' ? '🚴‍♂️' : '🏋️‍♂️'}</p></div>
+                                    <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">DIST</p><p className="text-white font-black text-sm md:text-lg italic">{daily.rDist} <span className="text-[9px] font-normal text-zinc-500">km</span></p></div>
+                                    <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">PACE</p><p className="text-white font-black text-sm md:text-lg italic">{daily.rPace}</p></div>
+                                    <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">HR</p><p className="text-white font-black text-sm md:text-lg italic">{daily.rHr || '-'}</p></div>
+                                    <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">SPM</p><p className="text-white font-black text-sm md:text-lg italic">{daily.rCadence || '-'}</p></div>
                                 </div>
                                 <h4 className="text-xs font-black text-orange-400 uppercase tracking-widest mb-3">🤖 AI COACH FEEDBACK</h4>
                                 <p className="text-base font-bold text-zinc-200 leading-relaxed mb-5">{daily.aiFeedback}</p>
@@ -707,11 +721,15 @@
             );
         };
 
-        const TabPlan = ({ cfg, prof, weekIdx }) => {
+        // 🛠️ รับ updateDaily มาเพื่อให้ปุ่มกดป่วย/พัก ทำงานได้
+        const TabPlan = ({ cfg, prof, weekIdx, isHotWeather, updateDaily, todayStr }) => {
             const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
             const scheduleMap = { 'rest': 'Rest', 'easy': 'Easy', 'speed': 'Speed Work', 'long': 'Long Run' };
             const colorMap = { 'rest': 'text-zinc-500', 'easy': 'text-lime-400', 'speed': 'text-orange-400', 'long': 'text-red-400' };
             const todayIdx = new Date().getDay();
+            
+            // เช็คสถานะการป่วยของวันนี้จาก records
+            const isSickToday = prof.records?.[todayStr]?.isSick || false;
 
             return (
                 <div className="space-y-6 pb-12">
@@ -721,7 +739,25 @@
                     </section>
 
                     <section className="suunto-card p-8">
-                        <h2 className="font-black text-sm text-zinc-400 uppercase tracking-widest mb-6">TODAY'S PROTOCOL</h2>
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="font-black text-sm text-zinc-400 uppercase tracking-widest">TODAY'S PROTOCOL</h2>
+                            <div className="flex gap-2">
+                                {isHotWeather && <span className="bg-orange-500/20 text-orange-400 border border-orange-500/50 px-2 py-1 rounded text-[10px] font-black uppercase">☀️ สู้แดด</span>}
+                                {/* 🛠️ ปุ่มกด ป่วย/พลาดซ้อม */}
+                                <button 
+                                    onClick={() => {
+                                        const newSickStatus = !isSickToday;
+                                        updateDaily('isSick', newSickStatus);
+                                        if (newSickStatus) {
+                                            alert("บันทึกสถานะพักซ้อมแล้ว โค้ช AI จะปรับตารางวันพรุ่งนี้ให้เบาลงเพื่อฟื้นฟูร่างกายครับ 🤒");
+                                        }
+                                    }} 
+                                    className={`px-2 py-1 rounded text-[10px] font-black uppercase border transition-all ${isSickToday ? 'bg-red-500/20 text-red-400 border-red-500/50' : 'bg-[#18181b] text-zinc-500 border-zinc-700 hover:text-white'}`}
+                                >
+                                    {isSickToday ? '🤒 พักซ้อมแล้ว' : '🤒 ป่วย/พลาดซ้อม'}
+                                </button>
+                            </div>
+                        </div>
                         <div className="mb-6 pb-6 border-b border-zinc-800">
                             <p className="text-3xl font-black text-white uppercase italic">{cfg.name}</p>
                             <div className="flex gap-3 mt-4">
@@ -766,10 +802,18 @@
                                 const type = prof?.schedule?.[idx] || 'rest';
                                 const isToday = todayIdx === idx;
                                 
-                                // Simulate ตารางล่วงหน้าของแต่ละวัน
                                 const dummyDate = new Date();
                                 dummyDate.setDate(dummyDate.getDate() + (idx - todayIdx));
-                                const dayCfg = getDayConfig(dummyDate, weekIdx, false, prof);
+                                
+                                // เช็คว่าเมื่อวานป่วยไหม เพื่อคำนวณการปรับตาราง (needRecovery)
+                                let needRecovery = false;
+                                if (idx > 0) {
+                                    let prevDate = new Date();
+                                    prevDate.setDate(prevDate.getDate() + (idx - 1 - todayIdx));
+                                    needRecovery = prof.records?.[prevDate.toDateString()]?.isSick || false;
+                                }
+
+                                const dayCfg = getDayConfig(dummyDate, weekIdx, false, prof, false, needRecovery);
 
                                 return (
                                     <div key={idx} className={`p-5 rounded-xl border flex flex-col gap-2 transition-colors ${isToday ? 'bg-zinc-800 border-zinc-500 shadow-md' : 'bg-[#18181b] border-zinc-800'}`}>
@@ -779,7 +823,10 @@
                                         </div>
                                         {type !== 'rest' && (
                                             <div className="mt-2 pt-3 border-t border-zinc-700/50">
-                                                <p className={`text-xs font-bold leading-relaxed mb-3 ${isToday ? 'text-white' : 'text-zinc-400'}`}>{dayCfg.detailedWorkout.main}</p>
+                                                <p className={`text-xs font-bold leading-relaxed mb-3 ${isToday ? 'text-white' : 'text-zinc-400'}`}>
+                                                    {needRecovery && <span className="text-orange-400 font-black mr-1">[ปรับลด]</span>}
+                                                    {dayCfg.detailedWorkout.main}
+                                                </p>
                                                 <div className="flex gap-2">
                                                     <span className="text-[10px] font-black text-cyan-400 bg-cyan-400/10 px-2.5 py-1 rounded">PACE: {dayCfg.pace}</span>
                                                     <span className="text-[10px] font-black text-red-400 bg-red-400/10 px-2.5 py-1 rounded">HR: {dayCfg.hr}</span>
@@ -828,7 +875,9 @@
             </section>
         );
 
-        const TabStats = ({ prof, vo2Value, tDist, pTime, pSource, fastest5kSecs, fastest10kSecs, longestRun, achievements }) => {
+        const TabStats = ({ prof, vo2Value, tDist, pTime, pSource, fastest5kSecs, fastest10kSecs, longestRun, achievements, currentTss }) => {
+            const [showStrategy, setShowStrategy] = useState(false);
+            
             let vo2Color = "#ef4444", vo2Label = "POOR";
             if (vo2Value >= 35) { vo2Color = "#f97316"; vo2Label = "FAIR"; }
             if (vo2Value >= 40) { vo2Color = "#a3e635"; vo2Label = "GOOD"; }
@@ -838,7 +887,12 @@
             const mapGoal = 600;
             const mapProgress = Math.min((tDist / mapGoal) * 100, 100);
 
-            // กราฟ 7 วัน
+            // 🛠️ คำนวณสีและระดับของ TSS (ความล้า)
+            let tssColor = "#a3e635", tssLabel = "FRESH (สดชื่น)";
+            if (currentTss > 300) { tssColor = "#f97316"; tssLabel = "FATIGUED (เริ่มล้า)"; }
+            if (currentTss > 500) { tssColor = "#ef4444"; tssLabel = "OVERTRAINED (พักด่วน!)"; }
+            const tssOffset = 126 - (Math.min(100, (currentTss / 600) * 100) / 100) * 126;
+
             const chartData = useMemo(() => {
                 const days = [];
                 for (let i = 6; i >= 0; i--) {
@@ -852,7 +906,6 @@
 
             const maxChartDist = Math.max(...chartData.map(d => d.dist), 5); 
 
-            // ฟังก์ชันคำนวณเพซตามเปอร์เซ็นต์ VCR สำหรับหน้าโซนการซ้อม (แบบช่วง)
             const getPaceFromVcr = (pct) => {
                 const spd = (prof.vcr || 4500) / 1800 * (pct / 100);
                 if (spd <= 0) return "0:00";
@@ -867,25 +920,85 @@
                 return `${fmt(fastSecs)} - ${fmt(slowSecs)}`;
             };
 
+            let predSecs = 0;
+            if (fastest10kSecs !== Infinity) predSecs = fastest10kSecs * 10 * Math.pow(prof.targetDist/10, 1.06);
+            else if (fastest5kSecs !== Infinity) predSecs = fastest5kSecs * 5 * Math.pow(prof.targetDist/5, 1.06);
+            else {
+                const vcrKm = (prof.vcr || 4500) / 1000;
+                predSecs = 1800 * Math.pow(prof.targetDist / vcrKm, 1.06);
+            }
+            const avgPaceSecs = predSecs / prof.targetDist;
+            const formatP = (s) => `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;
+
+            let strategy = [];
+            if (prof.targetDist == 42.195) {
+                strategy = [
+                    { phase: '1', label: 'Warm Up', km: 'KM 1 - 5', pace: `${formatP(avgPaceSecs + 15)} - ${formatP(avgPaceSecs + 25)}`, desc: 'วิ่งสบายๆ คุมหัวใจไม่ให้พุ่ง อุ่นเครื่องกล้ามเนื้อ' },
+                    { phase: '2', label: 'Settle In', km: 'KM 6 - 30', pace: `${formatP(avgPaceSecs - 5)} - ${formatP(avgPaceSecs + 5)}`, desc: 'ล็อกความเร็วเป้าหมาย ดื่มน้ำทุกจุด กินเจลทุก 45 นาที' },
+                    { phase: '3', label: 'The Wall', km: 'KM 31 - 40', pace: `${formatP(avgPaceSecs)} - ${formatP(avgPaceSecs + 15)}`, desc: 'รักษารอบขา ประคองสติ ร่างกายจะล้าถึงขีดสุด' },
+                    { phase: '4', label: 'Finish Strong', km: 'KM 41 - 42.195', pace: `ใส่ให้หมด!`, desc: 'รวบรวมพลังเฮือกสุดท้าย พับเข่าดึงเท้าเข้าเส้นชัย!' }
+                ];
+            } else if (prof.targetDist == 21.1) {
+                strategy = [
+                    { phase: '1', label: 'Warm Up', km: 'KM 1 - 3', pace: `${formatP(avgPaceSecs + 10)} - ${formatP(avgPaceSecs + 20)}`, desc: 'อย่าเพิ่งรีบตามคนอื่น ให้ร่างกายและข้อต่อปรับตัว' },
+                    { phase: '2', label: 'Cruising', km: 'KM 4 - 15', pace: `${formatP(avgPaceSecs - 5)} - ${formatP(avgPaceSecs + 5)}`, desc: 'ล็อกเพซเป้าหมาย เติมเจลที่ KM 10' },
+                    { phase: '3', label: 'Push', km: 'KM 16 - 20', pace: `${formatP(avgPaceSecs - 10)} - ${formatP(avgPaceSecs)}`, desc: 'เริ่มเร่งความเร็วขึ้น ถ้าร่างกายและหัวใจยังไหว' },
+                    { phase: '4', label: 'Sprint', km: 'KM 21 - 21.1', pace: `ใส่ให้หมด!`, desc: 'สปรินต์เข้าเส้นชัยด้วยความเร็วสูงสุด!' }
+                ];
+            } else if (prof.targetDist == 10) {
+                strategy = [
+                    { phase: '1', label: 'Warm Up', km: 'KM 1 - 2', pace: `${formatP(avgPaceSecs + 10)} - ${formatP(avgPaceSecs + 15)}`, desc: 'เครื่องยังไม่ร้อน คุมเพซไว้ก่อนอย่าออกตัวแรง' },
+                    { phase: '2', label: 'Race Pace', km: 'KM 3 - 8', pace: `${formatP(avgPaceSecs - 5)} - ${formatP(avgPaceSecs + 5)}`, desc: 'เกาะเพซเป้าหมาย รักษาจังหวะหายใจให้สม่ำเสมอ' },
+                    { phase: '3', label: 'Sprint', km: 'KM 9 - 10', pace: `${formatP(avgPaceSecs - 15)} - ${formatP(avgPaceSecs - 5)}`, desc: 'เร่งเต็มกำลังที่มี!' }
+                ];
+            } else {
+                strategy = [
+                    { phase: '1', label: 'Start', km: 'KM 1', pace: `${formatP(avgPaceSecs + 5)} - ${formatP(avgPaceSecs + 10)}`, desc: 'คุมสติ อย่ากระชากออกตัวแรงเกินไป' },
+                    { phase: '2', label: 'Push', km: 'KM 2 - 4', pace: `${formatP(avgPaceSecs - 5)} - ${formatP(avgPaceSecs + 5)}`, desc: 'รักษาเพซเป้าหมาย ทนความล้า' },
+                    { phase: '3', label: 'Sprint', km: 'KM 5', pace: `ใส่ให้หมด!`, desc: 'สปรินต์เข้าเส้นชัย!' }
+                ];
+            }
+
             return (
                 <div className="space-y-6 pb-14">
                     <section className="suunto-card p-10 text-center border-t-2 border-t-zinc-700">
-                        <h2 className="font-black text-sm text-zinc-400 uppercase tracking-widest mb-8">PEAK VO2 MAX</h2>
-                        <div className="flex justify-center mb-8">
-                            <div className="relative w-56 h-28 overflow-hidden">
-                                <svg className="w-full h-full" viewBox="0 0 100 50">
-                                    <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#27272a" strokeWidth="8" strokeLinecap="round" />
-                                    <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke={vo2Color} strokeWidth="8" strokeLinecap="round" className="gauge-arc" style={{strokeDashoffset: offset}} />
-                                </svg>
-                                <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center">
-                                    <span className="text-6xl font-black tracking-tighter italic" style={{color: vo2Color}}>{vo2Value}</span>
+                        <div className="grid grid-cols-2 gap-4 mb-8">
+                            {/* เกจ VO2 MAX เดิม */}
+                            <div>
+                                <h2 className="font-black text-[10px] md:text-xs text-zinc-400 uppercase tracking-widest mb-4">PEAK VO2 MAX</h2>
+                                <div className="flex justify-center mb-4">
+                                    <div className="relative w-32 h-16 md:w-40 md:h-20 overflow-hidden">
+                                        <svg className="w-full h-full" viewBox="0 0 100 50">
+                                            <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#27272a" strokeWidth="8" strokeLinecap="round" />
+                                            <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke={vo2Color} strokeWidth="8" strokeLinecap="round" className="gauge-arc" style={{strokeDashoffset: offset}} />
+                                        </svg>
+                                        <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center">
+                                            <span className="text-3xl md:text-4xl font-black tracking-tighter italic" style={{color: vo2Color}}>{vo2Value}</span>
+                                        </div>
+                                    </div>
                                 </div>
+                                <span className="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded bg-black border border-zinc-800" style={{color: vo2Color}}>{vo2Label}</span>
+                            </div>
+                            
+                            {/* 🛠️ เกจ TSS 7 วันย้อนหลัง */}
+                            <div>
+                                <h2 className="font-black text-[10px] md:text-xs text-zinc-400 uppercase tracking-widest mb-4">7-DAY TSS LOAD</h2>
+                                <div className="flex justify-center mb-4">
+                                    <div className="relative w-32 h-16 md:w-40 md:h-20 overflow-hidden">
+                                        <svg className="w-full h-full" viewBox="0 0 100 50">
+                                            <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke="#27272a" strokeWidth="8" strokeLinecap="round" />
+                                            <path d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke={tssColor} strokeWidth="8" strokeLinecap="round" className="gauge-arc" style={{strokeDashoffset: tssOffset}} />
+                                        </svg>
+                                        <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center">
+                                            <span className="text-3xl md:text-4xl font-black tracking-tighter italic" style={{color: tssColor}}>{currentTss}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <span className="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded bg-black border border-zinc-800" style={{color: tssColor}}>{tssLabel}</span>
                             </div>
                         </div>
-                        <span className="text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg bg-black border border-zinc-800" style={{color: vo2Color}}>{vo2Label}</span>
                     </section>
 
-                    {/* 🎯 PERSONALIZED ZONES SECTION */}
                     <section className="suunto-card p-8">
                         <h2 className="font-black text-sm text-white uppercase tracking-widest mb-6 flex items-center gap-2"><span>🎯</span> TRAINING ZONES</h2>
                         <div className="space-y-3">
@@ -954,10 +1067,40 @@
                     </section>
 
                     <section className="suunto-card p-8 border-l-4 border-l-lime-500">
-                        <h2 className="font-black text-xs text-zinc-400 uppercase tracking-widest mb-2">AI PREDICTOR</h2>
+                        <div className="flex justify-between items-start mb-2">
+                            <h2 className="font-black text-xs text-zinc-400 uppercase tracking-widest">AI PREDICTOR</h2>
+                            <button onClick={() => setShowStrategy(!showStrategy)} className="text-[10px] font-black uppercase tracking-widest bg-lime-500/20 text-lime-400 border border-lime-500/50 px-3 py-1.5 rounded-lg active:scale-95 transition-all">
+                                {showStrategy ? 'ปิดกลยุทธ์' : '🏁 กลยุทธ์วันแข่ง'}
+                            </button>
+                        </div>
                         <p className="text-sm text-lime-400 font-black uppercase tracking-widest mb-4">EST. {prof.targetDist}K TIME</p>
                         <p className="text-6xl font-black text-white italic tracking-tighter mb-5">{pTime}</p>
                         <p className="text-xs text-zinc-500 font-bold uppercase tracking-widest">REF: {pSource}</p>
+                        
+                        {showStrategy && (
+                            <div className="mt-6 pt-6 border-t border-zinc-800 animate-in fade-in slide-in-from-top-4 duration-300">
+                                <h3 className="text-sm font-black text-white uppercase tracking-widest mb-4">🏁 RACE PACING STRATEGY</h3>
+                                <div className="space-y-3">
+                                    {strategy.map((s, i) => (
+                                        <div key={i} className="bg-[#18181b] p-4 rounded-xl border border-zinc-800 flex gap-4">
+                                            <div className="w-12 h-12 shrink-0 bg-lime-500/10 text-lime-400 rounded-lg flex items-center justify-center font-black text-xl italic">{s.phase}</div>
+                                            <div className="flex-1">
+                                                <div className="flex justify-between items-center mb-1">
+                                                    <p className="text-xs font-black text-zinc-400 uppercase tracking-widest">{s.km}</p>
+                                                    <p className="text-sm font-black text-lime-400 italic">{s.pace}</p>
+                                                </div>
+                                                <p className="text-sm font-bold text-white mb-1">{s.label}</p>
+                                                <p className="text-xs text-zinc-500 font-medium">{s.desc}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="mt-4 bg-blue-500/10 border border-blue-500/20 p-4 rounded-xl">
+                                    <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">💡 WATER & FUEL TIP</p>
+                                    <p className="text-xs font-bold text-zinc-300">แวะจิบน้ำทุก 2 กม. (อย่ารอให้หิว) และเติมเจลพลังงานทุกๆ 45 นาทีตลอดการแข่งขันครับ!</p>
+                                </div>
+                            </div>
+                        )}
                     </section>
                 </div>
             );
@@ -968,6 +1111,8 @@
             const [showSetup, setShowSetup] = useState(false);
             const [showToast, setShowToast] = useState(false);
             const [toastMessage, setToastMessage] = useState('');
+            const [isHotWeather, setIsHotWeather] = useState(false);
+
             const safeName = profileName.trim().toLowerCase();
             const localKey = `p80_v14_stable_${safeName}`;
             
@@ -978,21 +1123,20 @@
             });
 
             const todayStr = new Date().toDateString();
-            const [daily, setDaily] = useState(prof.records?.[todayStr] || { w:0, b:false, l:false, s:false, d:false, ex:[false,false,false,false], rLog:false, rDist:'', rPace:'', rHr:'', rType:'Run', aiFeedback: '', perfCondition: '', vcrUpgraded: false, newVcrVal: 0 });
+            const [daily, setDaily] = useState(prof.records?.[todayStr] || { w:0, b:false, l:false, s:false, d:false, ex:[false,false,false,false], rLog:false, rDist:'', rPace:'', rHr:'', rCadence:'', rType:'Run', aiFeedback: '', perfCondition: '', vcrUpgraded: false, newVcrVal: 0, isSick: false });
             
-            // เพิ่ม State สำหรับ Activity Type และ Scanner
             const [inAct, setInAct] = useState(daily.rType || 'Run');
             const [inDist, setInDist] = useState(daily.rDist || '');
             const [inPace, setInPace] = useState(daily.rPace || '');
             const [inHr, setInHr] = useState(daily.rHr || '');
+            const [inCadence, setInCadence] = useState(daily.rCadence || '');
             
             const [leaderboardData, setLeaderboardData] = useState([]);
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'profiles', safeName);
 
-            // คำนวณวัน Countdown ถอยหลัง
             const raceDateObj = new Date(prof.raceDate || '2026-11-15');
             const planStart = new Date(raceDateObj);
-            planStart.setDate(planStart.getDate() - 168); // ถอยหลัง 24 สัปดาห์
+            planStart.setDate(planStart.getDate() - 168);
             const diffDays = Math.ceil((new Date() - planStart)/(1000*3600*24));
             const weekIdx = Math.max(0, Math.min(23, Math.ceil(diffDays/7)-1));
             const progressPct = Math.max(0, Math.min(100, (diffDays / 168) * 100));
@@ -1045,11 +1189,24 @@
                     const equiv = (1800 / rSecs) * 1000;
                     if (equiv > currentVcr + 100) { currentVcr = Math.round(equiv); upgraded = true; }
                 }
-                const cfgToday = getDayConfig(new Date(), weekIdx, false, prof);
-                // ส่ง inAct (ประเภทกีฬา) เข้าไปให้ AI โค้ชวิเคราะห์ด้วย
-                const ai = generateFeedback(dNum, inPace, inHr, cfgToday.pace, inAct);
+                // 🛠️ เช็คสถานะการป่วยของเมื่อวาน
+                let prevDate = new Date();
+                prevDate.setDate(prevDate.getDate() - 1);
+                const wasSickYesterday = prof.records?.[prevDate.toDateString()]?.isSick || false;
+
+                const cfgToday = getDayConfig(new Date(), weekIdx, false, prof, isHotWeather, wasSickYesterday);
+                
+                const ai = generateFeedback(dNum, inPace, inHr, cfgToday.pace, inAct, inCadence);
                 const perf = calcCondition(inHr, inPace);
-                const nd = {...daily, rLog: true, rDist: inDist, rPace: inPace, rHr: inHr, rType: inAct, aiFeedback: ai, perfCondition: perf, vcrUpgraded: upgraded, newVcrVal: currentVcr};
+                
+                // 🛠️ คำนวณ TSS ของวันนี้: สมมติว่า (นาทีซ้อม * อัตราส่วนหัวใจ)
+                const hrNum = Number(inHr) || prof.rhr || 60;
+                const maxHr = 220 - (prof.age || 35);
+                const intensity = hrNum / maxHr;
+                const runMinutes = dNum * (rSecs / 60);
+                const todayTss = Math.round(runMinutes * intensity * 1.5); // สูตรจำลอง TSS เบื้องต้น
+
+                const nd = {...daily, rLog: true, rDist: inDist, rPace: inPace, rHr: inHr, rCadence: inCadence, rType: inAct, aiFeedback: ai, perfCondition: perf, vcrUpgraded: upgraded, newVcrVal: currentVcr, tss: todayTss};
                 
                 setDaily(nd);
                 const nProf = {...prof, vcr: currentVcr, records: {...prof.records, [todayStr]: nd}};
@@ -1065,46 +1222,37 @@
                 safeStorage.setItem(localKey, JSON.stringify({...prof, weight: w}));
             };
 
-            // ฟังก์ชันแชร์ลิ้งก์แอป
             const handleShare = async () => {
-                const shareData = {
-                    title: 'Project 80 Suunto',
-                    text: 'มาซ้อมวิ่งเตรียมลงแข่งมาราธอนกับโค้ช AI ใน Project 80 ด้วยกันเถอะ!',
-                    url: window.location.href
-                };
+                const shareData = { title: 'ULTIMATE PACE', text: 'มาซ้อมวิ่งกับโค้ช AI ใน ULTIMATE PACE ด้วยกัน!', url: window.location.href };
                 if (navigator.share) {
-                    try {
-                        await navigator.share(shareData);
-                    } catch (err) {
-                        console.error('Share failed', err);
-                    }
+                    try { await navigator.share(shareData); } catch (err) { console.error('Share failed', err); }
                 } else {
-                    // หากเข้าผ่านเบราว์เซอร์คอมพิวเตอร์ที่ไม่มีระบบแชร์ ให้ก๊อปปี้ลิ้งก์แทน
                     const textArea = document.createElement("textarea");
                     textArea.value = window.location.href;
                     document.body.appendChild(textArea);
                     textArea.select();
-                    try {
-                        document.execCommand('copy');
-                        setToastMessage('🔗 คัดลอกลิ้งก์สำเร็จ! นำไปวางส่งให้เพื่อนได้เลยครับ');
-                        setShowToast(true);
-                        setTimeout(() => setShowToast(false), 4000);
-                    } catch (err) {
-                        setToastMessage('❌ ไม่สามารถคัดลอกลิ้งก์ได้');
-                        setShowToast(true);
-                        setTimeout(() => setShowToast(false), 4000);
-                    }
+                    try { document.execCommand('copy'); setToastMessage('🔗 คัดลอกลิ้งก์สำเร็จ!'); setShowToast(true); setTimeout(() => setShowToast(false), 4000); } 
+                    catch (err) { setToastMessage('❌ ไม่สามารถคัดลอกลิ้งก์ได้'); setShowToast(true); setTimeout(() => setShowToast(false), 4000); }
                     document.body.removeChild(textArea);
                 }
             };
 
-            const cfg = getDayConfig(new Date(), weekIdx, daysLeft <= 0, prof);
+            // 🛠️ เช็คสถานะการป่วยของเมื่อวานเพื่อส่งไปให้หน้าหลัก
+            let prevDate = new Date();
+            prevDate.setDate(prevDate.getDate() - 1);
+            const wasSickYesterday = prof.records?.[prevDate.toDateString()]?.isSick || false;
+
+            const cfg = getDayConfig(new Date(), weekIdx, daysLeft <= 0, prof, isHotWeather, wasSickYesterday);
 
             let tDist = 0, tSecs = 0, f5k = Infinity, f10k = Infinity, longestRun = 0, maxStreakCount = 0, streakCount = 0, maxAquaCount = 0, aquaCount = 0;
+            // 🛠️ ตัวแปรเก็บผลรวม TSS 7 วันย้อนหลัง
+            let totalTss7Days = 0;
+            const last7DaysStrings = Array.from({length:7}, (_,i) => { let d = new Date(); d.setDate(d.getDate()-i); return d.toDateString(); });
+
             const sortedDates = Object.keys(prof.records || {}).sort((a,b)=>new Date(a)-new Date(b));
             sortedDates.forEach(dt => {
                 const r = prof.records[dt];
-                if(r.rLog && r.rDist && r.rPace && (r.rType === 'Run' || !r.rType)) { // คิดสถิติเฉพาะการวิ่งถนน
+                if(r.rLog && r.rDist && r.rPace && (r.rType === 'Run' || !r.rType)) {
                     const d = parseFloat(r.rDist), s = parsePace(r.rPace);
                     if(!isNaN(d) && isFinite(s)) {
                         tDist += d; tSecs += (s*d);
@@ -1113,20 +1261,24 @@
                     }
                     streakCount++;
                 } else if(r.rLog) {
-                    // ถ้าซ้อมอย่างอื่น ก็นับ streak ด้วย แต่ไม่เอาไปคิด Pace/Distance PB
                     streakCount++;
                 } else streakCount = 0;
                 
                 if(streakCount > maxStreakCount) maxStreakCount = streakCount;
                 if(r.w >= 8) aquaCount++; else aquaCount = 0;
                 if(aquaCount > maxAquaCount) maxAquaCount = aquaCount;
+
+                // รวม TSS 7 วัน
+                if (last7DaysStrings.includes(dt)) {
+                    totalTss7Days += (r.tss || 0);
+                }
             });
 
             const achievements = { halfMarathon: longestRun >= 21.1, streakMaster: maxStreakCount >= 7, aquaMan: maxAquaCount >= 3 };
             
             let bestMin = (prof.vcr || 4500) / 30;
-            if (f5k !== Infinity) bestMin = Math.max(bestMin, 5000 / (f5k / 60));
-            if (f10k !== Infinity) bestMin = Math.max(bestMin, 10000 / (f10k / 60));
+            if (f5k !== Infinity) bestMin = Math.max(bestMin, 1000 / (f5k / 60));
+            if (f10k !== Infinity) bestMin = Math.max(bestMin, 1000 / (f10k / 60));
             let vo2Value = parseFloat(((bestMin * 0.2) + 3.5).toFixed(1));
 
             let pTime = "NEED DATA", pSource = "Run 5K to unlock";
@@ -1147,7 +1299,6 @@
                     {showConfetti && <Confetti />}
                     {showSetup && <SetupModal initialProf={prof} onSave={(d)=>{ const finalD = {...prof, ...d, isSetupComplete: true}; setProf(finalD); setDoc(docRef, finalD); safeStorage.setItem(localKey, JSON.stringify(finalD)); setShowSetup(false);}} onCancel={()=> prof.initialWeight && setShowSetup(false)} />}
                     
-                    {/* แจ้งเตือนเมื่อคัดลอกลิ้งก์ */}
                     {showToast && (
                         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 bg-[#bef264] text-black px-6 py-3 rounded-full font-black text-xs md:text-sm uppercase tracking-widest shadow-[0_0_20px_rgba(190,242,100,0.4)] transition-all">
                             {toastMessage}
@@ -1157,7 +1308,7 @@
                     <header className="flex justify-between items-start mb-8 pt-4">
                         <div>
                             <p className="text-zinc-400 font-black text-xs tracking-[0.3em] uppercase mb-2">TARGET RACE DAY</p>
-                            <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic">PRO <span className="suunto-accent">80</span></h1>
+                            <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic">ULTIMATE <span className="suunto-accent">PACE</span></h1>
                             <p className="text-sm font-bold text-zinc-400 mt-3 tracking-widest uppercase">Runner: <span className="text-white">{profileName}</span></p>
                         </div>
                         <div className="flex gap-2">
@@ -1172,7 +1323,6 @@
                         </div>
                     </header>
 
-                    {/* Progress Bar วันแข่ง */}
                     <div className="mb-8">
                         <div className="flex justify-between text-xs font-black text-zinc-400 uppercase tracking-widest mb-2">
                             <span>Plan Started</span>
@@ -1216,10 +1366,12 @@
                     </nav>
 
                     <main className="animate-in fade-in duration-300">
-                        {activeTab === 'tracker' && <TabTracker score={score} daily={daily} updateDaily={updateDaily} cfg={cfg} inDist={inDist} setInDist={setInDist} inPace={inPace} setInPace={setInPace} inHr={inHr} setInHr={setInHr} inAct={inAct} setInAct={setInAct} saveRun={saveRun} targetWater={targetWater} />}
-                        {activeTab === 'plan' && <TabPlan cfg={cfg} prof={prof} weekIdx={weekIdx} />}
+                        {activeTab === 'tracker' && <TabTracker score={score} daily={daily} updateDaily={updateDaily} cfg={cfg} inDist={inDist} setInDist={setInDist} inPace={inPace} setInPace={setInPace} inHr={inHr} setInHr={setInHr} inCadence={inCadence} setInCadence={setInCadence} inAct={inAct} setInAct={setInAct} saveRun={saveRun} targetWater={targetWater} isHotWeather={isHotWeather} setIsHotWeather={setIsHotWeather} />}
+                        {/* 🛠️ สั่ง TabPlan ให้รับ updateDaily และ todayStr ไปใช้งานปุ่มป่วย */}
+                        {activeTab === 'plan' && <TabPlan cfg={cfg} prof={prof} weekIdx={weekIdx} isHotWeather={isHotWeather} updateDaily={updateDaily} todayStr={todayStr} />}
                         {activeTab === 'ranking' && <TabRanking leaderboardData={leaderboardData} />}
-                        {activeTab === 'stats' && <TabStats prof={prof} vo2Value={vo2Value} tDist={tDist} pTime={pTime} pSource={pSource} fastest5kSecs={f5k} fastest10kSecs={f10k} longestRun={longestRun} achievements={achievements} />}
+                        {/* 🛠️ สั่ง TabStats ให้แสดง currentTss */}
+                        {activeTab === 'stats' && <TabStats prof={prof} vo2Value={vo2Value} tDist={tDist} pTime={pTime} pSource={pSource} fastest5kSecs={f5k} fastest10kSecs={f10k} longestRun={longestRun} achievements={achievements} currentTss={totalTss7Days} />}
                     </main>
                 </div>
             );
