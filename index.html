@@ -135,44 +135,60 @@
             return "+0 (ปกติ ทรงตัว)";
         };
 
-        // --- ระบบ AI ผสานหลักสูตรครูดิน ---
+        // --- ระบบ AI ผสานหลักสูตรครูดิน (อัปเกรดฐานข้อมูลจาก Master Plan รุ่น 15 ปี 2026) ---
         const getDayConfig = (todayObj, weekIdx, isRace, prof) => {
             const dayIndex = todayObj.getDay(); 
             const currentTargetDist = prof.targetDist || 42.195;
-            const currentSchedule = prof.schedule || {0:'long', 1:'rest', 2:'easy', 3:'speed', 4:'rest', 5:'easy', 6:'rest'};
+            
+            // ปรับตารางหลักให้อิงตามคัมภีร์ครูดิน: จันทร์(พัก), อังคาร(คอร์ท/Speed), พุธ(หญ้า/Easy), พฤหัส(Aerobic/Fartlek), ศุกร์(ไหล/Drill), เสาร์(Long Run), อาทิตย์(ว่ายน้ำ/Recovery)
+            const currentSchedule = prof.schedule || {0:'easy', 1:'rest', 2:'speed', 3:'easy', 4:'easy', 5:'speed', 6:'long'}; 
             const dayType = currentSchedule[dayIndex] || 'rest';
 
-            const vcrSpeed = (prof.vcr || 4500) / 1800; 
-            const getPaceStr = (pct) => {
+            const vcrSpeed = (prof.vcr || 4500) / 1800; // m/s
+            // ฟังก์ชันคำนวณ Pace แบบช่วง (Range) เพื่อความยืดหยุ่นในการซ้อม
+            const getPaceRange = (pct) => {
                 const spd = vcrSpeed * (pct/100);
                 if(spd<=0) return "0:00";
-                const s = 1000/spd;
-                return `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;
+                const baseSecs = Math.round(1000/spd);
+                
+                // กำหนดช่วงบวกลบ (Buffer) ให้เหมาะกับความเหนื่อย
+                let fastSecs = baseSecs - 10; 
+                let slowSecs = baseSecs + 15;
+                if(pct >= 85) { fastSecs = baseSecs - 5; slowSecs = baseSecs + 10; } // คอร์ท/Speed บีบช่วงให้แคบ
+                if(pct <= 70) { fastSecs = baseSecs - 15; slowSecs = baseSecs + 20; } // วิ่งสบาย ให้ช่วงกว้างขึ้น
+
+                const fmt = (s) => `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;
+                return `${fmt(fastSecs)} - ${fmt(slowSecs)}`;
             };
             
-            // Pace Zones (อิงตามหลักสูตร)
-            const pz = { ez: getPaceStr(75), lr: getPaceStr(80), tm: getPaceStr(90), in: getPaceStr(105) };
+            // Pace Zones 
+            const pz = { ez: getPaceRange(70), lr: getPaceRange(75), tm: getPaceRange(85), in: getPaceRange(100), max: getPaceRange(110) };
 
-            // คำนวณระยะ Long Run
-            let baseLong = 5;
-            if(currentTargetDist == 42.195) baseLong = [10,12,14,10, 16,18,20,15, 22,24,26,18, 28,30,21,32, 25,35,25,30, 21,15,10, 42.195][weekIdx] || 10;
-            else if(currentTargetDist == 21.1) baseLong = [5,6,7,5, 8,10,12,8, 14,16,18,10, 15,18,12,20, 15,21.1,12,15, 10,8,5, 21.1][weekIdx] || 5;
-            else if(currentTargetDist == 10) baseLong = [3,4,5,3, 5,6,7,4, 6,8,9,5, 8,10,6,12, 8,10,6,8, 5,4,3, 10][weekIdx] || 3;
-            else baseLong = [2,3,4,2, 3,4,5,3, 4,5,6,3, 4,6,4,7, 5,6,4,5, 3,3,2, 5][weekIdx] || 2; 
+            // 🌟 คัมภีร์โปรแกรมซ้อม 20 สัปดาห์ (สกัดจากตารางครูดิน รุ่นที่ 15 ปี 2026)
+            const masterPlan = [
+                { w: 1, long: '10k', lZone: '60%', speed: 'วิ่ง 50 นาทีสบายๆ สลับ Stride 60x5', sZone: '60%', easy: 'ว่ายน้ำตีขา 40 นาที', drill: 'เต้นแอโรบิค 50 นาที' },
+                { w: 2, long: '75 นาที', lZone: '60%', speed: 'วิ่ง 10k เร็วไม่ดูนาฬิกา', sZone: '80%', easy: 'วิ่งบนหญ้า 50 นาที + Bodyweight', drill: 'วิ่งช้าสลับเร็ว 40 นาที' },
+                { w: 3, long: '80 นาที', lZone: '60%', speed: 'วิ่ง 200m jog 100m x 20', sZone: '70%', easy: 'ว่ายน้ำตีขา 40 นาที', drill: 'เต้นแอโรบิค 50 นาที' },
+                { w: 4, long: '90 นาที', lZone: '60%', speed: 'วิ่ง 4k x 2 เดินสลับ jog 5 นาที', sZone: 'Pace10K', easy: 'วิ่งบนหญ้า 50 นาที', drill: 'วิ่งขึ้นที่สูง (Hill) 50 นาที' },
+                { w: 5, long: '15k', lZone: 'เหนื่อยหอบ', speed: 'วิ่ง 1k x 8 เดิน 100m (เร็วกว่า Pace10k)', sZone: '95%', easy: 'ว่ายน้ำ 40 นาที', drill: 'เต้นแอโรบิค 50 นาที' },
+                { w: 6, long: '90 นาที', lZone: '60%', speed: 'วิ่ง 5k x 2 เร็วไม่ดูนาฬิกา', sZone: '70%', easy: 'วิ่งบนหญ้า 40 นาที', drill: 'วิ่ง 30 นาทีสบายๆ + Stride 150x8' },
+                { w: 7, long: '20k', lZone: '60%', speed: 'วิ่ง 400m x 15 jog 100m', sZone: '80%', easy: 'ว่ายน้ำ 40 นาที + Bodyweight', drill: 'วิ่งช้าสลับเร็ว 50 นาที (70%)' },
+                { w: 8, long: '20k', lZone: '60%', speed: 'วิ่ง 1k x 12 เดิน 100m', sZone: 'Pace10K', easy: 'วิ่งบนหญ้า 50 นาที', drill: 'เต้นแอโรบิค 60 นาที' },
+                { w: 9, long: '25k', lZone: '60%', speed: 'วิ่ง 5k x 3 เดินสลับ jog', sZone: '60%', easy: 'ว่ายน้ำ 40 นาที', drill: 'วิ่ง 30 นาที + Stride 60x5' },
+                { w: 10, long: '20k', lZone: '60%', speed: 'วิ่ง 100m jog 100m x 15 รอบสนาม', sZone: '70%', easy: 'วิ่งบนหญ้า 50 นาที', drill: 'เต้นแอโรบิค 60 นาที' },
+                { w: 11, long: '25k', lZone: 'Z3', speed: 'วิ่ง 1k x 12 (Pace 5k)', sZone: '70%', easy: 'ว่ายน้ำ 40 นาที', drill: 'วิ่ง 150m ไหล 50m x 15 รอบสนาม (70%)' },
+                { w: 12, long: '20k', lZone: 'Z3', speed: 'วิ่ง 12k (300m ไหล 50m)', sZone: '75%', easy: 'วิ่งบนหญ้า 50 นาที', drill: 'เต้นแอโรบิค 60 นาที' },
+                { w: 13, long: '25k', lZone: 'Z3', speed: 'วิ่ง 400m x 20 jog 100m (2k สุดท้ายเร็ว)', sZone: '70%', easy: 'ว่ายน้ำ 50 นาที', drill: 'วิ่ง 30 นาที + 150x6 (70%)' },
+                { w: 14, long: '28k', lZone: 'Z2', speed: 'วิ่ง 4k x 3 เดิน 200m', sZone: '70%', easy: 'วิ่งบนหญ้า 40 นาที', drill: 'วิ่ง 6k (150m jog ไหล 50m)' },
+                { w: 15, long: '25k', lZone: 'Z3', speed: 'วิ่ง 200m x 20 jog 100m', sZone: '85%', easy: 'ว่ายน้ำ 60 นาที + Bodyweight', drill: 'วิ่ง 30 นาที + 150x6 (70%)' },
+                { w: 16, long: '30k', lZone: 'Z2', speed: 'วิ่ง 800m x 6 เดิน 100m', sZone: '80%', easy: 'วิ่งบนหญ้า 40 นาที', drill: 'วิ่ง 150m ไหล 50m x 30 (15 รอบสนาม)' },
+                { w: 17, long: '25k', lZone: 'Z3', speed: 'วิ่ง 400m x 20 jog 100m', sZone: '70%', easy: 'ว่ายน้ำ 60 นาที', drill: 'วิ่ง 30 นาที + 150x6 (70%)' },
+                { w: 18, long: '30k', lZone: 'Z2', speed: 'วิ่ง 1k x 12 (Pace 10k)', sZone: 'Pace10K', easy: 'วิ่งบนหญ้า 40 นาที', drill: 'วิ่ง 300m ไหล 50m x 30 (80%)' },
+                { w: 19, long: '15k', lZone: 'Taper', speed: 'วิ่ง 400m x 10', sZone: '70%', easy: 'ว่ายน้ำ 30 นาที', drill: 'พักผ่อน ยืดเหยียด' },
+                { w: 20, long: '42.195k', lZone: 'Race', speed: 'พักผ่อน (Tapering)', sZone: 'Rest', easy: 'จ๊อกกิ้งเบาๆ 20 นาที', drill: 'พักผ่อน' }
+            ];
 
-            // --- ฐานข้อมูลท่าซ้อมครูดิน (หมุนเวียนตามสัปดาห์) ---
-            const kruDinSpeed = [
-                `วิ่ง 400m x 10 เที่ยว (ความเร็ว 70-80%) สลับ เดิน 100m / Jog 100m`,
-                `วิ่ง 1K x 6 เที่ยว (เร็วกว่า Pace 10K ประมาณ 10 วิ) สลับ เดิน 100m / Jog 100m`,
-                `วิ่ง 800m x 6 เที่ยว (ความเร็ว 80%) สลับ เดิน 100m / Jog 100m`,
-                `วิ่ง 200m สลับ Jog 100m x 15 เที่ยว (ความเร็ว 70%)`
-            ];
-            const kruDinEasy = [
-                `วิ่งบนหญ้า หรือ ว่ายน้ำตีขาในน้ำเบาๆ 40-50 นาที (เซฟข้อต่อ)`,
-                `วิ่ง Easy สบายๆ หรือ เต้นแอโรบิค 50 นาที (หรือทำท่า Drills ต่อเนื่อง)`,
-                `วิ่งสบายๆ หายใจหอบเหนื่อยเบาๆ 50 นาที เน้นกายบริหาร`,
-                `วิ่งขึ้นที่สูง (เนิน/สะพาน) 40 นาที สลับเดินเมื่อเหนื่อย`
-            ];
+            const currentWeekData = masterPlan[Math.min(weekIdx, 19)] || masterPlan[0];
 
             // --- เมนูอาหาร Street Food 7-11 & ร้านตามสั่ง ---
             let dynamicMeals = { b: 'ไข่ลวก 2 ฟอง + นมโปรตีนสูง / โจ๊กหมูใส่ไข่', l: 'เกาเหลาเลือดหมูข้าวเปล่า / ข้าวมันไก่ต้ม(ไม่หนัง)', s: 'ถั่วแระญี่ปุ่น 7-11 / กล้วยหอม', d: 'สุกี้น้ำไก่ / สลัดผักอกไก่ฉีก 7-11' };
@@ -181,22 +197,32 @@
             }
 
             let cfg = { id:'rest', name:'Rest Day', desc:'พักฟื้นร่างกายตามหลักสูตร', pace:'-', hr:'-', meals: dynamicMeals, ex:['💤 พักการวิ่ง 100% (Full Rest)','Core Plank 3 เซต','กลิ้ง Foam Roller นวดกล้ามเนื้อ'], advice: 'ครูดินเน้นย้ำเสมอว่า วันพักคือส่วนสำคัญที่สุดของการซ้อม ให้ร่างกายได้ซ่อมแซมตัวเองครับ' };
-            cfg.detailedWorkout = { warmup: [], main: 'พักฟื้นร่างกายอย่างเต็มที่', cooldown: [] };
+            cfg.detailedWorkout = { warmup: [], main: 'พักฟื้นร่างกายอย่างเต็มที่ (No Running)', cooldown: [] };
 
             if(isRace) {
-                cfg = { id:'long', name:`RACE DAY!`, desc:'ถึงเวลาโชว์ผลการซ้อม!', pace:'Target Pace', hr:getHrZone(0.7,0.88, prof.age, prof.rhr), meals:dynamicMeals, ex:['🏃‍♂️ ลุยให้เต็มที่ ดื่มน้ำทุกจุด','แช่น้ำเย็น Recovery','ยืดเหยียดเบาๆ'], advice: 'ออกตัวช้าๆ อย่าวิ่งตามคนอื่น คุมเพซตัวเองให้ดีเหมือนตอนซ้อมยาวครับ' };
+                cfg = { id:'long', name:`RACE DAY!`, desc:'ถึงเวลาโชว์ผลการซ้อม!', pace:pz.tm, hr:getHrZone(0.7,0.88, prof.age, prof.rhr), meals:dynamicMeals, ex:['🏃‍♂️ ลุยให้เต็มที่ ดื่มน้ำทุกจุด','แช่น้ำเย็น Recovery','ยืดเหยียดเบาๆ'], advice: 'ออกตัวช้าๆ อย่าวิ่งตามคนอื่น คุมเพซตัวเองให้ดีเหมือนตอนซ้อมยาวครับ' };
                 cfg.detailedWorkout = { warmup: ['วอร์มอัพเบาๆ 10 นาที'], main: `วิ่ง ${currentTargetDist}K อย่างมั่นใจ เติมพลังงานตามแผน`, cooldown: ['เดินรับเหรียญ 10 นาที'] };
             } else if(dayType === 'long') {
-                cfg = { id:'long', name:'Long Run (วัดใจ)', desc:`วิ่งยาว ${baseLong} กม. เน้นความอึดทนทาน`, pace:`${pz.lr} - ${pz.ez}`, hr:getHrZone(0.65,0.75, prof.age, prof.rhr), meals:dynamicMeals, ex:[`🏃‍♂️ วิ่งระยะ ${baseLong} กม.`,'จิบน้ำทุก 2 กม.','ยืดเหยียดชุดใหญ่หลังวิ่ง'], advice: 'วิ่งยาวสไตล์ครูดิน: โซน 2-3 เหนื่อยหอบพอทนได้ ไม่ต้องสนความเร็ว เน้นเวลาบนเท้าให้ครบครับ' };
-                cfg.detailedWorkout = { warmup: ['เดินเร็ว 5 นาที', 'กายบริหาร ยืดเหยียดแบบขยับ (Dynamic)'], main: `วิ่ง ${baseLong} กม. ความเร็ว 60-70% (โซน 2-3) สลับเดินได้เมื่อหัวใจพุ่ง`, cooldown: ['เดินคลายกรด 10 นาที', 'ยืดเหยียดค้างท่า (Static)'] };
+                const targetPace = currentWeekData.lZone.includes('60%') ? pz.ez : (currentWeekData.lZone.includes('Z3') ? pz.tm : pz.lr);
+                const targetHr = currentWeekData.lZone.includes('60%') ? getHrZone(0.6,0.7, prof.age, prof.rhr) : getHrZone(0.7,0.8, prof.age, prof.rhr);
+                cfg = { id:'long', name:'Long Run (วัดใจ)', desc:`วิ่งยาว ${currentWeekData.long} ตามโปรแกรม`, pace:`${targetPace}`, hr:targetHr, meals:dynamicMeals, ex:[`🏃‍♂️ วิ่ง ${currentWeekData.long}`,'จิบน้ำทุก 2 กม.','ยืดเหยียดชุดใหญ่หลังวิ่ง'], advice: `เป้าหมายสัปดาห์นี้คือ ${currentWeekData.long} (${currentWeekData.lZone}) ไม่ต้องสนความเร็ว เน้นเวลาบนเท้าให้ครบครับ` };
+                cfg.detailedWorkout = { warmup: ['เดินเร็ว 5 นาที', 'กายบริหารแบบขยับ (Dynamic)'], main: `วิ่ง ${currentWeekData.long} คุมความเหนื่อยระดับ ${currentWeekData.lZone}`, cooldown: ['เดินคลายกรด 10 นาที', 'ยืดเหยียดค้างท่า (Static)'] };
             } else if(dayType === 'speed') {
-                const speedMain = kruDinSpeed[weekIdx % kruDinSpeed.length];
-                cfg = { id:'speed', name:'Speed Work / คอร์ท', desc:'ฝึกลงคอร์ทสร้างความเร็วและความทนทานของกล้ามเนื้อ', pace:`${pz.in} - ${pz.tm}`, hr:getHrZone(0.8,0.88, prof.age, prof.rhr), meals: dynamicMeals, ex:[`⚡ ${speedMain.split(' (')[0]}`,'วอร์มอัพให้ถึงก่อนวิ่งเร็ว','Russian Twist 3 เซต'], advice: 'วันลงคอร์ทช่วยขยับเพดานความฟิต (VCR) ให้สูงขึ้น วิ่งเสร็จต้องคูลดาวน์ให้ดีครับ' };
-                cfg.detailedWorkout = { warmup: ['จ๊อกกิ้งเบาๆ 15 นาที', 'ทำ Drills ยกเข่าเตะก้น'], main: `${speedMain} (Pace เป้าหมาย: ${cfg.pace})`, cooldown: ['จ๊อกกิ้งเบาๆ คลายกล้ามเนื้อ 15 นาที'] };
+                // คำนวณ Pace จากข้อมูลที่สกัดมา
+                let sPace = pz.in;
+                if(currentWeekData.sZone === '70%') sPace = getPaceRange(70);
+                else if(currentWeekData.sZone === '80%') sPace = getPaceRange(80);
+                else if(currentWeekData.sZone === '60%') sPace = getPaceRange(60);
+                else if(currentWeekData.sZone === 'Pace10K') sPace = getPaceRange(90); // ประเมิน Pace 10k อยู่ที่ 90% VCR
+                
+                cfg = { id:'speed', name:'Quality Work / ลงคอร์ท', desc:currentWeekData.speed, pace:`${sPace}`, hr:getHrZone(0.8,0.9, prof.age, prof.rhr), meals: dynamicMeals, ex:[`⚡ ${currentWeekData.speed.split(' ')[0]}`,'วอร์มอัพให้ถึงก่อนวิ่งเร็ว','Russian Twist 3 เซต'], advice: 'ตารางวันนี้ช่วยขยับเพดานความฟิต (VCR) ให้สูงขึ้น วิ่งเสร็จต้องคูลดาวน์ให้ดีครับ' };
+                cfg.detailedWorkout = { warmup: ['จ๊อกกิ้งเบาๆ 15 นาที', 'ทำ Drills ยกเข่าเตะก้น'], main: `${currentWeekData.speed} (เป้าหมาย: ${sPace})`, cooldown: ['จ๊อกกิ้งเบาๆ คลายกล้ามเนื้อ 15 นาที'] };
             } else if(dayType === 'easy') {
-                const easyMain = kruDinEasy[weekIdx % kruDinEasy.length];
-                cfg = { id:'easy', name:'Active Recovery / วิ่งสบาย', desc:'ฟื้นฟูร่างกาย สร้างฐานความฟิต (Aerobic Base)', pace:pz.ez, hr:getHrZone(0.6,0.7, prof.age, prof.rhr), meals: dynamicMeals, ex:[`🏃‍♂️ ${easyMain.split(' (')[0]}`, 'ทำ Drills พื้นฐาน', 'Squats 3 เซต (หรือ Bodyweight)'], advice: 'วันวิ่งสบายคือการนวดกล้ามเนื้อด้วยการวิ่ง ท่าวิ่งต้องผ่อนคลายที่สุด ไม่ก้มหน้าครับ' };
-                cfg.detailedWorkout = { warmup: ['หมุนข้อต่อ 3 นาที'], main: `${easyMain} (คุมเพซสบายๆ ${cfg.pace})`, cooldown: ['เดินช้าลงเรื่อยๆ'] };
+                // วันพุธ หรือ วันอาทิตย์ มักจะเป็นหญ้า หรือ ว่ายน้ำ
+                const isSwimDay = dayIndex === 0; // วันอาทิตย์ให้เป็นว่ายน้ำ
+                const easyTask = isSwimDay ? currentWeekData.easy : currentWeekData.drill;
+                cfg = { id:'easy', name:'Active Recovery', desc:easyTask, pace:pz.ez, hr:getHrZone(0.6,0.7, prof.age, prof.rhr), meals: dynamicMeals, ex:[`🏃‍♂️ ${easyTask.substring(0,20)}...`, 'ทำ Drills พื้นฐาน', 'Squats 3 เซต (หรือ Bodyweight)'], advice: 'วันวิ่งสบายคือการนวดกล้ามเนื้อด้วยการวิ่ง ท่าวิ่งต้องผ่อนคลายที่สุด ไม่ก้มหน้าครับ' };
+                cfg.detailedWorkout = { warmup: ['หมุนข้อต่อ 3 นาที'], main: `${easyTask}`, cooldown: ['เดินช้าลงเรื่อยๆ'] };
             }
 
             // ระบบเซฟข้อต่อ (Injury Adaptation)
@@ -826,6 +852,21 @@
 
             const maxChartDist = Math.max(...chartData.map(d => d.dist), 5); 
 
+            // ฟังก์ชันคำนวณเพซตามเปอร์เซ็นต์ VCR สำหรับหน้าโซนการซ้อม (แบบช่วง)
+            const getPaceFromVcr = (pct) => {
+                const spd = (prof.vcr || 4500) / 1800 * (pct / 100);
+                if (spd <= 0) return "0:00";
+                const baseSecs = Math.round(1000 / spd);
+                
+                let fastSecs = baseSecs - 10; 
+                let slowSecs = baseSecs + 15;
+                if(pct >= 85) { fastSecs = baseSecs - 5; slowSecs = baseSecs + 10; }
+                if(pct <= 70) { fastSecs = baseSecs - 15; slowSecs = baseSecs + 20; }
+
+                const fmt = (s) => `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;
+                return `${fmt(fastSecs)} - ${fmt(slowSecs)}`;
+            };
+
             return (
                 <div className="space-y-6 pb-14">
                     <section className="suunto-card p-10 text-center border-t-2 border-t-zinc-700">
@@ -842,6 +883,29 @@
                             </div>
                         </div>
                         <span className="text-xs font-black uppercase tracking-widest px-4 py-2 rounded-lg bg-black border border-zinc-800" style={{color: vo2Color}}>{vo2Label}</span>
+                    </section>
+
+                    {/* 🎯 PERSONALIZED ZONES SECTION */}
+                    <section className="suunto-card p-8">
+                        <h2 className="font-black text-sm text-white uppercase tracking-widest mb-6 flex items-center gap-2"><span>🎯</span> TRAINING ZONES</h2>
+                        <div className="space-y-3">
+                            <div className="bg-[#18181b] p-5 rounded-xl border border-l-4 border-l-lime-400 border-zinc-800 flex justify-between items-center">
+                                <div><p className="text-xs font-black text-lime-400 uppercase tracking-widest">EASY (Zone 2)</p><p className="text-[10px] text-zinc-500 font-bold mt-1 uppercase">Recovery / Base</p></div>
+                                <div className="text-right"><p className="text-base font-black text-white italic">{getPaceFromVcr(75)} <span className="text-[10px] text-zinc-500 normal-case font-bold">/km</span></p><p className="text-xs font-bold text-zinc-400 mt-1">{getHrZone(0.6, 0.7, prof.age, prof.rhr)}</p></div>
+                            </div>
+                            <div className="bg-[#18181b] p-5 rounded-xl border border-l-4 border-l-cyan-400 border-zinc-800 flex justify-between items-center">
+                                <div><p className="text-xs font-black text-cyan-400 uppercase tracking-widest">AEROBIC (Zone 3)</p><p className="text-[10px] text-zinc-500 font-bold mt-1 uppercase">Long Run / Endurance</p></div>
+                                <div className="text-right"><p className="text-base font-black text-white italic">{getPaceFromVcr(80)} <span className="text-[10px] text-zinc-500 normal-case font-bold">/km</span></p><p className="text-xs font-bold text-zinc-400 mt-1">{getHrZone(0.7, 0.8, prof.age, prof.rhr)}</p></div>
+                            </div>
+                            <div className="bg-[#18181b] p-5 rounded-xl border border-l-4 border-l-orange-400 border-zinc-800 flex justify-between items-center">
+                                <div><p className="text-xs font-black text-orange-400 uppercase tracking-widest">TEMPO (Zone 4)</p><p className="text-[10px] text-zinc-500 font-bold mt-1 uppercase">Threshold / Race</p></div>
+                                <div className="text-right"><p className="text-base font-black text-white italic">{getPaceFromVcr(90)} <span className="text-[10px] text-zinc-500 normal-case font-bold">/km</span></p><p className="text-xs font-bold text-zinc-400 mt-1">{getHrZone(0.8, 0.88, prof.age, prof.rhr)}</p></div>
+                            </div>
+                            <div className="bg-[#18181b] p-5 rounded-xl border border-l-4 border-l-red-500 border-zinc-800 flex justify-between items-center">
+                                <div><p className="text-xs font-black text-red-500 uppercase tracking-widest">INTERVAL (Zone 5)</p><p className="text-[10px] text-zinc-500 font-bold mt-1 uppercase">Speed / VO2 Max</p></div>
+                                <div className="text-right"><p className="text-base font-black text-white italic">{getPaceFromVcr(105)} <span className="text-[10px] text-zinc-500 normal-case font-bold">/km</span></p><p className="text-xs font-bold text-zinc-400 mt-1">{getHrZone(0.88, 1.0, prof.age, prof.rhr)}</p></div>
+                            </div>
+                        </div>
                     </section>
 
                     <section className="suunto-card p-8">
