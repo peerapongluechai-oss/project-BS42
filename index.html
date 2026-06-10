@@ -103,7 +103,6 @@
             return `${Math.round(hrr*min)+Number(rhr||60)}-${Math.round(hrr*max)+Number(rhr||60)} bpm`;
         };
 
-        // 🛠️ อัปเดต: เพิ่มการรับพารามิเตอร์ cadence เพื่อวิเคราะห์รอบขา
         const generateFeedback = (dist, pace, hr, targetPaceStr, actType = 'Run', cadence = '') => {
             let cadenceFeedback = "";
             if (actType === 'Run' && cadence) {
@@ -124,7 +123,7 @@
             if (actType === 'Bike') return "🚴‍♂️ ปั่นจักรยานช่วยสลับการใช้กล้ามเนื้อและสร้าง Aerobic Base ได้ดีมาก AI บันทึกผลให้เรียบร้อยครับ!";
             if (actType === 'Other') return "🏋️‍♂️ ยอดเยี่ยมครับ! การเสริมสร้างความแข็งแรง (Strength) จะช่วยให้การวิ่งมาราธอนของคุณทนทานขึ้นครับ";
 
-            if(!targetPaceStr || targetPaceStr === '-') return "บันึกสถิติสำเร็จ! วินัยคือหัวใจสำคัญครับ 🏃‍♂️" + cadenceFeedback;
+            if(!targetPaceStr || targetPaceStr === '-') return "บันทึกสถิติสำเร็จ! วินัยคือหัวใจสำคัญครับ 🏃‍♂️" + cadenceFeedback;
             
             const pSecs = parsePace(pace);
             const tSecsArr = targetPaceStr.split(' - ').map(parsePace);
@@ -148,42 +147,36 @@
             return "+0 (ปกติ ทรงตัว)";
         };
 
-        // --- ระบบ AI ผสานหลักสูตรครูดิน (อัปเกรดฐานข้อมูลจาก Master Plan รุ่น 15 ปี 2026) ---
-        // 🛠️ อัปเดต: รับค่า isHot เพื่อคำนวณปรับเพซสู้แดด และ needRecovery (กรณีเพิ่งกดป่วย/พักซ้อมมา)
         const getDayConfig = (todayObj, weekIdx, isRace, prof, isHot = false, needRecovery = false) => {
             const dayIndex = todayObj.getDay(); 
             const currentTargetDist = prof.targetDist || 42.195;
             
             const currentSchedule = prof.schedule || {0:'easy', 1:'rest', 2:'speed', 3:'easy', 4:'easy', 5:'speed', 6:'long'}; 
-            // 🛠️ ถ้าต้องการ Recovery ให้เปลี่ยนวันที่ซ้อมหนัก (speed/long) ให้กลายเป็น easy แทน
             let dayType = currentSchedule[dayIndex] || 'rest';
             if (needRecovery && (dayType === 'speed' || dayType === 'long')) {
                 dayType = 'easy';
             }
 
-            const vcrSpeed = (prof.vcr || 4500) / 1800; // m/s
+            const vcrSpeed = (prof.vcr || 4500) / 1800; 
             
-            // 🛠️ ฟังก์ชันคำนวณ Pace แบบช่วง (Range) + ปรับสู้อากาศร้อน
             const getPaceRange = (pct) => {
                 const spd = vcrSpeed * (pct/100);
                 if(spd<=0) return "0:00";
                 let baseSecs = Math.round(1000/spd);
                 
-                if (isHot) baseSecs += 15; // ☀️ อากาศร้อน: ปรับเป้าหมายเพซให้ช้าลง 15 วินาที/กม. อัตโนมัติ
+                if (isHot) baseSecs += 15; 
                 
                 let fastSecs = baseSecs - 10; 
                 let slowSecs = baseSecs + 15;
-                if(pct >= 85) { fastSecs = baseSecs - 5; slowSecs = baseSecs + 10; } // คอร์ท/Speed บีบช่วงให้แคบ
-                if(pct <= 70) { fastSecs = baseSecs - 15; slowSecs = baseSecs + 20; } // วิ่งสบาย ให้ช่วงกว้างขึ้น
+                if(pct >= 85) { fastSecs = baseSecs - 5; slowSecs = baseSecs + 10; } 
+                if(pct <= 70) { fastSecs = baseSecs - 15; slowSecs = baseSecs + 20; } 
 
                 const fmt = (s) => `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;
                 return `${fmt(fastSecs)} - ${fmt(slowSecs)}`;
             };
             
-            // Pace Zones 
             const pz = { ez: getPaceRange(70), lr: getPaceRange(75), tm: getPaceRange(85), in: getPaceRange(100), max: getPaceRange(110) };
 
-            // 🌟 คัมภีร์โปรแกรมซ้อม 20 สัปดาห์ (สกัดจากตารางครูดิน รุ่นที่ 15 ปี 2026)
             const masterPlan = [
                 { w: 1, long: '10k', lZone: '60%', speed: 'วิ่ง 50 นาทีสบายๆ สลับ Stride 60x5', sZone: '60%', easy: 'ว่ายน้ำตีขา 40 นาที', drill: 'เต้นแอโรบิค 50 นาที' },
                 { w: 2, long: '75 นาที', lZone: '60%', speed: 'วิ่ง 10k เร็วไม่ดูนาฬิกา', sZone: '80%', easy: 'วิ่งบนหญ้า 50 นาที + Bodyweight', drill: 'วิ่งช้าสลับเร็ว 40 นาที' },
@@ -268,7 +261,6 @@
             return 8;
         };
 
-        // --- 3. COMPONENTS ---
         class ErrorBoundary extends React.Component {
             constructor(props) { super(props); this.state = { hasError: false, error: null }; }
             static getDerivedStateFromError(error) { return { hasError: true, error }; }
@@ -294,7 +286,6 @@
             </div>
         );
 
-        // 🏃‍♂️ Elite Avatar (Suunto Style - Realism Upgraded)
         const EliteAvatar = ({ activity = 'stretch' }) => {
             const isRunning = activity !== 'stretch' && activity !== 'rest';
             return (
@@ -308,60 +299,38 @@
                             @keyframes head-bob { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(3px); } }
                         `}</style>
                         <g transform="translate(0, 15)">
-                            {/* แขนซ้าย (ผิวหนัง) */}
                             <g style={{transformOrigin: '50px 35px', animation: isRunning ? 'arm-l 0.6s infinite ease-in-out' : 'none'}}>
                                 <path d="M 45 35 Q 20 50 30 75" fill="none" stroke="#d4a373" strokeWidth="8" strokeLinecap="round" />
                                 <circle cx="30" cy="75" r="4" fill="#d4a373" />
                             </g>
-                            
-                            {/* ขาซ้าย */}
                             <g style={{transformOrigin: '50px 65px', animation: isRunning ? 'run-l 0.6s infinite ease-in-out' : 'none'}}>
                                 <path d="M 46 65 Q 35 90 40 112" fill="none" stroke="#bc8a5f" strokeWidth="10" strokeLinecap="round" />
-                                {/* รองเท้าคาร์บอน ซ้าย */}
                                 <path d="M 33 112 Q 38 105 48 112 L 48 122 Q 40 125 33 122 Z" fill="#bef264" />
                                 <path d="M 33 122 Q 40 125 48 122 L 48 126 Q 40 128 33 126 Z" fill="#18181b" />
                             </g>
-                            
-                            {/* ขาขวา */}
                             <g style={{transformOrigin: '50px 65px', animation: isRunning ? 'run-r 0.6s infinite ease-in-out' : 'none'}}>
                                 <path d="M 54 65 Q 65 90 60 112" fill="none" stroke="#d4a373" strokeWidth="10" strokeLinecap="round" />
-                                {/* ถุงเท้ารัดน่อง ขวา */}
                                 <path d="M 56 95 L 62 95 L 63 112 L 56 112 Z" fill="#27272a" />
-                                {/* รองเท้าคาร์บอน ขวา */}
                                 <path d="M 53 112 Q 58 105 68 112 L 68 122 Q 60 125 53 122 Z" fill="#bef264" />
                                 <path d="M 53 122 Q 60 125 68 122 L 68 126 Q 60 128 53 126 Z" fill="#18181b" />
                             </g>
-                            
-                            {/* ลำตัว เสื้อกล้ามรัดรูป */}
                             <path d="M 38 32 Q 50 25 62 32 L 58 68 L 42 68 Z" fill="#18181b" />
-                            {/* ลายเสื้อ */}
                             <path d="M 44 32 L 56 32 L 50 50 Z" fill="#bef264" />
                             <path d="M 40 65 L 60 65 L 60 68 L 40 68 Z" fill="#27272a" />
-                            
-                            {/* แขนขวา (ผิวหนัง) */}
                             <g style={{transformOrigin: '50px 35px', animation: isRunning ? 'arm-r 0.6s infinite ease-in-out' : 'none'}}>
                                 <path d="M 55 35 Q 80 50 70 75" fill="none" stroke="#e6ccb2" strokeWidth="8" strokeLinecap="round" />
                                 <circle cx="70" cy="75" r="4" fill="#e6ccb2" />
-                                {/* นาฬิกา Suunto */}
                                 <rect x="65" y="64" width="12" height="6" fill="#18181b" rx="2" transform="rotate(-30 70 68)" />
                                 <circle cx="70" cy="67" r="2.5" fill="#bef264" transform="rotate(-30 70 68)" />
                             </g>
-                            
-                            {/* ศีรษะและใบหน้า */}
                             <g style={{transformOrigin: '50px 20px', animation: isRunning ? 'head-bob 0.6s infinite ease-in-out' : 'none'}}>
-                                {/* คอ */}
                                 <rect x="46" y="25" width="8" height="6" fill="#d4a373" />
-                                {/* โครงหน้า */}
                                 <path d="M 38 15 Q 38 30 50 30 Q 62 30 62 15 Z" fill="#e6ccb2" />
-                                {/* หมวกวิ่ง */}
                                 <path d="M 35 15 Q 50 0 65 15 Z" fill="#18181b" />
                                 <path d="M 33 15 L 67 15 Q 72 17 67 17 L 33 17 Z" fill="#18181b" />
-                                {/* แว่นตาสปอร์ตสีฟ้าใส */}
                                 <path d="M 39 16 L 61 16 L 58 22 Q 50 25 42 22 Z" fill="rgba(6, 182, 212, 0.7)" stroke="#0891b2" strokeWidth="1" />
-                                {/* หู */}
                                 <circle cx="37" cy="20" r="2" fill="#d4a373" />
                                 <circle cx="63" cy="20" r="2" fill="#d4a373" />
-                                {/* ปาก (อ้าปากตอนวิ่ง, ยิ้มตอนพัก) */}
                                 {isRunning ? (
                                     <ellipse cx="50" cy="26" rx="2" ry="3" fill="#18181b" />
                                 ) : (
@@ -388,7 +357,6 @@
             );
         };
 
-        // ⚙️ Compact Setup Modal 
         const SetupModal = ({ initialProf, onSave, onCancel }) => {
             const [w, setW] = useState(initialProf.weight?.toString() || '');
             const [tw, setTw] = useState(initialProf.targetWeight?.toString() || '');
@@ -721,14 +689,12 @@
             );
         };
 
-        // 🛠️ รับ updateDaily มาเพื่อให้ปุ่มกดป่วย/พัก ทำงานได้
         const TabPlan = ({ cfg, prof, weekIdx, isHotWeather, updateDaily, todayStr }) => {
             const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
             const scheduleMap = { 'rest': 'Rest', 'easy': 'Easy', 'speed': 'Speed Work', 'long': 'Long Run' };
             const colorMap = { 'rest': 'text-zinc-500', 'easy': 'text-lime-400', 'speed': 'text-orange-400', 'long': 'text-red-400' };
             const todayIdx = new Date().getDay();
             
-            // เช็คสถานะการป่วยของวันนี้จาก records
             const isSickToday = prof.records?.[todayStr]?.isSick || false;
 
             return (
@@ -743,7 +709,6 @@
                             <h2 className="font-black text-sm text-zinc-400 uppercase tracking-widest">TODAY'S PROTOCOL</h2>
                             <div className="flex gap-2">
                                 {isHotWeather && <span className="bg-orange-500/20 text-orange-400 border border-orange-500/50 px-2 py-1 rounded text-[10px] font-black uppercase">☀️ สู้แดด</span>}
-                                {/* 🛠️ ปุ่มกด ป่วย/พลาดซ้อม */}
                                 <button 
                                     onClick={() => {
                                         const newSickStatus = !isSickToday;
@@ -805,7 +770,6 @@
                                 const dummyDate = new Date();
                                 dummyDate.setDate(dummyDate.getDate() + (idx - todayIdx));
                                 
-                                // เช็คว่าเมื่อวานป่วยไหม เพื่อคำนวณการปรับตาราง (needRecovery)
                                 let needRecovery = false;
                                 if (idx > 0) {
                                     let prevDate = new Date();
@@ -887,7 +851,6 @@
             const mapGoal = 600;
             const mapProgress = Math.min((tDist / mapGoal) * 100, 100);
 
-            // 🛠️ คำนวณสีและระดับของ TSS (ความล้า)
             let tssColor = "#a3e635", tssLabel = "FRESH (สดชื่น)";
             if (currentTss > 300) { tssColor = "#f97316"; tssLabel = "FATIGUED (เริ่มล้า)"; }
             if (currentTss > 500) { tssColor = "#ef4444"; tssLabel = "OVERTRAINED (พักด่วน!)"; }
@@ -963,7 +926,6 @@
                 <div className="space-y-6 pb-14">
                     <section className="suunto-card p-10 text-center border-t-2 border-t-zinc-700">
                         <div className="grid grid-cols-2 gap-4 mb-8">
-                            {/* เกจ VO2 MAX เดิม */}
                             <div>
                                 <h2 className="font-black text-[10px] md:text-xs text-zinc-400 uppercase tracking-widest mb-4">PEAK VO2 MAX</h2>
                                 <div className="flex justify-center mb-4">
@@ -980,7 +942,6 @@
                                 <span className="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded bg-black border border-zinc-800" style={{color: vo2Color}}>{vo2Label}</span>
                             </div>
                             
-                            {/* 🛠️ เกจ TSS 7 วันย้อนหลัง */}
                             <div>
                                 <h2 className="font-black text-[10px] md:text-xs text-zinc-400 uppercase tracking-widest mb-4">7-DAY TSS LOAD</h2>
                                 <div className="flex justify-center mb-4">
@@ -1189,7 +1150,6 @@
                     const equiv = (1800 / rSecs) * 1000;
                     if (equiv > currentVcr + 100) { currentVcr = Math.round(equiv); upgraded = true; }
                 }
-                // 🛠️ เช็คสถานะการป่วยของเมื่อวาน
                 let prevDate = new Date();
                 prevDate.setDate(prevDate.getDate() - 1);
                 const wasSickYesterday = prof.records?.[prevDate.toDateString()]?.isSick || false;
@@ -1199,12 +1159,11 @@
                 const ai = generateFeedback(dNum, inPace, inHr, cfgToday.pace, inAct, inCadence);
                 const perf = calcCondition(inHr, inPace);
                 
-                // 🛠️ คำนวณ TSS ของวันนี้: สมมติว่า (นาทีซ้อม * อัตราส่วนหัวใจ)
                 const hrNum = Number(inHr) || prof.rhr || 60;
                 const maxHr = 220 - (prof.age || 35);
                 const intensity = hrNum / maxHr;
                 const runMinutes = dNum * (rSecs / 60);
-                const todayTss = Math.round(runMinutes * intensity * 1.5); // สูตรจำลอง TSS เบื้องต้น
+                const todayTss = Math.round(runMinutes * intensity * 1.5); 
 
                 const nd = {...daily, rLog: true, rDist: inDist, rPace: inPace, rHr: inHr, rCadence: inCadence, rType: inAct, aiFeedback: ai, perfCondition: perf, vcrUpgraded: upgraded, newVcrVal: currentVcr, tss: todayTss};
                 
@@ -1237,7 +1196,6 @@
                 }
             };
 
-            // 🛠️ เช็คสถานะการป่วยของเมื่อวานเพื่อส่งไปให้หน้าหลัก
             let prevDate = new Date();
             prevDate.setDate(prevDate.getDate() - 1);
             const wasSickYesterday = prof.records?.[prevDate.toDateString()]?.isSick || false;
@@ -1245,7 +1203,6 @@
             const cfg = getDayConfig(new Date(), weekIdx, daysLeft <= 0, prof, isHotWeather, wasSickYesterday);
 
             let tDist = 0, tSecs = 0, f5k = Infinity, f10k = Infinity, longestRun = 0, maxStreakCount = 0, streakCount = 0, maxAquaCount = 0, aquaCount = 0;
-            // 🛠️ ตัวแปรเก็บผลรวม TSS 7 วันย้อนหลัง
             let totalTss7Days = 0;
             const last7DaysStrings = Array.from({length:7}, (_,i) => { let d = new Date(); d.setDate(d.getDate()-i); return d.toDateString(); });
 
@@ -1268,7 +1225,6 @@
                 if(r.w >= 8) aquaCount++; else aquaCount = 0;
                 if(aquaCount > maxAquaCount) maxAquaCount = aquaCount;
 
-                // รวม TSS 7 วัน
                 if (last7DaysStrings.includes(dt)) {
                     totalTss7Days += (r.tss || 0);
                 }
@@ -1305,20 +1261,21 @@
                         </div>
                     )}
 
-                    <header className="flex justify-between items-start mb-8 pt-4">
-                        <div>
-                            <p className="text-zinc-400 font-black text-xs tracking-[0.3em] uppercase mb-2">TARGET RACE DAY</p>
-                            <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic">ULTIMATE <span className="suunto-accent">PACE</span></h1>
-                            <p className="text-sm font-bold text-zinc-400 mt-3 tracking-widest uppercase">Runner: <span className="text-white">{profileName}</span></p>
+                    {/* 🛠️ ปรับแก้ Layout ส่วน Header ให้รองรับมือถือจอเล็ก ไม่ทับกัน */}
+                    <header className="flex justify-between items-start mb-8 pt-4 gap-4">
+                        <div className="flex-1">
+                            <p className="text-zinc-400 font-black text-[10px] md:text-xs tracking-[0.2em] md:tracking-[0.3em] uppercase mb-2">TARGET RACE DAY</p>
+                            <h1 className="text-4xl md:text-5xl font-black text-white tracking-tighter uppercase italic leading-none md:leading-tight mb-2">ULTIMATE <br className="sm:hidden" /><span className="suunto-accent">PACE</span></h1>
+                            <p className="text-xs md:text-sm font-bold text-zinc-400 mt-2 tracking-widest uppercase">Runner: <span className="text-white">{profileName}</span></p>
                         </div>
-                        <div className="flex gap-2">
-                            <button onClick={handleShare} className="suunto-card p-4 w-16 h-16 flex flex-col items-center justify-center active:scale-95 transition-transform hover:bg-zinc-800">
-                                <svg className="w-6 h-6 text-cyan-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
-                                <span className="text-[10px] font-black uppercase text-cyan-400">SHARE</span>
+                        <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+                            <button onClick={handleShare} className="suunto-card p-3 w-14 h-14 md:p-4 md:w-16 md:h-16 flex flex-col items-center justify-center active:scale-95 transition-transform hover:bg-zinc-800">
+                                <svg className="w-5 h-5 md:w-6 md:h-6 text-cyan-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                                <span className="text-[9px] md:text-[10px] font-black uppercase text-cyan-400">SHARE</span>
                             </button>
-                            <button onClick={onLogout} className="suunto-card p-4 w-16 h-16 flex flex-col items-center justify-center active:scale-95 transition-transform hover:bg-zinc-800">
-                                <svg className="w-6 h-6 text-zinc-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                                <span className="text-[10px] font-black uppercase text-zinc-400">EXIT</span>
+                            <button onClick={onLogout} className="suunto-card p-3 w-14 h-14 md:p-4 md:w-16 md:h-16 flex flex-col items-center justify-center active:scale-95 transition-transform hover:bg-zinc-800">
+                                <svg className="w-5 h-5 md:w-6 md:h-6 text-zinc-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+                                <span className="text-[9px] md:text-[10px] font-black uppercase text-zinc-400">EXIT</span>
                             </button>
                         </div>
                     </header>
@@ -1333,25 +1290,28 @@
                         </div>
                     </div>
 
-                    <div className="suunto-card p-8 mb-8 relative overflow-hidden">
+                    <div className="suunto-card p-6 md:p-8 mb-8 relative overflow-hidden">
                         <div className="relative z-10">
-                            <button onClick={()=>setShowSetup(true)} className="flex items-center gap-2 mb-4 group">
+                            {/* 🛠️ ย้ายป้ายบอกแผนการซ้อมวันนี้ มาไว้ตรงนี้ (ไม่ลอยทับซ้อนแล้ว) */}
+                            <div className="mb-4 inline-block relative z-20">
+                                <span className="bg-[#18181b] text-zinc-200 border border-zinc-700 px-3 py-1.5 md:px-4 md:py-2 rounded-lg text-[10px] md:text-xs font-black uppercase tracking-widest shadow-md">{cfg.name}</span>
+                            </div>
+
+                            <button onClick={()=>setShowSetup(true)} className="flex items-center gap-2 mb-4 group relative z-20">
                                 <span className="text-zinc-400 font-black text-sm uppercase tracking-widest group-hover:text-white transition-colors">TARGET WEIGHT</span>
                                 <svg className="w-5 h-5 text-zinc-500 group-hover:text-white transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
                             </button>
-                            <div className="flex items-baseline gap-3 mb-8">
+                            <div className="flex items-baseline gap-3 mb-8 relative z-20">
                                 <span className="text-7xl font-black text-white italic tracking-tighter">{prof.weight}</span>
                                 <span className="text-zinc-400 font-bold text-2xl uppercase tracking-widest">KG</span>
                             </div>
-                            <div className="flex gap-3 w-[150px]">
+                            <div className="flex gap-3 w-[150px] relative z-20">
                                 <button onClick={()=>updateWeight(0.1)} className="flex-1 h-14 bg-[#1e1e1e] rounded-xl text-zinc-300 font-black text-2xl active:scale-95 border border-zinc-700 hover:bg-zinc-800">+</button>
                                 <button onClick={()=>updateWeight(-0.1)} className="flex-1 h-14 suunto-bg-accent rounded-xl text-black font-black text-3xl active:scale-95 pb-1">-</button>
                             </div>
                         </div>
-                        <div className="absolute top-6 right-6 z-20">
-                            <span className="bg-[#18181b] text-zinc-200 border border-zinc-700 px-4 py-2 rounded-lg text-xs font-black uppercase tracking-widest">{cfg.name}</span>
-                        </div>
-                        <div className="absolute bottom-[-20px] right-2 z-0 opacity-80 scale-125 origin-bottom-right">
+                        {/* 🛠️ ปรับตำแหน่ง Avatar ให้หลบซ้ายนิดหน่อยบนจอมือถือเล็ก */}
+                        <div className="absolute bottom-[-20px] right-[-10px] sm:right-2 z-0 opacity-80 scale-[1.15] sm:scale-125 origin-bottom-right">
                             <EliteAvatar activity={cfg.id} />
                         </div>
                     </div>
@@ -1367,10 +1327,8 @@
 
                     <main className="animate-in fade-in duration-300">
                         {activeTab === 'tracker' && <TabTracker score={score} daily={daily} updateDaily={updateDaily} cfg={cfg} inDist={inDist} setInDist={setInDist} inPace={inPace} setInPace={setInPace} inHr={inHr} setInHr={setInHr} inCadence={inCadence} setInCadence={setInCadence} inAct={inAct} setInAct={setInAct} saveRun={saveRun} targetWater={targetWater} isHotWeather={isHotWeather} setIsHotWeather={setIsHotWeather} />}
-                        {/* 🛠️ สั่ง TabPlan ให้รับ updateDaily และ todayStr ไปใช้งานปุ่มป่วย */}
                         {activeTab === 'plan' && <TabPlan cfg={cfg} prof={prof} weekIdx={weekIdx} isHotWeather={isHotWeather} updateDaily={updateDaily} todayStr={todayStr} />}
                         {activeTab === 'ranking' && <TabRanking leaderboardData={leaderboardData} />}
-                        {/* 🛠️ สั่ง TabStats ให้แสดง currentTss */}
                         {activeTab === 'stats' && <TabStats prof={prof} vo2Value={vo2Value} tDist={tDist} pTime={pTime} pSource={pSource} fastest5kSecs={f5k} fastest10kSecs={f10k} longestRun={longestRun} achievements={achievements} currentTss={totalTss7Days} />}
                     </main>
                 </div>
