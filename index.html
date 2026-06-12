@@ -87,7 +87,8 @@
                 nutritionGuide: "คำแนะนำโภชนาการ", weeklySchedule: "📅 ตารางซ้อมสัปดาห์นี้",
                 leaderboard: "ตารางจัดอันดับ", weeklyMileage: "ระยะทางสะสม 7 วัน",
                 currentWeight: "น้ำหนักปัจจุบัน", weightTarget: "น้ำหนัก (เป้าหมาย:",
-                targetRaceDay: "เป้าหมายวันแข่ง", runner: "นักวิ่ง:", planStarted: "เริ่มแผนเมื่อ", daysLeft: "วันก่อนแข่ง!", raceDay: "วันแข่ง!"
+                targetRaceDay: "เป้าหมายวันแข่ง", runner: "นักวิ่ง:", planStarted: "เริ่มแผนเมื่อ", daysLeft: "วันก่อนแข่ง!", raceDay: "วันแข่ง!",
+                distPlace: "ระยะ(KM)", pacePlace: "เพซ", elevPlace: "ความชัน(m)", hrPlace: "HR", spmPlace: "รอบขา", durationPlace: "เวลา(นาที)"
             },
             en: {
                 setupTitle: "Setup Profile", focusPerf: "🚀 Focus Performance", weightLoss: "⚖️ Weight Loss",
@@ -110,7 +111,8 @@
                 nutritionGuide: "NUTRITION GUIDE", weeklySchedule: "📅 WEEKLY SCHEDULE",
                 leaderboard: "LEADERBOARD", weeklyMileage: "Weekly Mileage (7 Days)",
                 currentWeight: "CURRENT WEIGHT", weightTarget: "WEIGHT (TARGET:",
-                targetRaceDay: "TARGET RACE DAY", runner: "Runner:", planStarted: "Plan Started", daysLeft: "Days Left", raceDay: "RACE DAY!"
+                targetRaceDay: "TARGET RACE DAY", runner: "Runner:", planStarted: "Plan Started", daysLeft: "Days Left", raceDay: "RACE DAY!",
+                distPlace: "DIST(KM)", pacePlace: "PACE", elevPlace: "ELEV(m)", hrPlace: "HR", spmPlace: "SPM", durationPlace: "MINS"
             }
         };
 
@@ -153,38 +155,42 @@
             return `${Math.round(hrr*min)+Number(rhr||60)}-${Math.round(hrr*max)+Number(rhr||60)} bpm`;
         };
 
-        const generateFeedback = (dist, pace, hr, targetPaceStr, actType = 'Run', cadence = '') => {
+        const generateFeedback = (dist, pace, hr, targetPaceStr, actType = 'Run', cadence = '', elevation = '', duration = '') => {
             let cadenceFeedback = "";
-            if (actType === 'Run' && cadence) {
-                const spm = Number(cadence);
-                if (spm > 0 && spm < 160) {
-                    cadenceFeedback = ` ⚠️ รอบขาของคุณค่อนข้างต่ำ (${spm} SPM) ระวัง Overstride และอาการเจ็บเข่านะครับ ลองซอยเท้าให้ถี่ขึ้นแตะ 170+ SPM ครับ`;
-                } else if (spm >= 170) {
-                    cadenceFeedback = ` 🏃‍♂️ รอบขาเยี่ยมมาก (${spm} SPM) พับเข่าและดึงเท้าได้ดีครับ เซฟข้อต่อได้เยอะเลย!`;
-                } else if (spm > 0) {
-                    cadenceFeedback = ` 👍 รอบขาอยู่ในเกณฑ์กำลังดี (${spm} SPM) คุมให้สม่ำเสมอนะครับ`;
+            let elevFeedback = "";
+            
+            if (elevation && Number(elevation) > 50) elevFeedback = ` (บวกกับความชัน ${elevation} เมตร ⛰️ ทนทานสุดๆ)`;
+            
+            if (actType === 'Run' || actType === 'Trail') {
+                if (cadence) {
+                    const spm = Number(cadence);
+                    if (spm > 0 && spm < 160) {
+                        cadenceFeedback = ` ⚠️ รอบขาของคุณค่อนข้างต่ำ (${spm} SPM) ระวัง Overstride และอาการเจ็บเข่านะครับ ลองซอยเท้าให้ถี่ขึ้นแตะ 170+ SPM ครับ`;
+                    } else if (spm >= 170) {
+                        cadenceFeedback = ` 🏃‍♂️ รอบขาเยี่ยมมาก (${spm} SPM) พับเข่าและดึงเท้าได้ดีครับ เซฟข้อต่อได้เยอะเลย!`;
+                    } else if (spm > 0) {
+                        cadenceFeedback = ` 👍 รอบขาอยู่ในเกณฑ์กำลังดี (${spm} SPM) คุมให้สม่ำเสมอนะครับ`;
+                    }
                 }
             }
 
-            if(!pace || pace === '0:00') return "บันทึกสถิติสำเร็จ! วินัยคือหัวใจสำคัญครับ 🏃‍♂️" + cadenceFeedback;
-            
-            if (actType === 'Trail') return "⛰️ ลุยเทรลมาใช่ไหมครับ! เพซเทรลจะช้ากว่าถนนปกติ AI จะไม่นำเพซนี้ไปฉุด VCR ของคุณลง ถือว่าได้ฝึกความแข็งแรงกล้ามเนื้อแบบเต็มๆ ครับ!" + cadenceFeedback;
-            if (actType === 'Swim') return "🏊‍♂️ ว่ายน้ำเป็นการ Cross-Training (เซฟข้อต่อ) ที่ยอดเยี่ยมตามหลักสูตรครูดินครับ! AI บันทึกสะสมไมล์ให้โดยไม่กระทบสถิติเพซวิ่งครับ";
-            if (actType === 'Bike') return "🚴‍♂️ ปั่นจักรยานช่วยสลับการใช้กล้ามเนื้อและสร้าง Aerobic Base ได้ดีมาก AI บันทึกผลให้เรียบร้อยครับ!";
-            if (actType === 'Other') return "🏋️‍♂️ ยอดเยี่ยมครับ! การเสริมสร้างความแข็งแรง (Strength) จะช่วยให้การวิ่งมาราธอนของคุณทนทานขึ้นครับ";
+            if (actType === 'Trail') return `⛰️ ลุยเทรลมาใช่ไหมครับ! เพซเทรลจะช้ากว่าถนนปกติ${elevFeedback} AI จะไม่นำเพซนี้ไปฉุด VCR ของคุณลง ถือว่าได้ฝึกความแข็งแรงกล้ามเนื้อแบบเต็มๆ ครับ!` + cadenceFeedback;
+            if (actType === 'Swim') return `🏊‍♂️ ว่ายน้ำ ${duration} นาที เป็นการ Cross-Training (เซฟข้อต่อ) ที่ยอดเยี่ยมตามหลักสูตรครูดินครับ! AI บันทึกความล้าให้โดยไม่กระทบสถิติเพซวิ่งครับ`;
+            if (actType === 'Bike') return `🚴‍♂️ ปั่นจักรยานช่วยสลับการใช้กล้ามเนื้อและสร้าง Aerobic Base ได้ดีมาก AI บันทึกผลและระยะเวลา ${duration} นาที ให้เรียบร้อยครับ!`;
+            if (actType === 'Other') return `🏋️‍♂️ ยอดเยี่ยมครับ! การเสริมสร้างความแข็งแรง (Strength) ระยะเวลา ${duration} นาที จะช่วยให้การวิ่งมาราธอนของคุณทนทานขึ้นครับ`;
 
-            if(!targetPaceStr || targetPaceStr === '-') return "บันทึกสถิติสำเร็จ! วินัยคือหัวใจสำคัญครับ 🏃‍♂️" + cadenceFeedback;
+            if(!pace || pace === '0:00') return "บันทึกสถิติสำเร็จ! วินัยคือหัวใจสำคัญครับ 🏃‍♂️" + elevFeedback + cadenceFeedback;
             
             const pSecs = parsePace(pace);
             const tSecsArr = targetPaceStr.split(' - ').map(parsePace);
             if(tSecsArr.length >= 1 && tSecsArr[0] !== Infinity) {
                 const minT = Math.min(...tSecsArr);
                 const maxT = Math.max(...tSecsArr);
-                if(pSecs < minT - 15) return "วิ่งเร็วกว่าเป้าหมาย! ⚡ ครูดินบอกเสมอว่าซ้อมเร็วกว่ากำหนดระวังจะกรอบ ยืดเหยียดให้เยอะๆ ครับ" + cadenceFeedback;
-                if(pSecs > maxT + 15) return "เพซช้ากว่าเป้านิดหน่อย แต่ร่างกายได้สร้างความทนทาน (Endurance) ถือว่าเยี่ยมครับ 🐢" + cadenceFeedback;
-                return "เพอร์เฟกต์! 🎯 คุมเพซและหัวใจได้ตรงแผนเป๊ะ ร่างกายกำลังพัฒนาไปถูกทางตามหลักสูตรครับ" + cadenceFeedback;
+                if(pSecs < minT - 15) return "วิ่งเร็วกว่าเป้าหมาย! ⚡ ครูดินบอกเสมอว่าซ้อมเร็วกว่ากำหนดระวังจะกรอบ ยืดเหยียดให้เยอะๆ ครับ" + elevFeedback + cadenceFeedback;
+                if(pSecs > maxT + 15) return "เพซช้ากว่าเป้านิดหน่อย แต่ร่างกายได้สร้างความทนทาน (Endurance) ถือว่าเยี่ยมครับ 🐢" + elevFeedback + cadenceFeedback;
+                return "เพอร์เฟกต์! 🎯 คุมเพซและหัวใจได้ตรงแผนเป๊ะ ร่างกายกำลังพัฒนาไปถูกทางตามหลักสูตรครับ" + elevFeedback + cadenceFeedback;
             }
-            return "ยอดเยี่ยมมากครับ! เก็บสะสมไมล์ไปเรื่อยๆ ความฟิตจะตามมาเอง 🏆" + cadenceFeedback;
+            return "ยอดเยี่ยมมากครับ! เก็บสะสมไมล์ไปเรื่อยๆ ความฟิตจะตามมาเอง 🏆" + elevFeedback + cadenceFeedback;
         };
 
         const calcCondition = (hr, pace) => {
@@ -567,10 +573,13 @@
             }
         };
 
-        const TabTracker = ({ score, daily, updateDaily, cfg, inDist, setInDist, inPace, setInPace, inHr, setInHr, inCadence, setInCadence, inAct, setInAct, saveRun, targetWater, isHotWeather, setIsHotWeather, lang }) => {
+        const TabTracker = ({ score, daily, updateDaily, cfg, inDist, setInDist, inPace, setInPace, inHr, setInHr, inCadence, setInCadence, inElevation, setInElevation, inDuration, setInDuration, inAct, setInAct, saveRun, targetWater, isHotWeather, setIsHotWeather, lang }) => {
             const t = i18n[lang];
             const [isScanning, setIsScanning] = useState(false);
             const [scanError, setScanError] = useState('');
+
+            // 🛠️ เช็คประเภทกีฬา เพื่อปรับ UI การกรอกให้ตรงเป้าหมาย
+            const isRunOrTrail = inAct === 'Run' || inAct === 'Trail';
 
             const handleScanImage = async (e) => {
                 const file = e.target.files[0];
@@ -623,9 +632,11 @@
 
                         const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${secretKey}`;
                         
-                        const promptText = "Extract workout data from this fitness app screenshot (e.g., Zepp, Garmin, Strava). The UI is likely in Thai. Map Thai words correctly (e.g., 'ระยะทาง' = distance, 'ฝีเท้าเฉลี่ย' = pace, 'อัตราการเต้นหัวใจ' = hr, 'รอบขา' or 'ก้าว/นาที' or 'spm' = cadence). " +
-                                           "Return ONLY a valid JSON object without markdown. Keys needed: 'distance' (number, MUST be in kilometers. If image shows meters like 1550 ม., convert to 1.55), " +
-                                           "'pace' (string, average pace MM:SS), 'hr' (number, average heart rate bpm), 'cadence' (number, average steps per minute or cadence. Usually between 140-200. E.g., if it says 165 spm, return 165), " +
+                        // 🛠️ อัปเดตคำสั่ง AI ให้สแกนหา เวลา (duration) และ ความชัน (elevation) ด้วย
+                        const promptText = "Extract workout data from this fitness app screenshot (e.g., Zepp, Garmin, Strava). The UI is likely in Thai. Map Thai words correctly (e.g., 'ระยะทาง' = distance, 'ฝีเท้าเฉลี่ย' = pace, 'อัตราการเต้นหัวใจ' = hr, 'รอบขา' or 'ก้าว/นาที' or 'spm' = cadence, 'เวลา' or 'duration' = duration, 'ความชัน' or 'elevation' = elevation). " +
+                                           "Return ONLY a valid JSON object without markdown. Keys needed: 'distance' (number, MUST be in kilometers), " +
+                                           "'pace' (string, average pace MM:SS), 'hr' (number, average heart rate bpm), 'cadence' (number, average spm), " +
+                                           "'duration' (number in minutes, e.g. 1h 30m = 90), 'elevation' (number in meters), " +
                                            "'type' (string: strictly guess from 'Run', 'Trail', 'Swim', 'Bike', or 'Other' based on context like การวิ่งเทรล, ว่ายน้ำ). If unable to find a value, leave it empty.";
 
                         const payload = {
@@ -645,6 +656,8 @@
                                         pace: { type: "STRING" },
                                         hr: { type: "NUMBER" },
                                         cadence: { type: "NUMBER" },
+                                        duration: { type: "NUMBER" },
+                                        elevation: { type: "NUMBER" },
                                         type: { type: "STRING" }
                                     }
                                 }
@@ -665,6 +678,8 @@
                             if(data.pace) setInPace(data.pace.toString());
                             if(data.hr) setInHr(data.hr.toString());
                             if(data.cadence) setInCadence(data.cadence.toString());
+                            if(data.duration) setInDuration(data.duration.toString());
+                            if(data.elevation) setInElevation(data.elevation.toString());
                             if(data.type) setInAct(data.type.toString());
                             setScanError(''); 
                         } else {
@@ -731,7 +746,7 @@
                                         <option value="Trail">⛰️ Trail</option>
                                         <option value="Swim">🏊‍♂️ Swim</option>
                                         <option value="Bike">🚴‍♂️ Bike</option>
-                                        <option value="Other">🏋️‍♂️ Other</option>
+                                        <option value="Other">🏋️‍♂️ Other (Weight/Yoga)</option>
                                     </select>
                                     <label className={`flex-[2] border ${isScanning ? 'bg-zinc-800 border-cyan-800 text-cyan-500' : 'bg-cyan-950/30 border-cyan-800 text-cyan-400 hover:bg-cyan-900/50'} p-4 rounded-xl text-center font-bold text-xs flex justify-center items-center gap-2 cursor-pointer active:scale-95 transition-all`}>
                                         {isScanning ? <span className="animate-pulse">🔄 AI กำลังสแกนรูป...</span> : <>📸 สแกนรูปจากนาฬิกา / Strava<input type="file" accept="image/*" className="hidden" onChange={handleScanImage} /></>}
@@ -739,13 +754,24 @@
                                 </div>
                                 {scanError && <p className="text-red-400 text-xs font-bold text-center mb-4 bg-red-500/10 p-2 rounded-lg border border-red-500/20">{scanError}</p>}
 
-                                <div className="grid grid-cols-4 gap-2 mb-6">
-                                    <input type="number" value={inDist} onChange={e=>setInDist(e.target.value)} className="bg-black p-3 rounded-xl border border-zinc-700 text-center font-bold text-sm md:text-lg text-white outline-none focus:border-[#bef264]" placeholder="KM"/>
-                                    <input type="text" value={inPace} onChange={e=>setInPace(e.target.value)} className="bg-black p-3 rounded-xl border border-zinc-700 text-center font-bold text-sm md:text-lg text-white outline-none focus:border-[#bef264]" placeholder="PACE"/>
-                                    <input type="number" value={inHr} onChange={e=>setInHr(e.target.value)} className="bg-black p-3 rounded-xl border border-zinc-700 text-center font-bold text-sm md:text-lg text-white outline-none focus:border-[#bef264]" placeholder="HR"/>
-                                    <input type="number" value={inCadence} onChange={e=>setInCadence(e.target.value)} className="bg-black p-3 rounded-xl border border-zinc-700 text-center font-bold text-sm md:text-lg text-white outline-none focus:border-[#bef264]" placeholder="SPM"/>
-                                </div>
-                                <button onClick={saveRun} disabled={!inDist || !inPace} className="w-full suunto-bg-accent py-5 rounded-xl uppercase tracking-widest text-sm font-black disabled:opacity-30 disabled:grayscale transition-all active:scale-95 shadow-[0_0_15px_rgba(190,242,100,0.1)]">{t.saveActivity}</button>
+                                {/* 🛠️ อัปเดตช่องกรอกข้อมูลแบบ Dynamic ตามชนิดกีฬา */}
+                                {isRunOrTrail ? (
+                                    <div className="grid grid-cols-2 md:grid-cols-5 gap-2 mb-6">
+                                        <input type="number" value={inDist} onChange={e=>setInDist(e.target.value)} className="bg-black p-3 rounded-xl border border-zinc-700 text-center font-bold text-sm md:text-lg text-white outline-none focus:border-[#bef264]" placeholder={t.distPlace}/>
+                                        <input type="text" value={inPace} onChange={e=>setInPace(e.target.value)} className="bg-black p-3 rounded-xl border border-zinc-700 text-center font-bold text-sm md:text-lg text-white outline-none focus:border-[#bef264]" placeholder={t.pacePlace}/>
+                                        <input type="number" value={inElevation} onChange={e=>setInElevation(e.target.value)} className="bg-black p-3 rounded-xl border border-zinc-700 text-center font-bold text-sm md:text-lg text-white outline-none focus:border-cyan-400" placeholder={t.elevPlace}/>
+                                        <input type="number" value={inHr} onChange={e=>setInHr(e.target.value)} className="bg-black p-3 rounded-xl border border-zinc-700 text-center font-bold text-sm md:text-lg text-white outline-none focus:border-red-400" placeholder={t.hrPlace}/>
+                                        <input type="number" value={inCadence} onChange={e=>setInCadence(e.target.value)} className="bg-black p-3 rounded-xl border border-zinc-700 text-center font-bold text-sm md:text-lg text-white outline-none focus:border-orange-400" placeholder={t.spmPlace}/>
+                                    </div>
+                                ) : (
+                                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 mb-6">
+                                        <input type="number" value={inDuration} onChange={e=>setInDuration(e.target.value)} className="bg-black p-3 rounded-xl border border-zinc-700 text-center font-bold text-sm md:text-lg text-white outline-none focus:border-[#bef264]" placeholder={t.durationPlace}/>
+                                        <input type="number" value={inDist} onChange={e=>setInDist(e.target.value)} className="bg-black p-3 rounded-xl border border-zinc-700 text-center font-bold text-sm md:text-lg text-white outline-none focus:border-[#bef264]" placeholder={t.distPlace}/>
+                                        <input type="number" value={inHr} onChange={e=>setInHr(e.target.value)} className="bg-black p-3 rounded-xl border border-zinc-700 text-center font-bold text-sm md:text-lg text-white outline-none focus:border-red-400" placeholder={t.hrPlace}/>
+                                    </div>
+                                )}
+
+                                <button onClick={saveRun} disabled={isRunOrTrail ? (!inDist || !inPace) : !inDuration} className="w-full suunto-bg-accent py-5 rounded-xl uppercase tracking-widest text-sm font-black disabled:opacity-30 disabled:grayscale transition-all active:scale-95 shadow-[0_0_15px_rgba(190,242,100,0.1)]">{t.saveActivity}</button>
                             </div>
                         )}
                         
@@ -755,12 +781,21 @@
                                     <p className="suunto-accent font-black text-sm uppercase tracking-widest">{t.activityLogged}</p>
                                     <button onClick={()=>updateDaily('rLog', false)} className="text-xs text-zinc-400 uppercase font-bold hover:text-white underline">{t.edit}</button>
                                 </div>
-                                <div className="bg-black p-4 rounded-xl border border-zinc-800 mb-6 grid grid-cols-5 text-center gap-1">
+                                {/* 🛠️ อัปเดต UI หน้า Logged ตามชนิดกีฬา */}
+                                <div className={`bg-black p-4 rounded-xl border border-zinc-800 mb-6 grid ${daily.rType === 'Run' || daily.rType === 'Trail' ? 'grid-cols-4 md:grid-cols-6' : 'grid-cols-3 md:grid-cols-4'} text-center gap-2`}>
                                     <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">TYPE</p><p className="text-white font-black text-sm md:text-lg italic">{daily.rType === 'Run' ? '🏃‍♂️' : daily.rType === 'Trail' ? '⛰️' : daily.rType === 'Swim' ? '🏊‍♂️' : daily.rType === 'Bike' ? '🚴‍♂️' : '🏋️‍♂️'}</p></div>
-                                    <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">DIST</p><p className="text-white font-black text-sm md:text-lg italic">{daily.rDist} <span className="text-[9px] font-normal text-zinc-500">km</span></p></div>
-                                    <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">PACE</p><p className="text-white font-black text-sm md:text-lg italic">{daily.rPace}</p></div>
-                                    <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">HR</p><p className="text-white font-black text-sm md:text-lg italic">{daily.rHr || '-'}</p></div>
-                                    <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">SPM</p><p className="text-white font-black text-sm md:text-lg italic">{daily.rCadence || '-'}</p></div>
+                                    
+                                    {(daily.rType === 'Run' || daily.rType === 'Trail' || daily.rDist) && <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">DIST</p><p className="text-white font-black text-sm md:text-lg italic">{daily.rDist || '-'} <span className="text-[9px] font-normal text-zinc-500">km</span></p></div>}
+                                    
+                                    {(daily.rType === 'Run' || daily.rType === 'Trail') && <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">PACE</p><p className="text-white font-black text-sm md:text-lg italic">{daily.rPace || '-'}</p></div>}
+                                    
+                                    {(!['Run', 'Trail'].includes(daily.rType)) && <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">MINS</p><p className="text-white font-black text-sm md:text-lg italic">{daily.rDuration || '-'}</p></div>}
+                                    
+                                    {(daily.rType === 'Run' || daily.rType === 'Trail') && <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">ELEV</p><p className="text-white font-black text-sm md:text-lg italic text-cyan-400">{daily.rElevation || '-'}</p></div>}
+                                    
+                                    <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">HR</p><p className="text-white font-black text-sm md:text-lg italic text-red-400">{daily.rHr || '-'}</p></div>
+                                    
+                                    {(daily.rType === 'Run' || daily.rType === 'Trail') && <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">SPM</p><p className="text-white font-black text-sm md:text-lg italic text-orange-400">{daily.rCadence || '-'}</p></div>}
                                 </div>
                                 <h4 className="text-xs font-black text-orange-400 uppercase tracking-widest mb-3">{t.aiFeedback}</h4>
                                 <p className="text-base font-bold text-zinc-200 leading-relaxed mb-5">{daily.aiFeedback}</p>
@@ -1199,13 +1234,15 @@
             });
 
             const todayStr = new Date().toDateString();
-            const [daily, setDaily] = useState(prof.records?.[todayStr] || { w:0, b:false, l:false, s:false, d:false, ex:[false,false,false,false], rLog:false, rDist:'', rPace:'', rHr:'', rCadence:'', rType:'Run', aiFeedback: '', perfCondition: '', vcrUpgraded: false, newVcrVal: 0, isSick: false });
+            const [daily, setDaily] = useState(prof.records?.[todayStr] || { w:0, b:false, l:false, s:false, d:false, ex:[false,false,false,false], rLog:false, rDist:'', rPace:'', rHr:'', rCadence:'', rElevation:'', rDuration:'', rType:'Run', aiFeedback: '', perfCondition: '', vcrUpgraded: false, newVcrVal: 0, isSick: false, tss: 0 });
             
             const [inAct, setInAct] = useState(daily.rType || 'Run');
             const [inDist, setInDist] = useState(daily.rDist || '');
             const [inPace, setInPace] = useState(daily.rPace || '');
             const [inHr, setInHr] = useState(daily.rHr || '');
             const [inCadence, setInCadence] = useState(daily.rCadence || '');
+            const [inElevation, setInElevation] = useState(daily.rElevation || '');
+            const [inDuration, setInDuration] = useState(daily.rDuration || '');
             
             const [leaderboardData, setLeaderboardData] = useState([]);
             const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'profiles', safeName);
@@ -1259,28 +1296,36 @@
             };
 
             const saveRun = () => {
-                const rSecs = parsePace(inPace); const dNum = parseFloat(inDist);
+                const isRunOrTrail = inAct === 'Run' || inAct === 'Trail';
+                const rSecs = isRunOrTrail ? parsePace(inPace) : 0; 
+                const dNum = parseFloat(inDist) || 0;
+                
                 let currentVcr = prof.vcr || 4500; let upgraded = false;
-                if (rSecs !== Infinity && dNum >= 3 && inAct === 'Run') {
+                // 🛠️ อัปเกรด VCR เฉพาะวิ่งเท่านั้น
+                if (isRunOrTrail && rSecs !== Infinity && dNum >= 3 && inAct === 'Run') {
                     const equiv = (1800 / rSecs) * 1000;
                     if (equiv > currentVcr + 100) { currentVcr = Math.round(equiv); upgraded = true; }
                 }
+                
                 let prevDate = new Date();
                 prevDate.setDate(prevDate.getDate() - 1);
                 const wasSickYesterday = prof.records?.[prevDate.toDateString()]?.isSick || false;
 
                 const cfgToday = getDayConfig(new Date(), weekIdx, false, prof, isHotWeather, wasSickYesterday);
                 
-                const ai = generateFeedback(dNum, inPace, inHr, cfgToday.pace, inAct, inCadence);
+                // 🛠️ ส่งค่า inElevation และ inDuration ไปให้ AI ช่วยวิจารณ์
+                const ai = generateFeedback(dNum, inPace, inHr, cfgToday.pace, inAct, inCadence, inElevation, inDuration);
                 const perf = calcCondition(inHr, inPace);
                 
                 const hrNum = Number(inHr) || prof.rhr || 60;
                 const maxHr = 220 - (prof.age || 35);
                 const intensity = hrNum / maxHr;
-                const runMinutes = dNum * (rSecs / 60);
+                
+                // 🛠️ คำนวณเวลาซ้อม: ถ้าวิ่งคำนวณจากเพซ ถ้าเวท/ปั่นให้ใช้เวลาที่กรอกมา
+                const runMinutes = isRunOrTrail ? (dNum * (rSecs / 60)) : (parseFloat(inDuration) || 0);
                 const todayTss = Math.round(runMinutes * intensity * 1.5); 
 
-                const nd = {...daily, rLog: true, rDist: inDist, rPace: inPace, rHr: inHr, rCadence: inCadence, rType: inAct, aiFeedback: ai, perfCondition: perf, vcrUpgraded: upgraded, newVcrVal: currentVcr, tss: todayTss};
+                const nd = {...daily, rLog: true, rDist: inDist, rPace: inPace, rHr: inHr, rCadence: inCadence, rElevation: inElevation, rDuration: inDuration, rType: inAct, aiFeedback: ai, perfCondition: perf, vcrUpgraded: upgraded, newVcrVal: currentVcr, tss: todayTss};
                 
                 setDaily(nd);
                 const nProf = {...prof, vcr: currentVcr, records: {...prof.records, [todayStr]: nd}};
@@ -1383,7 +1428,6 @@
                             <p className="text-xs md:text-sm font-bold text-zinc-400 mt-2 tracking-widest uppercase">{t.runner} <span className="text-white">{profileName}</span></p>
                         </div>
                         <div className="flex flex-col sm:flex-row gap-2 shrink-0">
-                            {/* 🌐 ปุ่มเปลี่ยนภาษา (Language Toggle) */}
                             <button onClick={toggleLang} className="suunto-card p-3 w-14 h-14 md:p-4 md:w-16 md:h-16 flex flex-col items-center justify-center active:scale-95 transition-transform hover:bg-zinc-800">
                                 <span className="text-sm md:text-base font-black text-white">{lang === 'th' ? 'EN' : 'TH'}</span>
                                 <span className="text-[9px] md:text-[10px] font-black uppercase text-zinc-500">LANG</span>
@@ -1454,7 +1498,7 @@
                     </nav>
 
                     <main className="animate-in fade-in duration-300">
-                        {activeTab === 'tracker' && <TabTracker score={score} daily={daily} updateDaily={updateDaily} cfg={cfg} inDist={inDist} setInDist={setInDist} inPace={inPace} setInPace={setInPace} inHr={inHr} setInHr={setInHr} inCadence={inCadence} setInCadence={setInCadence} inAct={inAct} setInAct={setInAct} saveRun={saveRun} targetWater={targetWater} isHotWeather={isHotWeather} setIsHotWeather={setIsHotWeather} lang={lang} />}
+                        {activeTab === 'tracker' && <TabTracker score={score} daily={daily} updateDaily={updateDaily} cfg={cfg} inDist={inDist} setInDist={setInDist} inPace={inPace} setInPace={setInPace} inHr={inHr} setInHr={setInHr} inCadence={inCadence} setInCadence={setInCadence} inElevation={inElevation} setInElevation={setInElevation} inDuration={inDuration} setInDuration={setInDuration} inAct={inAct} setInAct={setInAct} saveRun={saveRun} targetWater={targetWater} isHotWeather={isHotWeather} setIsHotWeather={setIsHotWeather} lang={lang} />}
                         {activeTab === 'plan' && <TabPlan cfg={cfg} prof={prof} weekIdx={weekIdx} isHotWeather={isHotWeather} updateDaily={updateDaily} todayStr={todayStr} lang={lang} />}
                         {activeTab === 'ranking' && <TabRanking leaderboardData={leaderboardData} lang={lang} />}
                         {activeTab === 'stats' && <TabStats prof={prof} vo2Value={vo2Value} tDist={tDist} pTime={pTime} pSource={pSource} fastest5kSecs={f5k} fastest10kSecs={f10k} longestRun={longestRun} achievements={achievements} currentTss={totalTss7Days} lang={lang} />}
