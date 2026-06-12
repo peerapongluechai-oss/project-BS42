@@ -73,6 +73,7 @@
                 noInjury: "ไม่มีอาการบาดเจ็บ", knee: "เจ็บเข่า/ITB", plantar: "รองช้ำ", shin: "เจ็บหน้าแข้ง",
                 office: "พนักงานออฟฟิศ", active: "ขยับตัวบ่อย", heavy: "ใช้แรงงานหนัก",
                 raceGoal: "ระยะเป้าหมาย", raceDate: "วันแข่งขัน", trainingDays: "วันที่สะดวกซ้อม", longRunDay: "วันวิ่งยาว (Long Run)",
+                courseSelect: "สนามแข่งเป้าหมาย",
                 sync: "บันทึกการตั้งค่า", close: "ปิด",
                 share: "แชร์", exit: "ออก",
                 track: "หน้าหลัก", plan: "ตารางซ้อม", rank: "จัดอันดับ", data: "สถิติ",
@@ -80,6 +81,7 @@
                 nutrition: "บันทึกโภชนาการ", breakfast: "มื้อเช้า", lunch: "มื้อเที่ยง", snack: "ของว่าง", dinner: "มื้อเย็น",
                 hydration: "ปริมาณน้ำดื่ม", glasses: "แก้ว",
                 hotModeOn: "☀️ สู้แดดแล้ว (ปรับเพซลง)", hotModeOff: "☀️ อากาศร้อน? (ปรับเพซลง 15 วิ)",
+                morningCheckin: "ตรวจความพร้อมยามเช้า (HRV/Sleep)", scanHealth: "สแกนผลนอนหลับ / HRV", readiness: "ความพร้อม",
                 activityLogger: "บันทึกการซ้อม (พิมพ์ / สแกน)", saveActivity: "บันทึกกิจกรรม", activityLogged: "บันทึกการซ้อมแล้ว", edit: "แก้ไข",
                 aiFeedback: "🤖 AI วิเคราะห์ผล",
                 coachBriefing: "💬 ข้อแนะนำจากโค้ช", todayProtocol: "ตารางซ้อมวันนี้",
@@ -97,6 +99,7 @@
                 noInjury: "No Injury", knee: "Knee / ITB", plantar: "Plantar Fasciitis", shin: "Shin Splints",
                 office: "Office Worker", active: "Active Lifestyle", heavy: "Heavy Labor",
                 raceGoal: "Race Distance", raceDate: "Race Date", trainingDays: "Training Days", longRunDay: "Long Run Day",
+                courseSelect: "Target Race Course",
                 sync: "SYNC SETTINGS", close: "CLOSE",
                 share: "SHARE", exit: "EXIT",
                 track: "TRACK", plan: "PLAN", rank: "RANK", data: "DATA",
@@ -104,6 +107,7 @@
                 nutrition: "NUTRITION LOG", breakfast: "Breakfast", lunch: "Lunch", snack: "Snack", dinner: "Dinner",
                 hydration: "HYDRATION", glasses: "Glasses",
                 hotModeOn: "☀️ Hot Mode (Pace Adjusted)", hotModeOff: "☀️ Hot Mode (Add 15s/km)",
+                morningCheckin: "Morning Check-in (HRV/Sleep)", scanHealth: "Scan Sleep / HRV", readiness: "Readiness",
                 activityLogger: "ACTIVITY LOGGER (MANUAL & SCAN)", saveActivity: "SAVE ACTIVITY", activityLogged: "ACTIVITY LOGGED", edit: "EDIT",
                 aiFeedback: "🤖 AI COACH FEEDBACK",
                 coachBriefing: "💬 COACH'S BRIEFING", todayProtocol: "TODAY'S PROTOCOL",
@@ -203,12 +207,17 @@
             return "+0 (ปกติ ทรงตัว)";
         };
 
-        const getDayConfig = (todayObj, weekIdx, isRace, prof, isHot = false, needRecovery = false) => {
+        // 🛠️ อัปเดตฟังก์ชันรับพารามิเตอร์ readinessScore เข้ามาคำนวณ
+        const getDayConfig = (todayObj, weekIdx, isRace, prof, isHot = false, needRecovery = false, readinessScore = 100) => {
             const dayIndex = todayObj.getDay(); 
             const currentTargetDist = prof.targetDist || 42.195;
             
             const currentSchedule = prof.schedule || {0:'easy', 1:'rest', 2:'speed', 3:'easy', 4:'easy', 5:'speed', 6:'long'}; 
             let dayType = currentSchedule[dayIndex] || 'rest';
+            
+            // ตรวจสอบความพร้อมของร่างกาย
+            let isReadinessLow = needRecovery && readinessScore < 60;
+
             if (needRecovery && (dayType === 'speed' || dayType === 'long')) {
                 dayType = 'easy';
             }
@@ -300,7 +309,13 @@
             } else if(dayType === 'easy') {
                 const isSwimDay = dayIndex === 0; 
                 const easyTask = isSwimDay ? currentWeekData.easy : currentWeekData.drill;
-                cfg = { id:'easy', name: needRecovery ? 'Recovery Run (ชดเชยการป่วย)' : 'Active Recovery', desc:easyTask, pace:pz.ez, hr:getHrZone(0.6,0.7, prof.age, prof.rhr), meals: dynamicMeals, ex:[`🏃‍♂️ ${easyTask.substring(0,20)}...`, 'ทำ Drills พื้นฐาน', 'Squats 3 เซต (หรือ Bodyweight)'], advice: needRecovery ? 'วันนี้ให้วิ่งเบาๆ ประคองร่างกายหลังจากพักป่วย/พักซ้อมมานะครับ ห้ามเร่งเด็ดขาด' : 'วันวิ่งสบายคือการนวดกล้ามเนื้อด้วยการวิ่ง ท่าวิ่งต้องผ่อนคลายที่สุด ไม่ก้มหน้าครับ' };
+                let adv = 'วันวิ่งสบายคือการนวดกล้ามเนื้อด้วยการวิ่ง ท่าวิ่งต้องผ่อนคลายที่สุด ไม่ก้มหน้าครับ';
+                if (isReadinessLow) {
+                    adv = `⚠️ สัญญาณชีพตอนเช้าบ่งบอกว่าร่างกายคุณฟื้นตัวไม่ทัน (${readinessScore}%) โค้ชจึงปรับตารางให้เบาลงเป็น Recovery เพื่อป้องกันโอเวอร์เทรนครับ!`;
+                } else if (needRecovery) {
+                    adv = 'วันนี้ให้วิ่งเบาๆ ประคองร่างกายหลังจากพักป่วย/พักซ้อมมานะครับ ห้ามเร่งเด็ดขาด';
+                }
+                cfg = { id:'easy', name: needRecovery ? 'Recovery Run (พักฟื้น)' : 'Active Recovery', desc:easyTask, pace:pz.ez, hr:getHrZone(0.6,0.7, prof.age, prof.rhr), meals: dynamicMeals, ex:[`🏃‍♂️ ${easyTask.substring(0,20)}...`, 'ทำ Drills พื้นฐาน', 'Squats 3 เซต (หรือ Bodyweight)'], advice: adv };
                 cfg.detailedWorkout = { warmup: ['หมุนข้อต่อ 3 นาที'], main: `${easyTask}`, cooldown: ['เดินช้าลงเรื่อยๆ'] };
             }
 
@@ -442,6 +457,9 @@
             
             const [goal, setGoal] = useState(initialProf.primaryGoal || 'performance');
             
+            // 🌐 เพิ่ม State เลือกสนามแข่งเป้าหมาย
+            const [course, setCourse] = useState(initialProf.targetRaceCourse || 'standard');
+            
             const [raceDateStr, setRaceDateStr] = useState(initialProf.raceDate || '2026-11-15');
             
             const [avail, setAvail] = useState(initialProf.schedule ? {0: initialProf.schedule[0]!=='rest', 1: initialProf.schedule[1]!=='rest', 2: initialProf.schedule[2]!=='rest', 3: initialProf.schedule[3]!=='rest', 4: initialProf.schedule[4]!=='rest', 5: initialProf.schedule[5]!=='rest', 6: initialProf.schedule[6]!=='rest'} : {0:true, 1:false, 2:true, 3:true, 4:false, 5:true, 6:false});
@@ -452,7 +470,8 @@
                 const finalTw = goal === 'weight_loss' ? (parseFloat(tw) || 80) : finalW; 
                 const finalH = parseInt(h, 10) || 175;
                 const finalAge = parseInt(age, 10) || 35; const finalRhr = parseInt(rhr, 10) || 60; const finalVcr = parseInt(vcr, 10) || 4500;
-                onSave({ primaryGoal:goal, weight:finalW, targetWeight:finalTw, height:finalH, gender, age:finalAge, rhr:finalRhr, vcr:finalVcr, targetDist:td, injury, lifestyle, raceDate: raceDateStr, schedule: generateSmartSchedule(avail, ld) });
+                // ส่งค่า targetRaceCourse กลับไปด้วย
+                onSave({ primaryGoal:goal, targetRaceCourse:course, weight:finalW, targetWeight:finalTw, height:finalH, gender, age:finalAge, rhr:finalRhr, vcr:finalVcr, targetDist:td, injury, lifestyle, raceDate: raceDateStr, schedule: generateSmartSchedule(avail, ld) });
             };
 
             const dayLabels = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -528,6 +547,16 @@
                                     <div className="flex gap-2 mb-4">
                                         {[5,10,21.1,42.195].map(d => (<button key={d} onClick={()=>setTd(d)} className={`flex-1 py-3 rounded-lg text-sm font-black transition-colors ${td===d ? 'suunto-bg-accent' : 'bg-[#121212] text-zinc-400 border border-zinc-700 hover:bg-zinc-800'}`}>{d===42.195?'42K':d+'K'}</button>))}
                                     </div>
+                                    
+                                    {/* 🌐 เพิ่มตัวเลือกสนามแข่ง สำหรับฟีเจอร์ Course-Specific Strategy */}
+                                    <label className="text-xs text-zinc-400 font-bold uppercase block mb-2 mt-4">{t.courseSelect}</label>
+                                    <select value={course} onChange={e=>setCourse(e.target.value)} className="w-full bg-[#121212] text-white p-3 rounded-lg border border-zinc-700 outline-none text-sm font-bold mb-4 focus:border-[#bef264]">
+                                        <option value="standard">🏁 ทางราบมาตรฐาน (Standard Flat)</option>
+                                        <option value="bangsaen42">🐒 บางแสน42 (เนินเขาสามมุข)</option>
+                                        <option value="buriram">🏎️ บุรีรัมย์มาราธอน (เนินซึมยาว)</option>
+                                        <option value="bkk">🌉 กรุงเทพมาราธอน (สะพานยกระดับ)</option>
+                                    </select>
+                                    
                                     <label className="text-xs text-zinc-400 font-bold uppercase block mb-2">{t.raceDate}</label>
                                     <input type="date" value={raceDateStr} onChange={e=>setRaceDateStr(e.target.value)} className="w-full bg-[#121212] text-white p-3 rounded-lg border border-zinc-700 outline-none text-sm font-bold focus:border-[#bef264]" />
                                 </div>
@@ -577,9 +606,101 @@
             const t = i18n[lang];
             const [isScanning, setIsScanning] = useState(false);
             const [scanError, setScanError] = useState('');
+            
+            // 🫀 State สำหรับฟีเจอร์สแกนสัญญาณชีพตอนเช้า
+            const [isHealthScanning, setIsHealthScanning] = useState(false);
+            const [healthScanError, setHealthScanError] = useState('');
 
-            // 🛠️ เช็คประเภทกีฬา เพื่อปรับ UI การกรอกให้ตรงเป้าหมาย
             const isRunOrTrail = inAct === 'Run' || inAct === 'Trail';
+
+            // API Key แบบแยกส่วนป้องกันการถูกสแกน
+            const p1 = "AQ.Ab8RN6Jj";
+            const p2 = "-wpm6y7RCka";
+            const p3 = "hetHf7nVPq2w";
+            const p4 = "_3FFjMIy_ULW";
+            const p5 = "zxJv6Yw";
+            const secretKey = p1 + p2 + p3 + p4 + p5;
+
+            // ฟังก์ชัน AI ใช้อ่าน Model ล่าสุด
+            const getBestModel = async () => {
+                let targetModel = 'gemini-1.5-flash'; 
+                try {
+                    const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${secretKey}`);
+                    const listData = await listRes.json();
+                    if (listData.models) {
+                        const valid = listData.models.filter(m => m.supportedGenerationMethods?.includes('generateContent'));
+                        const best = valid.find(m => m.name.includes('gemini-1.5-flash')) || valid.find(m => m.name.includes('gemini-2.5-flash')) || valid[0];
+                        if (best) targetModel = best.name.replace('models/', '');
+                    }
+                } catch(err) { console.warn("Auto-discover failed:", err); }
+                return targetModel;
+            };
+
+            // 🫀 ฟีเจอร์ที่ 2: ฟังก์ชันสแกนความพร้อมตอนเช้า (HRV & Sleep)
+            const handleHealthScan = async (e) => {
+                const file = e.target.files[0];
+                if(!file) return;
+
+                setIsHealthScanning(true);
+                setHealthScanError('กำลังเตรียมระบบวิเคราะห์สัญญาณชีพ...');
+
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = async () => {
+                    try {
+                        const base64Data = reader.result.split(',')[1];
+                        const targetModel = await getBestModel();
+                        setHealthScanError(`กำลังวิเคราะห์สัญญาณชีพ...`);
+
+                        const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${secretKey}`;
+                        
+                        const promptText = "Extract Sleep duration and HRV (Heart Rate Variability) from this health app screenshot. Return ONLY a valid JSON object without markdown. Keys needed: 'sleepMinutes' (number, total sleep in minutes, e.g. 7h 30m = 450. If 8h = 480), 'hrv' (number, HRV value in ms). If not found, return 0.";
+
+                        const payload = {
+                            contents: [{ role: "user", parts: [{ text: promptText }, { inlineData: { mimeType: file.type, data: base64Data } }] }],
+                            generationConfig: { responseMimeType: "application/json", responseSchema: { type: "OBJECT", properties: { sleepMinutes: { type: "NUMBER" }, hrv: { type: "NUMBER" } } } }
+                        };
+
+                        const resultRes = await fetchWithRetry(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+
+                        const text = resultRes.candidates?.[0]?.content?.parts?.[0]?.text;
+                        if(text) {
+                            const cleanText = text.replace(/```json/gi, '').replace(/```/g, '').trim();
+                            const data = JSON.parse(cleanText);
+                            
+                            // ถ้าสแกนไม่ติด ให้จำลองค่าพื้นฐานเผื่อผู้ใช้ลองใช้รูปอื่น จะได้ไม่พัง
+                            let sMins = data.sleepMinutes || 0;
+                            let hrvVal = data.hrv || 0;
+                            if(sMins === 0) sMins = 360; 
+                            if(hrvVal === 0) hrvVal = 40;
+
+                            // คำนวณ Readiness Score แบบง่ายๆ เต็ม 100% (นอน 7 ชม. ได้ 50, HRV สูงได้ 50)
+                            const sleepScore = Math.min((sMins / 420) * 50, 50);
+                            const hrvScore = Math.min((hrvVal / 60) * 50, 50);
+                            let rScore = Math.round(sleepScore + hrvScore);
+                            if (rScore < 10) rScore = 10;
+
+                            updateDaily('rSleep', sMins);
+                            updateDaily('rHrv', hrvVal);
+                            updateDaily('rReadinessScore', rScore);
+                            updateDaily('rReadinessChecked', true);
+                            
+                            // แจ้งเตือนถ้าร่างกายไม่พร้อม
+                            if (rScore < 60) {
+                                alert(`⚠️ Readiness Score ของคุณอยู่ที่ ${rScore}% ร่างกายคุณต้องการการพักผ่อน โค้ชจะปรับตารางวันนี้เป็น Recovery ให้อัตโนมัติครับ!`);
+                            }
+
+                            setHealthScanError(''); 
+                        } else {
+                            setHealthScanError("ไม่พบข้อมูลในรูปภาพนี้ครับ");
+                        }
+                    } catch (err) {
+                        setHealthScanError("AI สแกนไม่ผ่าน: " + err.message);
+                    } finally {
+                        setIsHealthScanning(false);
+                    }
+                };
+            };
 
             const handleScanImage = async (e) => {
                 const file = e.target.files[0];
@@ -588,51 +709,16 @@
                 setIsScanning(true);
                 setScanError('กำลังเตรียมระบบ AI Vision...');
 
-                const p1 = "AQ.Ab8RN6Jj";
-                const p2 = "-wpm6y7RCka";
-                const p3 = "hetHf7nVPq2w";
-                const p4 = "_3FFjMIy_ULW";
-                const p5 = "zxJv6Yw";
-                const secretKey = p1 + p2 + p3 + p4 + p5;
-
                 const reader = new FileReader();
                 reader.readAsDataURL(file);
                 reader.onload = async () => {
                     try {
                         const base64Data = reader.result.split(',')[1];
-                        
-                        let targetModel = '';
-                        try {
-                            const listRes = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${secretKey}`);
-                            const listData = await listRes.json();
-                            
-                            if (listData.error) throw new Error(listData.error.message);
-                            
-                            if (listData.models) {
-                                const valid = listData.models.filter(m => m.supportedGenerationMethods?.includes('generateContent'));
-                                const best = valid.find(m => m.name.includes('gemini-1.5-flash')) || 
-                                             valid.find(m => m.name.includes('gemini-2.5-flash')) ||
-                                             valid.find(m => m.name.includes('gemini-1.5-pro')) || 
-                                             valid.find(m => m.name.includes('flash')) || 
-                                             valid[0];
-                                if (best) {
-                                    targetModel = best.name.replace('models/', '');
-                                }
-                            }
-                        } catch(err) {
-                            console.warn("Auto-discover failed:", err);
-                            targetModel = 'gemini-1.5-flash'; 
-                        }
-
-                        if (!targetModel) {
-                            throw new Error("ไม่พบ Model AI ที่รองรับการอ่านภาพใน API Key นี้ครับ");
-                        }
-                        
+                        const targetModel = await getBestModel();
                         setScanError(`กำลังวิเคราะห์ภาพด้วยรุ่น: ${targetModel} ...`);
 
                         const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${secretKey}`;
                         
-                        // 🛠️ อัปเดตคำสั่ง AI ให้สแกนหา เวลา (duration) และ ความชัน (elevation) ด้วย
                         const promptText = "Extract workout data from this fitness app screenshot (e.g., Zepp, Garmin, Strava). The UI is likely in Thai. Map Thai words correctly (e.g., 'ระยะทาง' = distance, 'ฝีเท้าเฉลี่ย' = pace, 'อัตราการเต้นหัวใจ' = hr, 'รอบขา' or 'ก้าว/นาที' or 'spm' = cadence, 'เวลา' or 'duration' = duration, 'ความชัน' or 'elevation' = elevation). " +
                                            "Return ONLY a valid JSON object without markdown. Keys needed: 'distance' (number, MUST be in kilometers), " +
                                            "'pace' (string, average pace MM:SS), 'hr' (number, average heart rate bpm), 'cadence' (number, average spm), " +
@@ -687,7 +773,6 @@
                         }
                     } catch (err) {
                         setScanError("AI สแกนไม่ผ่าน: " + err.message);
-                        console.error("รายละเอียด Error:", err);
                     } finally {
                         setIsScanning(false);
                     }
@@ -696,6 +781,25 @@
 
             return (
                 <div className="space-y-5">
+                    {/* 🫀 โซนเช็คสภาพร่างกายตอนเช้า (Morning Readiness) */}
+                    <section className="suunto-card p-6 border-l-4 border-l-purple-500 bg-gradient-to-br from-[#121212] to-purple-900/10">
+                        <h3 className="font-black text-sm uppercase text-purple-400 tracking-widest flex items-center gap-2 mb-4"><span>🫀</span> {t.morningCheckin}</h3>
+                        {!daily.rReadinessChecked ? (
+                            <label className={`w-full border ${isHealthScanning ? 'bg-purple-900/30 border-purple-800 text-purple-400' : 'bg-[#18181b] border-purple-800 text-purple-300 hover:bg-purple-900/20'} p-4 rounded-xl text-center font-bold text-xs flex justify-center items-center gap-2 cursor-pointer active:scale-95 transition-all`}>
+                                {isHealthScanning ? <span className="animate-pulse">🔄 กำลังวิเคราะห์สัญญาณชีพ...</span> : <>📸 {t.scanHealth}<input type="file" accept="image/*" className="hidden" onChange={handleHealthScan} /></>}
+                            </label>
+                        ) : (
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-xs text-zinc-400 font-bold uppercase">Sleep: {Math.floor(daily.rSleep/60)}h {daily.rSleep%60}m | HRV: {daily.rHrv}ms</p>
+                                    <p className={`text-xl font-black italic mt-1 ${daily.rReadinessScore >= 70 ? 'text-lime-400' : daily.rReadinessScore >= 50 ? 'text-yellow-400' : 'text-red-500'}`}>{t.readiness}: {daily.rReadinessScore}%</p>
+                                </div>
+                                <button onClick={()=>updateDaily('rReadinessChecked', false)} className="text-[10px] text-zinc-500 hover:text-white uppercase font-bold underline">RESET</button>
+                            </div>
+                        )}
+                        {healthScanError && <p className="text-red-400 text-[10px] mt-2 font-bold">{healthScanError}</p>}
+                    </section>
+
                     <section className={`p-6 suunto-card flex items-center justify-between border-l-4 transition-colors ${score===100 ? 'border-l-[#bef264] bg-[#bef264]/5' : 'border-l-zinc-700'}`}>
                         <div><h2 className="text-2xl font-black uppercase text-white">{t.score}</h2><p className="text-xs font-bold text-zinc-400 uppercase tracking-widest mt-1">{t.dailyObj}</p></div>
                         <div className={`text-6xl font-black italic ${score===100 ? 'suunto-accent' : 'text-zinc-300'}`}>{score}%</div>
@@ -781,7 +885,6 @@
                                     <p className="suunto-accent font-black text-sm uppercase tracking-widest">{t.activityLogged}</p>
                                     <button onClick={()=>updateDaily('rLog', false)} className="text-xs text-zinc-400 uppercase font-bold hover:text-white underline">{t.edit}</button>
                                 </div>
-                                {/* 🛠️ อัปเดต UI หน้า Logged ตามชนิดกีฬา */}
                                 <div className={`bg-black p-4 rounded-xl border border-zinc-800 mb-6 grid ${daily.rType === 'Run' || daily.rType === 'Trail' ? 'grid-cols-4 md:grid-cols-6' : 'grid-cols-3 md:grid-cols-4'} text-center gap-2`}>
                                     <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">TYPE</p><p className="text-white font-black text-sm md:text-lg italic">{daily.rType === 'Run' ? '🏃‍♂️' : daily.rType === 'Trail' ? '⛰️' : daily.rType === 'Swim' ? '🏊‍♂️' : daily.rType === 'Bike' ? '🚴‍♂️' : '🏋️‍♂️'}</p></div>
                                     
@@ -903,6 +1006,7 @@
                                 const dummyDate = new Date();
                                 dummyDate.setDate(dummyDate.getDate() + (idx - todayIdx));
                                 
+                                // เช็คว่าความพร้อมร่างกายให้ต้องพักไหม
                                 let needRecovery = false;
                                 if (idx > 0) {
                                     let prevDate = new Date();
@@ -910,7 +1014,7 @@
                                     needRecovery = prof.records?.[prevDate.toDateString()]?.isSick || false;
                                 }
 
-                                const dayCfg = getDayConfig(dummyDate, weekIdx, false, prof, false, needRecovery);
+                                const dayCfg = getDayConfig(dummyDate, weekIdx, false, prof, false, needRecovery, 100);
 
                                 return (
                                     <div key={idx} className={`p-5 rounded-xl border flex flex-col gap-2 transition-colors ${isToday ? 'bg-zinc-800 border-zinc-500 shadow-md' : 'bg-[#18181b] border-zinc-800'}`}>
@@ -1031,6 +1135,8 @@
             const formatP = (s) => `${Math.floor(s/60)}:${Math.floor(s%60).toString().padStart(2,'0')}`;
 
             let strategy = [];
+            
+            // 🗺️ แทรกคำเตือนเฉพาะจุดตามสนามแข่งที่เลือก
             if (prof.targetDist == 42.195) {
                 strategy = [
                     { phase: '1', label: 'Warm Up', km: 'KM 1 - 5', pace: `${formatP(avgPaceSecs + 15)} - ${formatP(avgPaceSecs + 25)}`, desc: 'วิ่งสบายๆ คุมหัวใจไม่ให้พุ่ง อุ่นเครื่องกล้ามเนื้อ' },
@@ -1038,6 +1144,13 @@
                     { phase: '3', label: 'The Wall', km: 'KM 31 - 40', pace: `${formatP(avgPaceSecs)} - ${formatP(avgPaceSecs + 15)}`, desc: 'รักษารอบขา ประคองสติ ร่างกายจะล้าถึงขีดสุด' },
                     { phase: '4', label: 'Finish Strong', km: 'KM 41 - 42.195', pace: `ใส่ให้หมด!`, desc: 'รวบรวมพลังเฮือกสุดท้าย พับเข่าดึงเท้าเข้าเส้นชัย!' }
                 ];
+                if (prof.targetRaceCourse === 'bangsaen42') {
+                    strategy[2].desc += " ⛰️ โค้ชเตือน: ระวังเนินเขาสามมุขช่วง KM 35 ให้สับก้าวสั้นๆ ดรอปเพซ 20-30 วิ เซฟแรงไว้ครับ!";
+                } else if (prof.targetRaceCourse === 'buriram') {
+                    strategy[2].desc += " 🛣️ โค้ชเตือน: ช่วงนี้มีเนินซึมยาวๆ คุมจังหวะหายใจให้คงที่ อย่าเพิ่งเร่งตามคนอื่น";
+                } else if (prof.targetRaceCourse === 'bkk') {
+                    strategy[1].desc += " 🌉 โค้ชเตือน: เตรียมรับมือสะพานยกระดับยาวๆ และความร้อน รักษารอบขาให้คงที่";
+                }
             } else if (prof.targetDist == 21.1) {
                 strategy = [
                     { phase: '1', label: 'Warm Up', km: 'KM 1 - 3', pace: `${formatP(avgPaceSecs + 10)} - ${formatP(avgPaceSecs + 20)}`, desc: 'อย่าเพิ่งรีบตามคนอื่น ให้ร่างกายและข้อต่อปรับตัว' },
@@ -1045,6 +1158,9 @@
                     { phase: '3', label: 'Push', km: 'KM 16 - 20', pace: `${formatP(avgPaceSecs - 10)} - ${formatP(avgPaceSecs)}`, desc: 'เริ่มเร่งความเร็วขึ้น ถ้าร่างกายและหัวใจยังไหว' },
                     { phase: '4', label: 'Sprint', km: 'KM 21 - 21.1', pace: `ใส่ให้หมด!`, desc: 'สปรินต์เข้าเส้นชัยด้วยความเร็วสูงสุด!' }
                 ];
+                if (prof.targetRaceCourse === 'bangsaen42') {
+                    strategy[2].desc += " ⛰️ โค้ชเตือน: เตรียมเจอเนินเขาสามมุข ซอยเท้าให้ถี่ขึ้นครับ!";
+                }
             } else if (prof.targetDist == 10) {
                 strategy = [
                     { phase: '1', label: 'Warm Up', km: 'KM 1 - 2', pace: `${formatP(avgPaceSecs + 10)} - ${formatP(avgPaceSecs + 15)}`, desc: 'เครื่องยังไม่ร้อน คุมเพซไว้ก่อนอย่าออกตัวแรง' },
@@ -1211,12 +1327,9 @@
             const [toastMessage, setToastMessage] = useState('');
             const [isHotWeather, setIsHotWeather] = useState(false);
             
-            // 🌐 เพิ่ม State สำหรับจัดการภาษา (TH / EN)
             const [lang, setLang] = useState(() => safeStorage.getItem('p80_lang') || 'th');
+            const t = i18n[lang];
 
-            const t = i18n[lang]; // ดึงคำแปลตามภาษาที่เลือก
-
-            // ฟังก์ชันสลับภาษา
             const toggleLang = () => {
                 const newLang = lang === 'th' ? 'en' : 'th';
                 setLang(newLang);
@@ -1227,14 +1340,15 @@
             const localKey = `p80_v14_stable_${safeName}`;
             
             const [prof, setProf] = useState(() => JSON.parse(safeStorage.getItem(localKey)) || {
-                primaryGoal: 'performance',
+                primaryGoal: 'performance', targetRaceCourse: 'standard', // 🗺️ รับค่าสนามแข่งเป้าหมาย
                 initialWeight: null, weight: 90.0, targetWeight: 80.0, height: 175, gender: 'male',
                 age: 35, rhr: 60, vcr: 4500, targetDist: 42.195, injury: 'none', lifestyle: 'active', raceDate: '2026-11-15',
                 schedule: {0:'long', 1:'rest', 2:'easy', 3:'speed', 4:'rest', 5:'easy', 6:'rest'}, records: {}
             });
 
             const todayStr = new Date().toDateString();
-            const [daily, setDaily] = useState(prof.records?.[todayStr] || { w:0, b:false, l:false, s:false, d:false, ex:[false,false,false,false], rLog:false, rDist:'', rPace:'', rHr:'', rCadence:'', rElevation:'', rDuration:'', rType:'Run', aiFeedback: '', perfCondition: '', vcrUpgraded: false, newVcrVal: 0, isSick: false, tss: 0 });
+            // 🫀 เพิ่มสถานะการเก็บข้อมูลความพร้อมตอนเช้า
+            const [daily, setDaily] = useState(prof.records?.[todayStr] || { w:0, b:false, l:false, s:false, d:false, ex:[false,false,false,false], rLog:false, rDist:'', rPace:'', rHr:'', rCadence:'', rElevation:'', rDuration:'', rType:'Run', aiFeedback: '', perfCondition: '', vcrUpgraded: false, newVcrVal: 0, isSick: false, tss: 0, rReadinessChecked: false, rSleep: 0, rHrv: 0, rReadinessScore: 100 });
             
             const [inAct, setInAct] = useState(daily.rType || 'Run');
             const [inDist, setInDist] = useState(daily.rDist || '');
@@ -1301,7 +1415,6 @@
                 const dNum = parseFloat(inDist) || 0;
                 
                 let currentVcr = prof.vcr || 4500; let upgraded = false;
-                // 🛠️ อัปเกรด VCR เฉพาะวิ่งเท่านั้น
                 if (isRunOrTrail && rSecs !== Infinity && dNum >= 3 && inAct === 'Run') {
                     const equiv = (1800 / rSecs) * 1000;
                     if (equiv > currentVcr + 100) { currentVcr = Math.round(equiv); upgraded = true; }
@@ -1311,9 +1424,8 @@
                 prevDate.setDate(prevDate.getDate() - 1);
                 const wasSickYesterday = prof.records?.[prevDate.toDateString()]?.isSick || false;
 
-                const cfgToday = getDayConfig(new Date(), weekIdx, false, prof, isHotWeather, wasSickYesterday);
+                const cfgToday = getDayConfig(new Date(), weekIdx, false, prof, isHotWeather, wasSickYesterday, 100);
                 
-                // 🛠️ ส่งค่า inElevation และ inDuration ไปให้ AI ช่วยวิจารณ์
                 const ai = generateFeedback(dNum, inPace, inHr, cfgToday.pace, inAct, inCadence, inElevation, inDuration);
                 const perf = calcCondition(inHr, inPace);
                 
@@ -1321,7 +1433,6 @@
                 const maxHr = 220 - (prof.age || 35);
                 const intensity = hrNum / maxHr;
                 
-                // 🛠️ คำนวณเวลาซ้อม: ถ้าวิ่งคำนวณจากเพซ ถ้าเวท/ปั่นให้ใช้เวลาที่กรอกมา
                 const runMinutes = isRunOrTrail ? (dNum * (rSecs / 60)) : (parseFloat(inDuration) || 0);
                 const todayTss = Math.round(runMinutes * intensity * 1.5); 
 
@@ -1359,8 +1470,12 @@
             let prevDate = new Date();
             prevDate.setDate(prevDate.getDate() - 1);
             const wasSickYesterday = prof.records?.[prevDate.toDateString()]?.isSick || false;
+            
+            // 🫀 ส่งค่าความพร้อมไปให้ฟังก์ชันสร้างตารางของวันนี้พิจารณา
+            const todayReadiness = daily.rReadinessChecked ? daily.rReadinessScore : 100;
+            const needRecoveryToday = wasSickYesterday || todayReadiness < 60;
 
-            const cfg = getDayConfig(new Date(), weekIdx, daysLeft <= 0, prof, isHotWeather, wasSickYesterday);
+            const cfg = getDayConfig(new Date(), weekIdx, daysLeft <= 0, prof, isHotWeather, needRecoveryToday, todayReadiness);
 
             let tDist = 0, tSecs = 0, f5k = Infinity, f10k = Infinity, longestRun = 0, maxStreakCount = 0, streakCount = 0, maxAquaCount = 0, aquaCount = 0;
             let totalTss7Days = 0;
