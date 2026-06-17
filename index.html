@@ -51,14 +51,12 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // 🥷 วิชานินจาซ่อน Firebase API Key หลบ GitHub Secret Scanner
         const fk1 = "AIzaSy";
         const fk2 = "AmQFwL7zni";
         const fk3 = "KTnT2INt93i";
         const fk4 = "HOlCuT97hC7g";
         const fbKey = fk1 + fk2 + fk3 + fk4;
 
-        // --- 1. FIREBASE CONFIG ---
         const firebaseConfig = {
             apiKey: fbKey,
             authDomain: "myfamilyproject-ecff4.firebaseapp.com",
@@ -72,7 +70,6 @@
         const db = getFirestore(app);
         const appId = 'project80_github_app'; 
 
-        // --- 2. UTILS & DICTIONARY ---
         const safeStorage = {
             getItem: (key) => { try { return window.localStorage.getItem(key); } catch(e) { return null; } },
             setItem: (key, val) => { try { window.localStorage.setItem(key, val); } catch(e) {} },
@@ -85,7 +82,6 @@
             return new Date(d.getTime() - offset).toISOString().split('T')[0];
         };
 
-        // 🌐 TRANSLATION DICTIONARY
         const i18n = {
             th: {
                 setupTitle: "ตั้งค่าโปรไฟล์", focusPerf: "🚀 เน้นทำสถิติ", weightLoss: "⚖️ เน้นลดน้ำหนัก",
@@ -479,14 +475,12 @@
 
             cfg.isDowngraded = needRecoveryActiveDay;
             
-            // 🌟 NEW: ระบบดัดแปลงตารางซ้อมให้เข้ากับ "สนามแข่งเป้าหมาย" (Course-Specific Adaptation) 🌟
             const raceCourse = prof.targetRaceCourse || 'standard';
             
-            // จะทำงานก็ต่อเมื่อไม่ได้อยู่ในสถานะป่วย/ปรับลด และไม่ใช่วันพักเต็มร้อย
             if (raceCourse !== 'standard' && !cfg.isDowngraded && cfg.id !== 'rest') {
                 let courseNote = '';
                 let extraDrill = '';
-                let mainAppend = ''; // 🛠️ ตัวแปรใหม่: ใช้แปะป้ายกำกับให้โชว์ในหน้ารายสัปดาห์เลย!
+                let mainAppend = '';
 
                 if (raceCourse === 'bangsaen42') {
                     if (cfg.id === 'long') {
@@ -523,12 +517,9 @@
 
                 if (courseNote) cfg.advice += courseNote;
                 if (extraDrill && !cfg.ex.includes(extraDrill)) cfg.ex.push(extraDrill);
-                
-                // 🛠️ แปะป้ายบอกลงไปในหัวข้อหลัก เพื่อให้โชว์ในตาราง WEEKLY SCHEDULE ด้วย!
                 if (mainAppend) cfg.detailedWorkout.main += mainAppend;
             }
 
-            // 🌟 ปรับภาษาโชว์กระบวนการคิดของ AI ให้เป็น "ภาษามนุษย์" เข้าใจง่ายๆ ไม่ใช้ศัพท์เทคนิค
             if (cfg.id !== 'rest') {
                 const courseTextTh = raceCourse !== 'standard' ? `ปรับสูตรให้เข้ากับสนาม ${raceCourse} | ` : '';
                 const courseTextEn = raceCourse !== 'standard' ? `Tailored for ${raceCourse} | ` : '';
@@ -660,7 +651,9 @@
             const [lifestyle, setLifestyle] = useState(initialProf.lifestyle || 'active');
             
             const [goal, setGoal] = useState(initialProf.primaryGoal || 'performance');
+            
             const [course, setCourse] = useState(initialProf.targetRaceCourse || 'standard');
+            
             const [raceDateStr, setRaceDateStr] = useState(initialProf.raceDate || '2026-11-15');
             
             const [avail, setAvail] = useState(initialProf.schedule ? {0: initialProf.schedule[0]!=='rest', 1: initialProf.schedule[1]!=='rest', 2: initialProf.schedule[2]!=='rest', 3: initialProf.schedule[3]!=='rest', 4: initialProf.schedule[4]!=='rest', 5: initialProf.schedule[5]!=='rest', 6: initialProf.schedule[6]!=='rest'} : {0:true, 1:false, 2:true, 3:true, 4:false, 5:true, 6:false});
@@ -1020,7 +1013,6 @@
                         />
                     </div>
 
-                    {/* 🛠️ โชว์กระบวนการคิดของ AI โค้ช (Transparency) ก่อนกรอกข้อมูล เพื่อให้ผู้ใช้เห็นว่า AI สร้างตารางตามข้อมูลส่วนตัว */}
                     {cfg.coachLogic && (
                         <div className="bg-[#18181b] p-4 rounded-xl border border-zinc-700 text-xs font-medium text-zinc-400">
                             {cfg.coachLogic}
@@ -1181,7 +1173,7 @@
             );
         };
 
-        const TabPlan = ({ cfg, prof, weekIdx, isHotWeather, updateDaily, activeDateStr, activeDateObj, lang }) => {
+        const TabPlan = ({ cfg, prof, weekIdx, isHotWeather, updateDaily, updateSchedule, activeDateStr, activeDateObj, lang }) => {
             const t = i18n[lang];
             const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
             const scheduleMap = { 'rest': 'Rest', 'easy': 'Easy', 'speed': 'Speed Work', 'long': 'Long Run' };
@@ -1190,8 +1182,11 @@
             const activeIdx = activeDateObj.getDay();
             const dailyRec = prof.records?.[activeDateStr];
             
-            // 🛠️ กำหนดสถานะเหตุผลปัจจุบันสำหรับแสดงบน Dropdown
             const currentSkipReason = dailyRec?.skipReason || (dailyRec?.isSick ? 'sick' : 'none');
+
+            // 🌟 State สำหรับระบบสลับวันซ้อม (Micro-Adjustments)
+            const [swapMode, setSwapMode] = useState(false);
+            const [selectedIdx, setSelectedIdx] = useState(null);
 
             return (
                 <div className="space-y-6 pb-12">
@@ -1205,8 +1200,6 @@
                             <h2 className="font-black text-sm text-zinc-400 uppercase tracking-widest">{t.todayProtocol}</h2>
                             <div className="flex gap-2">
                                 {isHotWeather && <span className="bg-orange-500/20 text-orange-400 border border-orange-500/50 px-2 py-1 rounded text-[10px] font-black uppercase">☀️</span>}
-                                
-                                {/* 📌 อัปเดต Dropdown เลือกเหตุผลที่ไม่ได้ซ้อม */}
                                 <select 
                                     value={currentSkipReason}
                                     onChange={(e) => {
@@ -1239,7 +1232,6 @@
                             </div>
                         </div>
                         
-                        {/* 🌟 โชว์กระบวนการคิดของ AI 🌟 */}
                         {cfg.coachLogic && (
                             <div className="mb-6 p-4 rounded-xl bg-[#bef264]/10 border border-[#bef264]/30 text-zinc-300 text-xs font-medium leading-relaxed">
                                 {cfg.coachLogic}
@@ -1284,7 +1276,26 @@
                     </section>
 
                     <section className="suunto-card p-8">
-                        <h2 className="font-black text-sm text-zinc-400 uppercase tracking-widest mb-5 flex items-center gap-2"><span>📅</span> {t.weeklySchedule}</h2>
+                        {/* 🌟 อัปเกรดปุ่มสลับวันซ้อม 🌟 */}
+                        <div className="flex justify-between items-start mb-5">
+                            <h2 className="font-black text-sm text-zinc-400 uppercase tracking-widest flex items-center gap-2"><span>📅</span> {t.weeklySchedule}</h2>
+                            <button 
+                                onClick={() => { setSwapMode(!swapMode); setSelectedIdx(null); }}
+                                className={`px-3 py-1.5 rounded-lg text-[10px] font-black uppercase transition-all flex items-center gap-1.5 border ${swapMode ? 'bg-[#bef264]/20 text-[#bef264] border-[#bef264]/50 shadow-[0_0_10px_rgba(190,242,100,0.2)]' : 'bg-[#18181b] text-zinc-500 border-zinc-700 hover:text-zinc-300'}`}
+                            >
+                                🔄 {swapMode ? (lang==='th'?'ยกเลิกสลับ':'Cancel Swap') : (lang==='th'?'จัดตารางซ้อม':'Edit Schedule')}
+                            </button>
+                        </div>
+
+                        {/* กล่องข้อความแนะนำเมื่ออยู่ในโหมดสลับวัน */}
+                        {swapMode && (
+                            <div className="mb-5 bg-[#bef264]/10 border border-[#bef264]/30 p-3 rounded-xl text-[#bef264] text-xs font-bold text-center animate-pulse">
+                                {selectedIdx === null 
+                                    ? (lang==='th'?'👆 แตะเลือก "วันแรก" ที่ต้องการย้าย':'👆 Tap the first day to move')
+                                    : (lang==='th'?'✨ แตะเลือก "วันที่สอง" เพื่อสลับตารางทันที!':'✨ Tap the second day to swap!')}
+                            </div>
+                        )}
+
                         <div className="space-y-3">
                             {dayNames.map((day, idx) => {
                                 const type = prof?.schedule?.[idx] || 'rest';
@@ -1303,15 +1314,32 @@
                                 const dayCfg = getDayConfig(dummyDate, weekIdx, false, prof, false, prevSkip, 100, 420, lang);
 
                                 return (
-                                    <div key={idx} className={`p-5 rounded-xl border flex flex-col gap-2 transition-colors ${isToday ? 'bg-zinc-800 border-zinc-500 shadow-md' : 'bg-[#18181b] border-zinc-800'}`}>
-                                        <div className="flex justify-between items-center">
+                                    <div 
+                                        key={idx} 
+                                        onClick={() => {
+                                            if(!swapMode) return;
+                                            if(selectedIdx === null) setSelectedIdx(idx);
+                                            else {
+                                                if(selectedIdx !== idx) {
+                                                    const newSched = {...prof.schedule};
+                                                    const temp = newSched[selectedIdx];
+                                                    newSched[selectedIdx] = newSched[idx];
+                                                    newSched[idx] = temp;
+                                                    updateSchedule(newSched);
+                                                }
+                                                setSelectedIdx(null);
+                                                setSwapMode(false);
+                                            }
+                                        }}
+                                        className={`p-5 rounded-xl border flex flex-col gap-2 transition-colors ${swapMode ? 'cursor-pointer hover:border-[#bef264] hover:bg-[#121212]' : ''} ${selectedIdx === idx ? 'bg-[#bef264]/10 border-[#bef264] shadow-[0_0_15px_rgba(190,242,100,0.15)]' : isToday ? 'bg-zinc-800 border-zinc-500 shadow-md' : 'bg-[#18181b] border-zinc-800'}`}
+                                    >
+                                        <div className="flex justify-between items-center pointer-events-none">
                                             <span className={`text-sm font-black uppercase tracking-widest ${isToday ? 'text-white' : 'text-zinc-500'}`}>{day} {isToday && '(SELECTED)'}</span>
                                             <span className={`text-sm font-black uppercase tracking-widest ${colorMap[type]}`}>{scheduleMap[type]}</span>
                                         </div>
                                         {type !== 'rest' && (
-                                            <div className="mt-2 pt-3 border-t border-zinc-700/50">
+                                            <div className="mt-2 pt-3 border-t border-zinc-700/50 pointer-events-none">
                                                 <p className={`text-xs font-bold leading-relaxed mb-3 ${isToday ? 'text-white' : 'text-zinc-400'}`}>
-                                                    {/* 🛠️ ลิงก์ป้ายเตือนกับตัวแปรที่ถูกคำนวณมาจากโค้ช */}
                                                     {dayCfg.isDowngraded && <span className="text-orange-400 font-black mr-1">{lang === 'th' ? '[ปรับลด]' : '[DOWNGRADED]'}</span>}
                                                     {dayCfg.detailedWorkout.main}
                                                 </p>
@@ -1423,6 +1451,36 @@
             }, [prof?.records, activeDateObj]);
 
             const maxChartDist = Math.max(...chartData.map(d => d.dist), 5); 
+
+            // 🌟 NEW: คำนวณข้อมูลกราฟความฟิตย้อนหลัง 30 วัน (TSB Graph Data) 🌟
+            const tsbChartData = useMemo(() => {
+                const data = [];
+                let currentCTL = 0; // Fitness (เส้นสีฟ้า)
+                let currentATL = 0; // Fatigue (เส้นสีชมพู)
+                
+                // คำนวณย้อนหลังจากเมื่อวาน 30 วัน
+                for(let i=30; i>=0; i--) {
+                    let d = new Date(activeDateObj);
+                    d.setDate(d.getDate() - i);
+                    const dtStr = d.toDateString();
+                    const dailyTss = prof?.records?.[dtStr]?.tss || 0;
+                    
+                    // สูตรคำนวณ EWMA อย่างง่าย (Exponentially Weighted Moving Average)
+                    currentCTL = (dailyTss * (2/43)) + (currentCTL * (1 - 2/43));
+                    currentATL = (dailyTss * (2/8)) + (currentATL * (1 - 2/8));
+                    
+                    data.push({
+                        day: d.getDate(),
+                        ctl: currentCTL,
+                        atl: currentATL,
+                        tsb: currentCTL - currentATL // Form (ความสด)
+                    });
+                }
+                return data;
+            }, [prof?.records, activeDateObj]);
+
+            // หาค่า Max เพื่อตั้งสเกลแกน Y ของกราฟ TSB ให้สวยงาม (ให้ขั้นต่ำคือ 10 จะได้ไม่ดูแบนไป)
+            const maxTsbVal = Math.max(...tsbChartData.map(d => Math.max(d.ctl, d.atl, Math.abs(d.tsb), 10)));
 
             const getPaceFromVcr = (pct) => {
                 const spd = (prof.vcr || 4500) / 1800 * (pct / 100);
@@ -1536,6 +1594,35 @@
                                 </p>
                             </div>
                         </div>
+                    </section>
+
+                    {/* 🌟 NEW: ส่วนแสดงผลกราฟ TSB (Fitness Trend) 🌟 */}
+                    <section className="suunto-card p-6 md:p-8">
+                        <h2 className="font-black text-sm text-white uppercase tracking-widest mb-6 flex items-center gap-2"><span>📈</span> FITNESS TREND (TSB)</h2>
+                        <div className="relative w-full h-48 bg-[#18181b] rounded-xl border border-zinc-800 p-0 overflow-hidden flex items-end">
+                            <svg className="w-full h-full" viewBox="0 0 300 100" preserveAspectRatio="none">
+                                {/* เส้น Baseline (0) */}
+                                <line x1="0" y1="50" x2="300" y2="50" stroke="#3f3f46" strokeWidth="1" strokeDasharray="4" />
+                                
+                                {/* กราฟพื้นที่สีเขียว (Form/TSB) */}
+                                <path d={`M 0 50 ${tsbChartData.map((d, i) => `L ${i * 10} ${50 - (d.tsb / maxTsbVal) * 40}`).join(' ')} L 300 50 Z`} fill="rgba(190, 242, 100, 0.2)" />
+                                
+                                {/* กราฟเส้นสีฟ้า (Fitness/CTL) */}
+                                <path d={`M 0 ${100 - (tsbChartData[0].ctl / maxTsbVal) * 90} ${tsbChartData.map((d, i) => `L ${i * 10} ${100 - (d.ctl / maxTsbVal) * 90}`).join(' ')}`} fill="none" stroke="#3b82f6" strokeWidth="2.5" />
+                                
+                                {/* กราฟเส้นประสีชมพู (Fatigue/ATL) */}
+                                <path d={`M 0 ${100 - (tsbChartData[0].atl / maxTsbVal) * 90} ${tsbChartData.map((d, i) => `L ${i * 10} ${100 - (d.atl / maxTsbVal) * 90}`).join(' ')}`} fill="none" stroke="#ec4899" strokeWidth="1.5" strokeDasharray="3" />
+                            </svg>
+                            
+                            <div className="absolute top-3 right-3 bg-black/80 p-3 rounded-lg text-[9px] md:text-[10px] font-bold space-y-2 border border-zinc-800">
+                                <div className="flex items-center gap-2"><div className="w-3 h-0.5 bg-blue-500"></div><span className="text-blue-400">FITNESS (ฟิตเนส)</span></div>
+                                <div className="flex items-center gap-2"><div className="w-3 h-0.5 bg-pink-500 border-dashed"></div><span className="text-pink-400">FATIGUE (ความล้า)</span></div>
+                                <div className="flex items-center gap-2"><div className="w-3 h-3 bg-[#bef264]/40"></div><span className="text-[#bef264]">FORM (ความสด)</span></div>
+                            </div>
+                        </div>
+                        <p className="text-[10px] md:text-xs text-zinc-500 mt-4 font-medium leading-relaxed">
+                            {lang === 'th' ? '*จำลองการคำนวณ 30 วันย้อนหลัง: เส้นสีฟ้า (ความฟิต) ควรค่อยๆ สูงขึ้น, สีชมพู (ความล้า) จะพุ่งตอนซ้อมหนัก, พื้นที่สีเขียว (ความสด) ยิ่งบวกเยอะยิ่งพร้อมแข่ง' : '*30-Day Simulation: Blue (Fitness) should trend up, Pink (Fatigue) spikes on hard days, Green (Form) indicates race readiness.'}
+                        </p>
                     </section>
 
                     <section className="suunto-card p-8">
@@ -1676,7 +1763,6 @@
             const activeDateObj = new Date(logDate + 'T12:00:00');
             const activeDateStr = activeDateObj.toDateString();
             
-            // 🛠️ โค้ดตรงนี้ที่ลูกน้ำหายไป! นำมาเขียนใหม่แบบคลีนๆ เป๊ะๆ
             const [daily, setDaily] = useState(prof.records?.[activeDateStr] || { 
                 w: 0, 
                 b: false, 
@@ -1793,6 +1879,14 @@
                 setProf(p => ({...p, records: nRecords})); 
                 setDoc(docRef, { records: nRecords }, {merge:true});
                 safeStorage.setItem(localKey, JSON.stringify({...prof, records: nRecords}));
+            };
+
+            // 🌟 NEW: ฟังก์ชันสำหรับบันทึกการจัดตารางซ้อมใหม่ (Micro-Adjustments)
+            const updateSchedule = (newSchedule) => {
+                const nProf = {...prof, schedule: newSchedule};
+                setProf(nProf);
+                setDoc(docRef, { schedule: newSchedule }, {merge:true});
+                safeStorage.setItem(localKey, JSON.stringify(nProf));
             };
             
             const clearActivities = () => {
@@ -2051,7 +2145,8 @@
 
                     <main className="animate-in fade-in duration-300">
                         {activeTab === 'tracker' && <TabTracker score={score} daily={daily} updateDaily={updateDaily} clearActivities={clearActivities} cfg={cfg} inDist={inDist} setInDist={setInDist} inPace={inPace} setInPace={setInPace} inHr={inHr} setInHr={setInHr} inCadence={inCadence} setInCadence={setInCadence} inElevation={inElevation} setInElevation={setInElevation} inDuration={inDuration} setInDuration={setInDuration} inAct={inAct} setInAct={setInAct} saveRun={saveRun} targetWater={targetWater} isHotWeather={isHotWeather} setIsHotWeather={setIsHotWeather} lang={lang} logDate={logDate} setLogDate={setLogDate} />}
-                        {activeTab === 'plan' && <TabPlan cfg={cfg} prof={prof} weekIdx={weekIdx} isHotWeather={isHotWeather} updateDaily={updateDaily} activeDateStr={activeDateStr} activeDateObj={activeDateObj} lang={lang} />}
+                        {/* 🌟 ส่ง updateSchedule เข้าไปให้หน้า TabPlan ใช้งานด้วย */}
+                        {activeTab === 'plan' && <TabPlan cfg={cfg} prof={prof} weekIdx={weekIdx} isHotWeather={isHotWeather} updateDaily={updateDaily} updateSchedule={updateSchedule} activeDateStr={activeDateStr} activeDateObj={activeDateObj} lang={lang} />}
                         {activeTab === 'ranking' && <TabRanking leaderboardData={leaderboardData} lang={lang} />}
                         {activeTab === 'stats' && <TabStats prof={prof} vo2Value={vo2Value} tDist={tDist} pTime={pTime} pSource={pSource} fastest5kSecs={f5k} fastest10kSecs={f10k} longestRun={longestRun} achievements={achievements} currentTss={totalTss7Days} lang={lang} activeDateObj={activeDateObj} />}
                     </main>
