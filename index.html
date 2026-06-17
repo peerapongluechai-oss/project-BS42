@@ -12,7 +12,6 @@
     
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 🛠️ ลบ React UMD ตัวเก่าออก และใช้เทคโนโลยี Import Map (ESM) แบบล้ำๆ แทน -->
     <script type="importmap">
     {
       "imports": {
@@ -44,9 +43,7 @@
 <body>
     <div id="root"></div>
 
-    <!-- 🛠️ ลบ Babel Hack เก่าทิ้ง และกลับมาใช้ Script แบบคลีนๆ -->
     <script type="text/babel" data-type="module">
-        // 🛠️ Import React ระบบใหม่ หมดปัญหา jsx-runtime หาย 100%
         import React, { useState, useEffect, useMemo } from "react";
         import ReactDOM from "react-dom/client";
         
@@ -189,42 +186,46 @@
             return `${Math.round(hrr*min)+Number(rhr||60)}-${Math.round(hrr*max)+Number(rhr||60)} bpm`;
         };
 
-        const generateFeedback = (dist, pace, hr, targetPaceStr, actType = 'Run', cadence = '', elevation = '', duration = '') => {
+        // 🛠️ อัปเดต Feedback ให้โชว์ตัวเลขของผู้ใช้ชัดๆ ว่า AI ไม่ได้ตอบแบบนกแก้วนกขุนทอง
+        const generateFeedback = (dist, pace, hr, targetPaceStr, actType = 'Run', cadence = '', elevation = '', duration = '', lang = 'th') => {
+            const t = lang === 'th';
             let cadenceFeedback = "";
             let elevFeedback = "";
             
-            if (elevation && Number(elevation) > 50) elevFeedback = ` (บวกกับความชัน ${elevation} เมตร ⛰️ ทนทานสุดๆ)`;
+            if (elevation && Number(elevation) > 50) elevFeedback = t ? ` (สู้กับความชัน ${elevation}m ⛰️ กล้ามเนื้อขาแกร่งขึ้นแน่นอน!)` : ` (Elevation ${elevation}m ⛰️ great for leg strength!)`;
             
             if (actType === 'Run' || actType === 'Trail') {
                 if (cadence) {
                     const spm = Number(cadence);
                     if (spm > 0 && spm < 160) {
-                        cadenceFeedback = ` ⚠️ รอบขาของคุณค่อนข้างต่ำ (${spm} SPM) ระวัง Overstride และอาการเจ็บเข่านะครับ ลองซอยเท้าให้ถี่ขึ้นแตะ 170+ SPM ครับ`;
+                        cadenceFeedback = t ? ` ⚠️ รอบขาของคุณค่อนข้างต่ำ (${spm} SPM) ระวัง Overstride และเจ็บเข่านะครับ ลองซอยให้แตะ 170+ ครับ` : ` ⚠️ Your cadence is a bit low (${spm} SPM). Try to reach 170+ to prevent overstriding.`;
                     } else if (spm >= 170) {
-                        cadenceFeedback = ` 🏃‍♂️ รอบขาเยี่ยมมาก (${spm} SPM) พับเข่าและดึงเท้าได้ดีครับ เซฟข้อต่อได้เยอะเลย!`;
+                        cadenceFeedback = t ? ` 🏃‍♂️ รอบขา ${spm} SPM เยี่ยมมาก! พับเข่าดึงเท้าได้ดี เซฟข้อต่อสุดๆ` : ` 🏃‍♂️ Great cadence at ${spm} SPM! Very efficient form.`;
                     } else if (spm > 0) {
-                        cadenceFeedback = ` 👍 รอบขาอยู่ในเกณฑ์กำลังดี (${spm} SPM) คุมให้สม่ำเสมอนะครับ`;
+                        cadenceFeedback = t ? ` 👍 รอบขา ${spm} SPM กำลังดีครับ คุมให้สม่ำเสมอ` : ` 👍 Cadence at ${spm} SPM is good. Keep it steady.`;
                     }
                 }
             }
 
-            if (actType === 'Trail') return `⛰️ ลุยเทรลมาใช่ไหมครับ! เพซเทรลจะช้ากว่าถนนปกติ${elevFeedback} AI จะไม่นำเพซนี้ไปฉุด VCR ของคุณลง ถือว่าได้ฝึกความแข็งแรงกล้ามเนื้อแบบเต็มๆ ครับ!` + cadenceFeedback;
-            if (actType === 'Swim') return `🏊‍♂️ ว่ายน้ำ ${duration} นาที เป็นการ Cross-Training (เซฟข้อต่อ) ที่ยอดเยี่ยมตามหลักสูตรครูดินครับ! AI บันทึกความล้าให้โดยไม่กระทบสถิติเพซวิ่งครับ`;
-            if (actType === 'Bike') return `🚴‍♂️ ปั่นจักรยานช่วยสลับการใช้กล้ามเนื้อและสร้าง Aerobic Base ได้ดีมาก AI บันทึกผลและระยะเวลา ${duration} นาที ให้เรียบร้อยครับ!`;
-            if (actType === 'Other') return `🏋️‍♂️ ยอดเยี่ยมครับ! การเสริมสร้างความแข็งแรง (Strength) ระยะเวลา ${duration} นาที จะช่วยให้การวิ่งมาราธอนของคุณทนทานขึ้นครับ`;
+            if (actType === 'Trail') return (t ? `⛰️ เพซเทรลจะช้าเป็นปกติครับ AI ไม่นำเพซ ${pace} นี้ไปฉุด VCR ถือว่าได้ฝึกกล้ามเนื้อเต็มๆ!` : `⛰️ Trail pace is naturally slower. AI won't use ${pace} to drop your VCR. Great leg workout!`) + elevFeedback + cadenceFeedback;
+            if (actType === 'Swim') return (t ? `🏊‍♂️ ว่ายน้ำ ${duration} นาที เป็น Cross-Training ที่ช่วยเซฟข้อต่อและสร้าง Aerobic base ได้ยอดเยี่ยมมากครับ!` : `🏊‍♂️ Swimming for ${duration} mins is excellent cross-training for your joints!`);
+            if (actType === 'Bike') return (t ? `🚴‍♂️ ปั่นจักรยาน ${duration} นาที ช่วยสร้างกล้ามเนื้อขาส่วนหน้า (Quads) ได้ดี AI บันทึกความล้าให้เรียบร้อยครับ!` : `🚴‍♂️ Biking for ${duration} mins builds great quad strength!`);
+            if (actType === 'Other') return (t ? `🏋️‍♂️ การซ้อมเสริมความแข็งแรง ${duration} นาที จะช่วยป้องกันการบาดเจ็บจากการวิ่งระยะไกลได้ครับ` : `🏋️‍♂️ ${duration} mins of strength training will bulletproof your body for long runs!`);
 
-            if(!pace || pace === '0:00') return "บันทึกสถิติสำเร็จ! วินัยคือหัวใจสำคัญครับ 🏃‍♂️" + elevFeedback + cadenceFeedback;
+            if(!pace || pace === '0:00' || !targetPaceStr || targetPaceStr === '-') return (t ? "บันทึกสถิติสำเร็จ! วินัยคือหัวใจสำคัญครับ 🏃‍♂️" : "Activity saved! Consistency is key. 🏃‍♂️") + elevFeedback + cadenceFeedback;
             
             const pSecs = parsePace(pace);
             const tSecsArr = targetPaceStr.split(' - ').map(parsePace);
             if(tSecsArr.length >= 1 && tSecsArr[0] !== Infinity) {
                 const minT = Math.min(...tSecsArr);
                 const maxT = Math.max(...tSecsArr);
-                if(pSecs < minT - 15) return "วิ่งเร็วกว่าเป้าหมาย! ⚡ ครูดินบอกเสมอว่าซ้อมเร็วกว่ากำหนดระวังจะกรอบ ยืดเหยียดให้เยอะๆ ครับ" + elevFeedback + cadenceFeedback;
-                if(pSecs > maxT + 15) return "เพซช้ากว่าเป้านิดหน่อย แต่ร่างกายได้สร้างความทนทาน (Endurance) ถือว่าเยี่ยมครับ 🐢" + elevFeedback + cadenceFeedback;
-                return "เพอร์เฟกต์! 🎯 คุมเพซและหัวใจได้ตรงแผนเป๊ะ ร่างกายกำลังพัฒนาไปถูกทางตามหลักสูตรครับ" + elevFeedback + cadenceFeedback;
+                
+                // 🛠️ โชว์ตัวเลขให้เห็นชัดๆ ว่าเปรียบเทียบจากอะไร
+                if(pSecs < minT - 15) return (t ? `⚡ คุณวิ่งเพซ ${pace} ซึ่งเร็วกว่าเป้าหมาย (${targetPaceStr})! โค้ชเตือนว่าซ้อมเร็วกว่ากำหนดระวังจะกรอบนะครับ` : `⚡ You ran at ${pace}, faster than the target (${targetPaceStr})! Careful not to burn out.`) + elevFeedback + cadenceFeedback;
+                if(pSecs > maxT + 15) return (t ? `🐢 เพซ ${pace} วันนี้ช้ากว่าเป้า (${targetPaceStr}) นิดหน่อย แต่ร่างกายได้สร้าง Endurance ถือว่าทำได้ดีครับ` : `🐢 Pace ${pace} was slightly slower than target (${targetPaceStr}), but great for endurance.`) + elevFeedback + cadenceFeedback;
+                return (t ? `🎯 เพอร์เฟกต์! เพซ ${pace} ตรงตามแผน (${targetPaceStr}) เป๊ะๆ ร่างกายกำลังพัฒนาไปถูกทางครับ` : `🎯 Perfect execution! Pace ${pace} is exactly within the target (${targetPaceStr}).`) + elevFeedback + cadenceFeedback;
             }
-            return "ยอดเยี่ยมมากครับ! เก็บสะสมไมล์ไปเรื่อยๆ ความฟิตจะตามมาเอง 🏆" + elevFeedback + cadenceFeedback;
+            return (t ? "ยอดเยี่ยมมากครับ! เก็บสะสมไมล์ไปเรื่อยๆ ความฟิตจะตามมาเอง 🏆" : "Excellent work! Keep logging miles and fitness will follow. 🏆") + elevFeedback + cadenceFeedback;
         };
 
         const calcCondition = (hr, pace) => {
@@ -237,7 +238,6 @@
             return "+0 (ปกติ ทรงตัว)";
         };
 
-        // 🛠️ อัปเดตตรรกะ AI โค้ช รองรับตัวแปร "เหตุผลที่ไม่ได้ซ้อม" ของเมื่อวาน
         const getDayConfig = (todayObj, weekIdx, isRace, prof, isHot = false, prevSkipReason = 'none', readinessScore = 100, sleepMins = 420, lang = 'th') => {
             const dayIndex = todayObj.getDay(); 
             const currentTargetDist = prof.targetDist || 42.195;
@@ -245,15 +245,11 @@
             const currentSchedule = prof.schedule || {0:'easy', 1:'rest', 2:'speed', 3:'easy', 4:'easy', 5:'speed', 6:'long'}; 
             let dayType = currentSchedule[dayIndex] || 'rest';
             
-            // 🛠️ เพิ่มตัวแปรเช็คการนอนและความพร้อมที่หายไปกลับคืนมา! (แก้บั๊ก ReferenceError จอแดง)
             const isReadinessLow = readinessScore < 60;
             const isSleepLow = sleepMins < 360;
             
-            // ตรวจสอบความพร้อมของร่างกายและการนอนหลับ (ถ้าต่ำกว่า 6 ชั่วโมงถือว่าพักผ่อนไม่พอ)
-            // ถ้าป่วย (sick) จะถูกนับรวมว่า needRecovery ทันที
             const needRecoveryActiveDay = prevSkipReason === 'sick' || isReadinessLow || isSleepLow;
 
-            // หากร่างกายต้องการพักฟื้น ป่วย หรือนอนน้อยกว่า 6 ชั่วโมง ให้บังคับลดตารางวิ่งหนักเป็นวิ่งสบายๆ
             if (needRecoveryActiveDay && (dayType === 'speed' || dayType === 'long')) {
                 dayType = 'easy';
             }
@@ -354,14 +350,22 @@
                     easyTask = currentWeekData.easy;
                 }
                 
-                const isRunningTask = easyTask.includes('วิ่ง') || easyTask.includes('จ๊อกกิ้ง');
+                if (needRecoveryActiveDay) {
+                    if (prevSkipReason === 'sick') {
+                        easyTask = lang === 'th' ? 'เดินแกว่งแขนเบาๆ หรือ โยคะยืดเหยียด 20 นาที (ฟื้นฟูหลังป่วย)' : 'Light walk or stretching yoga for 20 mins (Post-sick recovery)';
+                    } else if (isSleepLow || isReadinessLow) {
+                        easyTask = lang === 'th' ? 'เดินสลับจ๊อกกิ้งเบาๆ คลายกรด 20-30 นาที (ลดภาระร่างกาย)' : 'Light jog or walk-jog for 20-30 mins (Reduce physical load)';
+                    }
+                }
+                
+                const isRunningTask = easyTask.includes('วิ่ง') || easyTask.includes('จ๊อกกิ้ง') || easyTask.includes('jog');
                 const displayPace = isRunningTask ? pz.ez : '-';
                 
                 let adv = isRunningTask ? (lang === 'th' ? 'วันวิ่งสบายคือการนวดกล้ามเนื้อด้วยการวิ่ง ท่าวิ่งต้องผ่อนคลายที่สุด ไม่ก้มหน้าครับ' : 'Easy runs are like a massage for your muscles. Keep your form relaxed.') 
                                         : (lang === 'th' ? 'วันนี้เป็นการออกกำลังกายแบบ Cross-Training เพื่อเซฟข้อต่อและสร้างความแข็งแรง คุมหัวใจให้อยู่โซน 2 ก็พอครับ' : 'Today is for cross-training to save your joints. Keep your HR in zone 2.');
                 
                 if (isSleepLow && isReadinessLow) {
-                    adv = lang === 'th' ? `⚠️ คุณนอนไปแค่ ${Math.floor(sleepMins/60)} ชม. ${sleepMins%60} นาที (ความพร้อม ${readinessScore}%) ร่างกายฟื้นตัวไม่ทัน โค้ชจึงปรับตารางให้เบาลงเป็น Recovery เพื่อป้องกันการบาดเจ็บครับ!` 
+                    adv = lang === 'th' ? `⚠️ คุณนอนไปแค่ ${Math.floor(sleepMins/60)} ชม. ${sleepMins%60} นาที (ความพร้อม ${readinessScore}%) ร่างกายฟื้นตัวไม่ทัน โค้ชจึงหั่นตารางให้เหลือแค่ Recovery เพื่อป้องกันการบาดเจ็บครับ!` 
                                         : `⚠️ You only slept ${Math.floor(sleepMins/60)}h ${sleepMins%60}m (Readiness ${readinessScore}%). Coach downgraded today to Recovery to prevent injury!`;
                 } else if (isSleepLow) {
                     adv = lang === 'th' ? `⚠️ วันนี้คุณนอนน้อยไปหน่อยนะ (${Math.floor(sleepMins/60)} ชม. ${sleepMins%60} นาที) โค้ชแนะนำให้ออกกำลังกายประคองตัว ไม่ฝืนเร่งนะครับ!`
@@ -370,12 +374,12 @@
                     adv = lang === 'th' ? `⚠️ สัญญาณชีพตอนเช้าบ่งบอกว่าร่างกายคุณฟื้นตัวไม่ทัน (${readinessScore}%) โค้ชจึงปรับตารางให้เบาลงเป็น Recovery เพื่อป้องกันโอเวอร์เทรนครับ!`
                                         : `⚠️ Morning vitals show poor recovery (${readinessScore}%). Coach adjusted today to Recovery to prevent overtraining!`;
                 } else if (prevSkipReason === 'sick') {
-                    adv = lang === 'th' ? 'วันนี้ให้ออกกำลังกายเบาๆ ประคองร่างกายหลังจากพักป่วยมานะครับ ห้ามเร่งเด็ดขาด'
-                                        : 'Take it easy today to let your body recover from being sick. Do not push the pace!';
+                    adv = lang === 'th' ? 'วันนี้เปลี่ยนมาเดินและยืดเหยียดเบาๆ ประคองร่างกายหลังจากพักป่วยมานะครับ ห้ามฝืนเด็ดขาด'
+                                        : 'Take it easy today to let your body recover from being sick. Just light walking or stretching!';
                 }
                 
-                cfg = { id:'easy', name: (isSleepLow || prevSkipReason === 'sick' || isReadinessLow) ? 'Recovery (พักฟื้น)' : 'Active Recovery', desc:easyTask, pace:displayPace, hr:getHrZone(0.6,0.7, prof.age, prof.rhr), meals: dynamicMeals, ex:[`${isRunningTask ? '🏃‍♂️' : '🤸‍♂️'} ${easyTask.substring(0,25)}...`, 'ยืดเหยียด (Stretching)', 'Squats 3 เซต (หรือ Bodyweight)'], advice: adv };
-                cfg.detailedWorkout = { warmup: ['หมุนข้อต่อ 3 นาที'], main: `${easyTask}`, cooldown: ['คลายกล้ามเนื้อ 5 นาที'] };
+                cfg = { id:'easy', name: needRecoveryActiveDay ? 'Recovery (พักฟื้น)' : 'Active Recovery', desc:easyTask, pace:displayPace, hr:getHrZone(0.6,0.7, prof.age, prof.rhr), meals: dynamicMeals, ex:[`${isRunningTask ? '🏃‍♂️' : '🤸‍♂️'} ${easyTask.substring(0,25)}...`, lang === 'th' ? 'ยืดเหยียด (Stretching)' : 'Stretching', lang === 'th' ? 'Squats 3 เซต (หรือ Bodyweight)' : '3 Sets Squats (or Bodyweight)'], advice: adv };
+                cfg.detailedWorkout = { warmup: [lang === 'th' ? 'หมุนข้อต่อ 3 นาที' : 'Joint rotation 3 mins'], main: `${easyTask}`, cooldown: [lang === 'th' ? 'คลายกล้ามเนื้อ 5 นาที' : 'Cool down 5 mins'] };
             }
 
             if (prof.injury === 'knee') {
@@ -390,19 +394,31 @@
             if (prof.lifestyle === 'heavy') cfg.meals.s = 'กล้วยหอม 1 ลูก + เกลือแร่ (ชดเชยเหงื่อจากการทำงาน)';
 
             cfg.detailedMeals = {
-                b: { menu: cfg.meals.b, detail: prof.primaryGoal === 'weight_loss' ? 'คุมแคลอรี่ โปรตีนสูง' : 'คาร์บเชิงซ้อน เติมพลังงาน' },
-                l: { menu: cfg.meals.l, detail: prof.primaryGoal === 'weight_loss' ? 'ลดคาร์บ เน้นเนื้อสัตว์ลีน' : 'เน้นแป้งให้พลังงานสำหรับซ้อม' },
-                s: cfg.meals.s ? { menu: cfg.meals.s, detail: 'ลดความหิว ป้องกันกินมื้อเย็นเกิน' } : null,
-                d: { menu: cfg.meals.d, detail: prof.primaryGoal === 'weight_loss' ? 'มื้อเบาๆ ผักและโปรตีนลีน' : 'ซ่อมแซมกล้ามเนื้อหลังซ้อมหนัก' }
+                b: { menu: cfg.meals.b, detail: prof.primaryGoal === 'weight_loss' ? (lang==='th'?'คุมแคลอรี่ โปรตีนสูง':'High Protein, Calorie Deficit') : (lang==='th'?'คาร์บเชิงซ้อน เติมพลังงาน':'Complex Carbs for Fuel') },
+                l: { menu: cfg.meals.l, detail: prof.primaryGoal === 'weight_loss' ? (lang==='th'?'ลดคาร์บ เน้นเนื้อสัตว์ลีน':'Low Carb, Lean Meat') : (lang==='th'?'เน้นแป้งให้พลังงานสำหรับซ้อม':'High Carbs for Training') },
+                s: cfg.meals.s ? { menu: cfg.meals.s, detail: lang==='th'?'ลดความหิว ป้องกันกินมื้อเย็นเกิน':'Reduce hunger before dinner' } : null,
+                d: { menu: cfg.meals.d, detail: prof.primaryGoal === 'weight_loss' ? (lang==='th'?'มื้อเบาๆ ผักและโปรตีนลีน':'Light Meal, Veggies & Lean Protein') : (lang==='th'?'ซ่อมแซมกล้ามเนื้อหลังซ้อมหนัก':'Muscle Recovery Meal') }
             };
 
-            // 🛠️ หากเมื่อวานไม่ได้ซ้อมเพราะไม่ว่างหรือฝนตก (ไม่ใช่เพราะป่วย) AI จะเชียร์ให้ออกกำลังกายวันนี้เต็มที่!
             if (prevSkipReason === 'busy' || prevSkipReason === 'weather') {
                 const reasonStrTh = prevSkipReason === 'busy' ? 'ไม่ว่าง' : 'สภาพอากาศ';
                 const reasonStrEn = prevSkipReason === 'busy' ? 'being busy' : 'bad weather';
                 cfg.advice = lang === 'th' 
                     ? `เมื่อวานพักซ้อมเพราะ${reasonStrTh} วันนี้พลังเต็มเปี่ยม กลับมาลุยตาราง ${cfg.name} ให้เต็มที่เลยครับ! 🔥`
                     : `You missed yesterday due to ${reasonStrEn}. You are fully rested, let's crush today's ${cfg.name}! 🔥`;
+            }
+
+            cfg.isDowngraded = needRecoveryActiveDay;
+            
+            // 🌟 เพิ่มคุณสมบัติโชว์กระบวนการคิดของ AI ให้ผู้ใช้เห็นชัดๆ (AI Logic Transparency)
+            if (cfg.id !== 'rest') {
+                cfg.coachLogic = lang === 'th'
+                    ? `🧠 AI Logic: คำนวณจาก VCR ปัจจุบัน (${prof.vcr}m) ของคุณ เพซเป้าหมายจึงอยู่ที่ ${cfg.pace} และช่วงหัวใจถูกอ้างอิงจากอายุ ${prof.age} ปี (RHR ${prof.rhr} bpm) เพื่อให้ได้โซนที่ปลอดภัยที่สุดครับ`
+                    : `🧠 AI Logic: Calculated from your current VCR (${prof.vcr}m), setting your target pace at ${cfg.pace}. Heart rate zones are personalized for your age (${prof.age}) and RHR (${prof.rhr} bpm) for optimal safety.`;
+            } else {
+                cfg.coachLogic = lang === 'th' 
+                    ? `🧠 AI Logic: วันพักคือส่วนสำคัญในวงจรการสร้างกล้ามเนื้อ (Supercompensation) ร่างกายจะพัฒนาความฟิตในวันนี้ครับ` 
+                    : `🧠 AI Logic: Rest days are crucial for the Supercompensation cycle. Your fitness actually improves while you rest.`;
             }
 
             return cfg;
@@ -886,6 +902,13 @@
                         />
                     </div>
 
+                    {/* 🛠️ โชว์กระบวนการคิดของ AI โค้ช (Transparency) ก่อนกรอกข้อมูล เพื่อให้ผู้ใช้เห็นว่า AI สร้างตารางตามข้อมูลส่วนตัว */}
+                    {cfg.coachLogic && (
+                        <div className="bg-[#18181b] p-4 rounded-xl border border-zinc-700 text-xs font-medium text-zinc-400">
+                            {cfg.coachLogic}
+                        </div>
+                    )}
+
                     <section className="suunto-card p-6 border-l-4 border-l-purple-500 bg-gradient-to-br from-[#121212] to-purple-900/10">
                         <h3 className="font-black text-sm uppercase text-purple-400 tracking-widest flex items-center gap-2 mb-4"><span>🫀</span> {t.morningCheckin}</h3>
                         {!daily.rReadinessChecked ? (
@@ -1097,6 +1120,14 @@
                                 {cfg.hr !== '-' && <span className="bg-[#18181b] border border-zinc-700 px-4 py-2 rounded-lg text-red-400 font-black text-xs tracking-widest">HR: {cfg.hr}</span>}
                             </div>
                         </div>
+                        
+                        {/* 🌟 โชว์กระบวนการคิดของ AI 🌟 */}
+                        {cfg.coachLogic && (
+                            <div className="mb-6 p-4 rounded-xl bg-[#bef264]/10 border border-[#bef264]/30 text-zinc-300 text-xs font-medium leading-relaxed">
+                                {cfg.coachLogic}
+                            </div>
+                        )}
+
                         <div className="space-y-6">
                             <div><p className="text-xs font-black text-orange-400 uppercase mb-3 tracking-widest">WARM-UP</p><ul className="list-disc list-inside text-base font-bold text-zinc-300 space-y-2">{cfg.detailedWorkout.warmup.map((i,idx)=><li key={idx}>{i}</li>)}</ul></div>
                             <div><p className="text-xs font-black suunto-accent uppercase mb-3 tracking-widest">MAIN SET</p><p className="text-lg font-black text-white bg-[#18181b] p-5 rounded-xl border border-zinc-700 leading-relaxed">{cfg.detailedWorkout.main}</p></div>
@@ -1658,7 +1689,7 @@
                 
                 const cfgToday = getDayConfig(activeDateObj, weekIdx, false, prof, isHotWeather, prevSkipReasonActive, activeReadiness, activeSleep, lang);
                 
-                const ai = generateFeedback(dNum, inPace, inHr, cfgToday.pace, inAct, inCadence, inElevation, inDuration);
+                const ai = generateFeedback(dNum, inPace, inHr, cfgToday.pace, inAct, inCadence, inElevation, inDuration, lang);
                 const perf = calcCondition(inHr, inPace);
                 
                 const hrNum = Number(inHr) || prof.rhr || 60;
@@ -1803,6 +1834,7 @@
                         </div>
                     )}
 
+                    {/* 🛠️ วางทับบล็อก Header นี้ทั้งหมด เพื่อซ่อมแซมบรรทัดที่แหว่งไปครับ */}
                     <header className="flex justify-between items-start mb-8 pt-4 gap-4">
                         <div className="flex-1">
                             <p className="text-zinc-400 font-black text-[10px] md:text-xs tracking-[0.2em] md:tracking-[0.3em] uppercase mb-2">{t.targetRaceDay}</p>
