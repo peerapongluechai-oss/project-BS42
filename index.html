@@ -336,22 +336,34 @@
                 cfg = { id:'speed', name:'Quality Work', desc:currentWeekData.speed, pace:`${sPace}`, hr:getHrZone(0.8,0.9, prof.age, prof.rhr), meals: dynamicMeals, ex:[`⚡ ${currentWeekData.speed.split(' ')[0]}`,'วอร์มอัพให้ถึงก่อนวิ่งเร็ว','Russian Twist 3 เซต'], advice: 'ตารางวันนี้ช่วยขยับเพดานความฟิต (VCR) ให้สูงขึ้น วิ่งเสร็จต้องคูลดาวน์ให้ดีครับ' };
                 cfg.detailedWorkout = { warmup: ['จ๊อกกิ้งเบาๆ 15 นาที', 'ทำ Drills ยกเข่าเตะก้น'], main: `${currentWeekData.speed} (เป้าหมาย: ${sPace})`, cooldown: ['จ๊อกกิ้งเบาๆ คลายกล้ามเนื้อ 15 นาที'] };
             } else if(dayType === 'easy') {
-                const isSwimDay = dayIndex === 0; 
-                const easyTask = isSwimDay ? currentWeekData.easy : currentWeekData.drill;
+                // 🛠️ อัปเดต: กระจายกิจกรรมวัน Easy ให้หลากหลาย ไม่ให้เต้นแอโรบิคซ้ำกัน 3 วัน!
+                let easyTask = '';
+                if (dayIndex === 0) { // วันอาทิตย์ มักจะเป็นว่ายน้ำตามตารางครูดิน
+                    easyTask = currentWeekData.easy;
+                } else if (dayIndex % 3 === 1) { // วันจันทร์, พฤหัส ให้เป็น Drill/แอโรบิค
+                    easyTask = currentWeekData.drill;
+                } else if (dayIndex % 3 === 2) { // วันอังคาร, ศุกร์ ให้เป็น Easy Run
+                    easyTask = 'วิ่งจ๊อกกิ้งสบายๆ (Easy Run) คุมโซน 2 ประมาณ 45-50 นาที';
+                } else { // วันพุธ, เสาร์
+                    easyTask = currentWeekData.easy;
+                }
                 
-                let adv = 'วันวิ่งสบายคือการนวดกล้ามเนื้อด้วยการวิ่ง ท่าวิ่งต้องผ่อนคลายที่สุด ไม่ก้มหน้าครับ';
+                const isRunningTask = easyTask.includes('วิ่ง') || easyTask.includes('จ๊อกกิ้ง');
+                const displayPace = isRunningTask ? pz.ez : '-';
+                
+                let adv = isRunningTask ? 'วันวิ่งสบายคือการนวดกล้ามเนื้อด้วยการวิ่ง ท่าวิ่งต้องผ่อนคลายที่สุด ไม่ก้มหน้าครับ' : 'วันนี้เป็นการออกกำลังกายแบบ Cross-Training เพื่อเซฟข้อต่อและสร้างความแข็งแรง คุมหัวใจให้อยู่โซน 2 ก็พอครับ';
                 if (isSleepLow && isReadinessLow) {
                     adv = `⚠️ คุณนอนไปแค่ ${Math.floor(sleepMins/60)} ชม. ${sleepMins%60} นาที (ความพร้อม ${readinessScore}%) ร่างกายฟื้นตัวไม่ทัน โค้ชจึงปรับตารางให้เบาลงเป็น Recovery เพื่อป้องกันการบาดเจ็บครับ!`;
                 } else if (isSleepLow) {
-                    adv = `⚠️ วันนี้คุณนอนน้อยไปหน่อยนะ (${Math.floor(sleepMins/60)} ชม. ${sleepMins%60} นาที) โค้ชแนะนำให้วิ่งประคองตัว ไม่ฝืนเร่งเพซนะครับ!`;
+                    adv = `⚠️ วันนี้คุณนอนน้อยไปหน่อยนะ (${Math.floor(sleepMins/60)} ชม. ${sleepMins%60} นาที) โค้ชแนะนำให้ออกกำลังกายประคองตัว ไม่ฝืนเร่งนะครับ!`;
                 } else if (isReadinessLow) {
                     adv = `⚠️ สัญญาณชีพตอนเช้าบ่งบอกว่าร่างกายคุณฟื้นตัวไม่ทัน (${readinessScore}%) โค้ชจึงปรับตารางให้เบาลงเป็น Recovery เพื่อป้องกันโอเวอร์เทรนครับ!`;
                 } else if (needRecovery) {
-                    adv = 'วันนี้ให้วิ่งเบาๆ ประคองร่างกายหลังจากพักป่วย/พักซ้อมมานะครับ ห้ามเร่งเด็ดขาด';
+                    adv = 'วันนี้ให้ออกกำลังกายเบาๆ ประคองร่างกายหลังจากพักป่วย/พักซ้อมมานะครับ ห้ามเร่งเด็ดขาด';
                 }
                 
-                cfg = { id:'easy', name: (isSleepLow || needRecovery) ? 'Recovery Run (พักฟื้น)' : 'Active Recovery', desc:easyTask, pace:pz.ez, hr:getHrZone(0.6,0.7, prof.age, prof.rhr), meals: dynamicMeals, ex:[`🏃‍♂️ ${easyTask.substring(0,20)}...`, 'ทำ Drills พื้นฐาน', 'Squats 3 เซต (หรือ Bodyweight)'], advice: adv };
-                cfg.detailedWorkout = { warmup: ['หมุนข้อต่อ 3 นาที'], main: `${easyTask}`, cooldown: ['เดินช้าลงเรื่อยๆ'] };
+                cfg = { id:'easy', name: (isSleepLow || needRecovery) ? 'Recovery (พักฟื้น)' : 'Active Recovery', desc:easyTask, pace:displayPace, hr:getHrZone(0.6,0.7, prof.age, prof.rhr), meals: dynamicMeals, ex:[`${isRunningTask ? '🏃‍♂️' : '🤸‍♂️'} ${easyTask.substring(0,25)}...`, 'ยืดเหยียด (Stretching)', 'Squats 3 เซต (หรือ Bodyweight)'], advice: adv };
+                cfg.detailedWorkout = { warmup: ['หมุนข้อต่อ 3 นาที'], main: `${easyTask}`, cooldown: ['คลายกล้ามเนื้อ 5 นาที'] };
             }
 
             if (prof.injury === 'knee') {
@@ -1051,8 +1063,9 @@
                         <div className="mb-6 pb-6 border-b border-zinc-800">
                             <p className="text-3xl font-black text-white uppercase italic">{cfg.name}</p>
                             <div className="flex gap-3 mt-4">
-                                <span className="bg-[#18181b] border border-zinc-700 px-4 py-2 rounded-lg text-cyan-400 font-black text-xs tracking-widest">PACE: {cfg.pace}</span>
-                                <span className="bg-[#18181b] border border-zinc-700 px-4 py-2 rounded-lg text-red-400 font-black text-xs tracking-widest">HR: {cfg.hr}</span>
+                                {/* 🛠️ ซ่อนป้าย PACE ถ้าค่าเป็น "-" */}
+                                {cfg.pace !== '-' && <span className="bg-[#18181b] border border-zinc-700 px-4 py-2 rounded-lg text-cyan-400 font-black text-xs tracking-widest">PACE: {cfg.pace}</span>}
+                                {cfg.hr !== '-' && <span className="bg-[#18181b] border border-zinc-700 px-4 py-2 rounded-lg text-red-400 font-black text-xs tracking-widest">HR: {cfg.hr}</span>}
                             </div>
                         </div>
                         <div className="space-y-6">
@@ -1124,8 +1137,9 @@
                                                     {dayCfg.detailedWorkout.main}
                                                 </p>
                                                 <div className="flex gap-2">
-                                                    <span className="text-[10px] font-black text-cyan-400 bg-cyan-400/10 px-2.5 py-1 rounded">PACE: {dayCfg.pace}</span>
-                                                    <span className="text-[10px] font-black text-red-400 bg-red-400/10 px-2.5 py-1 rounded">HR: {dayCfg.hr}</span>
+                                                    {/* 🛠️ ซ่อนป้าย PACE ในตารางรายสัปดาห์ด้วย ถ้าค่าเป็น "-" */}
+                                                    {dayCfg.pace !== '-' && <span className="text-[10px] font-black text-cyan-400 bg-cyan-400/10 px-2.5 py-1 rounded">PACE: {dayCfg.pace}</span>}
+                                                    {dayCfg.hr !== '-' && <span className="text-[10px] font-black text-red-400 bg-red-400/10 px-2.5 py-1 rounded">HR: {dayCfg.hr}</span>}
                                                 </div>
                                             </div>
                                         )}
