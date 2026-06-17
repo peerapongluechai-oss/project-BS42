@@ -35,7 +35,17 @@
 <body>
     <div id="root"></div>
 
-    <script type="text/babel" data-type="module">
+    <!-- 🛠️ เพิ่มสคริปต์ตั้งค่า Babel แบบคลาสสิก ป้องกัน Error "react/jsx-runtime" จอดำ -->
+    <script>
+        Babel.registerPreset('react-classic', {
+            presets: [
+                [Babel.availablePresets['react'], { "runtime": "classic" }]
+            ]
+        });
+    </script>
+
+    <!-- 🛠️ สั่งให้ Script หลักเรียกใช้ preset 'react-classic' ที่เราเพิ่งสร้าง -->
+    <script type="text/babel" data-type="module" data-presets="react-classic">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -542,7 +552,8 @@
                                     </div>
                                     <div className="bg-[#121212] p-3 rounded-lg border border-zinc-800">
                                         <ul className="text-[10px] text-zinc-400 font-bold space-y-1.5">
-                                            <li className="flex justify-between"><span>🔴 Beginner (> 7:30)</span><span>&lt; 4000m</span></li>
+                                            {/* 🛠️ แก้ไขเครื่องหมาย > เป็น &gt; และ < เป็น &lt; ป้องกัน React สับสนแท็ก HTML */}
+                                            <li className="flex justify-between"><span>🔴 Beginner (&gt; 7:30)</span><span>&lt; 4000m</span></li>
                                             <li className="flex justify-between"><span>🟡 Inter. (6:00 - 7:30)</span><span>4000 - 5000m</span></li>
                                             <li className="flex justify-between"><span>🟢 Advanced (&lt; 6:00)</span><span>&gt; 5000m</span></li>
                                         </ul>
@@ -1846,3 +1857,6 @@
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<ErrorBoundary><MainApp /></ErrorBoundary>);
+    </script>
+</body>
+</html>
