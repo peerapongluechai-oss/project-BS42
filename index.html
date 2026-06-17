@@ -479,15 +479,66 @@
 
             cfg.isDowngraded = needRecoveryActiveDay;
             
-            // 🌟 เพิ่มคุณสมบัติโชว์กระบวนการคิดของ AI ให้ผู้ใช้เห็นชัดๆ (AI Logic Transparency)
+            // 🌟 NEW: ระบบดัดแปลงตารางซ้อมให้เข้ากับ "สนามแข่งเป้าหมาย" (Course-Specific Adaptation) 🌟
+            const raceCourse = prof.targetRaceCourse || 'standard';
+            
+            // จะทำงานก็ต่อเมื่อไม่ได้อยู่ในสถานะป่วย/ปรับลด และไม่ใช่วันพักเต็มร้อย
+            if (raceCourse !== 'standard' && !cfg.isDowngraded && cfg.id !== 'rest') {
+                let courseNote = '';
+                let extraDrill = '';
+                let mainAppend = ''; // 🛠️ ตัวแปรใหม่: ใช้แปะป้ายกำกับให้โชว์ในหน้ารายสัปดาห์เลย!
+
+                if (raceCourse === 'bangsaen42') {
+                    if (cfg.id === 'long') {
+                        courseNote = lang === 'th' ? ' ⛰️ โค้ชเสริม: พยายามหาเส้นทางซ้อมที่มี "เนินชัน" เพื่อจำลองการขึ้นเขาสามมุข' : ' ⛰️ Course Prep: Find steep hills to simulate Khao Sam Muk.';
+                        mainAppend = lang === 'th' ? ' ⛰️ [ซ้อมเนินเขาสามมุข]' : ' ⛰️ [Hills Prep]';
+                    }
+                    if (cfg.id === 'easy') {
+                        extraDrill = lang === 'th' ? '🐒 แอดออนบางแสน: เพิ่มท่า Lunge ขาละ 15x3 เซต (สร้างหน้าขาไว้ลุยเขา)' : '🐒 Bangsaen Add-on: 3x15 Lunges (Build quads for hills)';
+                        mainAppend = lang === 'th' ? ' 🐒 [+Lunge สร้างหน้าขา]' : ' 🐒 [+Lunges]';
+                    }
+                    if (cfg.id === 'speed') {
+                        courseNote = lang === 'th' ? ' ⛰️ โค้ชเสริม: ตอนวิ่งเร็ว สับแขนให้แรงขึ้น เตรียมกล้ามเนื้อไว้สู้เนิน' : ' ⛰️ Course Prep: Drive your arms harder during speed work.';
+                        mainAppend = lang === 'th' ? ' ⛰️ [เน้นสับแขนสู้เนิน]' : ' ⛰️ [Arm Drive Prep]';
+                    }
+                } else if (raceCourse === 'buriram') {
+                    if (cfg.id === 'long') {
+                        courseNote = lang === 'th' ? ' 🏎️ โค้ชเสริม: หาเส้นทางที่มี "เนินซึมยาวๆ" ฝึกรักษารอบขาให้คงที่ไม่ตก' : ' 🏎️ Course Prep: Find long false flats to practice cadence control.';
+                        mainAppend = lang === 'th' ? ' 🏎️ [ซ้อมเนินซึม]' : ' 🏎️ [False Flats Prep]';
+                    }
+                    if (cfg.id === 'easy') {
+                        extraDrill = lang === 'th' ? '🏎️ แอดออนบุรีรัมย์: เพิ่ม Calf Raises (เขย่งปลายเท้า) 20x3 เซต (ทนทานเนินซึม)' : '🏎️ Buriram Add-on: 3x20 Calf Raises (Endurance for slopes)';
+                        mainAppend = lang === 'th' ? ' 🏎️ [+Calf Raises]' : ' 🏎️ [+Calf Raises]';
+                    }
+                } else if (raceCourse === 'bkk') {
+                    if (cfg.id === 'long') {
+                        courseNote = lang === 'th' ? ' 🌉 โค้ชเสริม: หาเส้นทางที่ต้อง "วิ่งขึ้นสะพาน" หรือลองซ้อมช่วงสายๆ เพื่อจำลองความร้อน' : ' 🌉 Course Prep: Find bridges to run over, or train later in the day for heat prep.';
+                        mainAppend = lang === 'th' ? ' 🌉 [ซ้อมขึ้นสะพาน/สู้แดด]' : ' 🌉 [Bridge/Heat Prep]';
+                    }
+                    if (cfg.id === 'easy') {
+                        extraDrill = lang === 'th' ? '🌉 แอดออน BKK: เพิ่มท่า Step-ups (ก้าวขึ้นเก้าอี้) ขาละ 15x3 เซต (พลังดันขึ้นสะพาน)' : '🌉 BKK Add-on: 3x15 Step-ups (Power for bridges)';
+                        mainAppend = lang === 'th' ? ' 🌉 [+Step-ups]' : ' 🌉 [+Step-ups]';
+                    }
+                }
+
+                if (courseNote) cfg.advice += courseNote;
+                if (extraDrill && !cfg.ex.includes(extraDrill)) cfg.ex.push(extraDrill);
+                
+                // 🛠️ แปะป้ายบอกลงไปในหัวข้อหลัก เพื่อให้โชว์ในตาราง WEEKLY SCHEDULE ด้วย!
+                if (mainAppend) cfg.detailedWorkout.main += mainAppend;
+            }
+
+            // 🌟 ปรับภาษาโชว์กระบวนการคิดของ AI ให้เป็น "ภาษามนุษย์" เข้าใจง่ายๆ ไม่ใช้ศัพท์เทคนิค
             if (cfg.id !== 'rest') {
+                const courseTextTh = raceCourse !== 'standard' ? `ปรับสูตรให้เข้ากับสนาม ${raceCourse} | ` : '';
+                const courseTextEn = raceCourse !== 'standard' ? `Tailored for ${raceCourse} | ` : '';
                 cfg.coachLogic = lang === 'th'
-                    ? `🧠 AI Logic: คำนวณจาก VCR ปัจจุบัน (${prof.vcr}m) ของคุณ เพซเป้าหมายจึงอยู่ที่ ${cfg.pace} และช่วงหัวใจถูกอ้างอิงจากอายุ ${prof.age} ปี (RHR ${prof.rhr} bpm) เพื่อให้ได้โซนที่ปลอดภัยที่สุดครับ`
-                    : `🧠 AI Logic: Calculated from your current VCR (${prof.vcr}m), setting your target pace at ${cfg.pace}. Heart rate zones are personalized for your age (${prof.age}) and RHR (${prof.rhr} bpm) for optimal safety.`;
+                    ? `🧠 ทำไมโค้ชถึงจัดตารางแบบนี้? : ${courseTextTh}ความเร็วที่แนะนำ (${cfg.pace}) ปรับจูนตาม "ความฟิตล่าสุด" ของคุณ ส่วนเป้าหมายการเต้นของหัวใจ คำนวณจาก "อายุและชีพจรตอนตื่นนอน" เพื่อให้เหนื่อยกำลังดีและปลอดภัยที่สุดครับ`
+                    : `🧠 Coach's Logic: ${courseTextEn}Your target pace (${cfg.pace}) is mapped to your current fitness. Heart rate zones use your age and resting HR to ensure a safe, productive workout.`;
             } else {
                 cfg.coachLogic = lang === 'th' 
-                    ? `🧠 AI Logic: วันพักคือส่วนสำคัญในวงจรการสร้างกล้ามเนื้อ (Supercompensation) ร่างกายจะพัฒนาความฟิตในวันนี้ครับ` 
-                    : `🧠 AI Logic: Rest days are crucial for the Supercompensation cycle. Your fitness actually improves while you rest.`;
+                    ? `🧠 ทำไมวันนี้ถึงให้พัก? : กล้ามเนื้อของคนเราจะพัฒนาและแข็งแรงขึ้นตอนที่เรา "พักผ่อน" ไม่ใช่ตอนที่วิ่งนะครับ วันนี้ปล่อยให้ร่างกายซ่อมแซมตัวเองให้เต็มที่เลยครับ` 
+                    : `🧠 Coach's Logic: Muscles get stronger when you rest, not when you run. Let your body repair itself fully today.`;
             }
 
             return cfg;
