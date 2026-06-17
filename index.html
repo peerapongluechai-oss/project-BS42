@@ -1571,8 +1571,10 @@
                 }
             }, [activeDateStr, prof.records]);
 
+            // 🛠️ อัปเดตฟังก์ชันบันทึกข้อมูล ให้รองรับการบันทึกทีละหลายๆ ค่าพร้อมกัน (Batch Update) ป้องกันปุ่มนิ่ง!
             const updateDaily = (key, val) => {
-                const nd = {...daily, [key]:val};
+                const updates = typeof key === 'object' ? key : { [key]: val };
+                const nd = {...daily, ...updates};
                 setDaily(nd);
                 const nRecords = {...prof.records, [activeDateStr]: nd};
                 setProf(p => ({...p, records: nRecords})); 
