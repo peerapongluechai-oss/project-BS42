@@ -186,7 +186,6 @@
             return `${Math.round(hrr*min)+Number(rhr||60)}-${Math.round(hrr*max)+Number(rhr||60)} bpm`;
         };
 
-        // 🛠️ อัปเดต Feedback ให้โชว์ตัวเลขของผู้ใช้ชัดๆ ว่า AI ไม่ได้ตอบแบบนกแก้วนกขุนทอง
         const generateFeedback = (dist, pace, hr, targetPaceStr, actType = 'Run', cadence = '', elevation = '', duration = '', lang = 'th') => {
             const t = lang === 'th';
             let cadenceFeedback = "";
@@ -220,7 +219,6 @@
                 const minT = Math.min(...tSecsArr);
                 const maxT = Math.max(...tSecsArr);
                 
-                // 🛠️ โชว์ตัวเลขให้เห็นชัดๆ ว่าเปรียบเทียบจากอะไร
                 if(pSecs < minT - 15) return (t ? `⚡ คุณวิ่งเพซ ${pace} ซึ่งเร็วกว่าเป้าหมาย (${targetPaceStr})! โค้ชเตือนว่าซ้อมเร็วกว่ากำหนดระวังจะกรอบนะครับ` : `⚡ You ran at ${pace}, faster than the target (${targetPaceStr})! Careful not to burn out.`) + elevFeedback + cadenceFeedback;
                 if(pSecs > maxT + 15) return (t ? `🐢 เพซ ${pace} วันนี้ช้ากว่าเป้า (${targetPaceStr}) นิดหน่อย แต่ร่างกายได้สร้าง Endurance ถือว่าทำได้ดีครับ` : `🐢 Pace ${pace} was slightly slower than target (${targetPaceStr}), but great for endurance.`) + elevFeedback + cadenceFeedback;
                 return (t ? `🎯 เพอร์เฟกต์! เพซ ${pace} ตรงตามแผน (${targetPaceStr}) เป๊ะๆ ร่างกายกำลังพัฒนาไปถูกทางครับ` : `🎯 Perfect execution! Pace ${pace} is exactly within the target (${targetPaceStr}).`) + elevFeedback + cadenceFeedback;
@@ -318,17 +316,52 @@
                 }
             }
 
-            let cfg = { id:'rest', name:'Rest Day', desc:'พักฟื้นร่างกายตามหลักสูตร', pace:'-', hr:'-', meals: dynamicMeals, ex:['💤 พักการวิ่ง 100% (Full Rest)','Core Plank 3 เซต','กลิ้ง Foam Roller นวดกล้ามเนื้อ'], advice: 'ครูดินเน้นย้ำเสมอว่า วันพักคือส่วนสำคัญที่สุดของการซ้อม ให้ร่างกายได้ซ่อมแซมตัวเองครับ' };
-            cfg.detailedWorkout = { warmup: [], main: 'พักฟื้นร่างกายอย่างเต็มที่ (No Running)', cooldown: [] };
+            let cfg = { 
+                id:'rest', 
+                name: lang === 'th' ? 'Rest Day (วันพัก)' : 'Rest Day', 
+                desc: lang === 'th' ? 'พักฟื้นร่างกายตามหลักสูตร' : 'Standard Recovery Day', 
+                pace:'-', hr:'-', meals: dynamicMeals, 
+                ex: [
+                    lang === 'th' ? '💤 พักการวิ่ง 100% ให้กล้ามเนื้อฟื้นฟูและซ่อมแซมตัวเองเต็มที่' : '💤 100% No Running. Full muscle recovery.',
+                    lang === 'th' ? 'นวดคลายกล้ามเนื้อด้วย Foam Roller (เน้นน่อง, หน้าขา, ITB) 10 นาที' : 'Foam rolling massage (calves, quads, ITB) 10 mins',
+                    lang === 'th' ? 'เสริมแกนกลางลำตัว (Core): Plank 45-60 วินาที x 3 เซต' : 'Core strength: Plank 45-60 secs x 3 sets'
+                ], 
+                advice: lang === 'th' ? 'ครูดินเน้นย้ำเสมอว่า วันพักคือส่วนสำคัญที่สุดของการซ้อม (Supercompensation) ร่างกายจะแข็งแรงขึ้นในวันนี้ครับ' : 'Rest days are the most important part of training for muscle repair and supercompensation.' 
+            };
+            cfg.detailedWorkout = { warmup: [], main: lang === 'th' ? 'พักฟื้นร่างกายอย่างเต็มที่ (No Running)' : 'Full Rest', cooldown: [] };
 
             if(isRace) {
-                cfg = { id:'long', name:`RACE DAY!`, desc:'ถึงเวลาโชว์ผลการซ้อม!', pace:pz.tm, hr:getHrZone(0.7,0.88, prof.age, prof.rhr), meals:dynamicMeals, ex:['🏃‍♂️ ลุยให้เต็มที่ ดื่มน้ำทุกจุด','แช่น้ำเย็น Recovery','ยืดเหยียดเบาๆ'], advice: 'ออกตัวช้าๆ อย่าวิ่งตามคนอื่น คุมเพซตัวเองให้ดีเหมือนตอนซ้อมยาวครับ' };
-                cfg.detailedWorkout = { warmup: ['วอร์มอัพเบาๆ 10 นาที'], main: `วิ่ง ${currentTargetDist}K อย่างมั่นใจ เติมพลังงานตามแผน`, cooldown: ['เดินรับเหรียญ 10 นาที'] };
+                cfg = { 
+                    id:'long', 
+                    name: lang === 'th' ? `RACE DAY!` : `RACE DAY!`, 
+                    desc: lang === 'th' ? 'ถึงเวลาโชว์ผลการซ้อม!' : 'Time to shine!', 
+                    pace:pz.tm, hr:getHrZone(0.7,0.88, prof.age, prof.rhr), meals:dynamicMeals, 
+                    ex: [
+                        lang === 'th' ? 'ทาครีมกันเสียดสี (รักแร้, ขาหนีบ) + ติดเบอร์วิ่ง (BIB) ให้พร้อม' : 'Apply anti-chafe cream + Pin your BIB ready',
+                        lang === 'th' ? 'วอร์มอัพเบาๆ (เดินหรือจ๊อก) 10 นาทีก่อนเข้าบล็อกสตาร์ท' : 'Warm-up (walk/light jog) 10 mins before entering start block',
+                        `🏃‍♂️ วิ่งระยะ ${currentTargetDist}K คุมสติและเพซตามแผน ห้ามไหลตามคนอื่นเด็ดขาด!`,
+                        lang === 'th' ? 'กินเจลพลังงานซองแรกก่อนปล่อยตัว 15 นาที และเติมเจลทุกๆ 45 นาที' : 'Take 1st energy gel 15m before start, then every 45 mins'
+                    ], 
+                    advice: lang === 'th' ? 'ออกตัวช้าๆ อย่าวิ่งตามคนอื่น คุมเพซตัวเองให้ดีเหมือนตอนซ้อมยาวครับ คุณทำได้!' : 'Start slow, run your own pace like your long runs. You got this!' 
+                };
+                cfg.detailedWorkout = { warmup: [lang === 'th' ? 'วอร์มอัพเบาๆ 10 นาที' : '10 min light warm-up'], main: lang === 'th' ? `วิ่ง ${currentTargetDist}K อย่างมั่นใจ เติมพลังงานตามแผน` : `Run ${currentTargetDist}K confidently`, cooldown: [lang === 'th' ? 'เดินรับเหรียญ 10 นาที' : '10 min walk to get medal'] };
             } else if(dayType === 'long') {
                 const targetPace = currentWeekData.lZone.includes('60%') ? pz.ez : (currentWeekData.lZone.includes('Z3') ? pz.tm : pz.lr);
                 const targetHr = currentWeekData.lZone.includes('60%') ? getHrZone(0.6,0.7, prof.age, prof.rhr) : getHrZone(0.7,0.8, prof.age, prof.rhr);
-                cfg = { id:'long', name:'Long Run (วัดใจ)', desc:`วิ่งยาว ${currentWeekData.long} ตามโปรแกรม`, pace:`${targetPace}`, hr:targetHr, meals:dynamicMeals, ex:[`🏃‍♂️ วิ่ง ${currentWeekData.long}`,'จิบน้ำทุก 2 กม.','ยืดเหยียดชุดใหญ่หลังวิ่ง'], advice: `เป้าหมายสัปดาห์นี้คือ ${currentWeekData.long} (${currentWeekData.lZone}) ไม่ต้องสนความเร็ว เน้นเวลาบนเท้าให้ครบครับ` };
-                cfg.detailedWorkout = { warmup: ['เดินเร็ว 5 นาที', 'กายบริหารแบบขยับ (Dynamic)'], main: `วิ่ง ${currentWeekData.long} คุมความเหนื่อยระดับ ${currentWeekData.lZone}`, cooldown: ['เดินคลายกรด 10 นาที', 'ยืดเหยียดค้างท่า (Static)'] };
+                cfg = { 
+                    id:'long', 
+                    name: lang === 'th' ? 'Long Run (ซ้อมยาววัดใจ)' : 'Long Run', 
+                    desc: lang === 'th' ? `เป้าหมาย: วิ่งยาว ${currentWeekData.long}` : `Goal: Long run ${currentWeekData.long}`, 
+                    pace:`${targetPace}`, hr:targetHr, meals:dynamicMeals, 
+                    ex: [
+                        lang === 'th' ? 'ทาครีมกันเสียดสี + วอร์มข้อต่อ (หมุนเข่า, ข้อเท้า, สะโพก) 5 นาที' : 'Anti-chafe cream + Joint warm-up 5 mins',
+                        `🏃‍♂️ วิ่งรักษาระดับความเหนื่อยระยะ ${currentWeekData.long} (เน้นเวลาบนเท้า ไม่เน้นความเร็ว)`,
+                        lang === 'th' ? 'จิบน้ำเปล่า/เกลือแร่ ทุกๆ 2-3 กม. (อย่ารอให้รู้สึกกระหาย)' : 'Sip water/electrolytes every 2-3 km (do not wait until thirsty)',
+                        lang === 'th' ? 'คูลดาวน์ด้วยการเดิน 10 นาที + ยืดเหยียดค้างท่า (Static Stretch) ชุดใหญ่' : '10m walk cool-down + Full static stretching routine'
+                    ], 
+                    advice: lang === 'th' ? `เป้าหมายหลักสัปดาห์นี้คือระยะ ${currentWeekData.long} (${currentWeekData.lZone}) ไม่ต้องสนความเร็ว เน้นเวลาบนเท้าให้ครบครับ` : `Goal today is ${currentWeekData.long} (${currentWeekData.lZone}). Ignore speed, focus on completing the time on feet.` 
+                };
+                cfg.detailedWorkout = { warmup: [lang === 'th' ? 'เดินเร็ว 5 นาที' : '5 min brisk walk', lang === 'th' ? 'กายบริหารแบบขยับ (Dynamic)' : 'Dynamic stretching'], main: lang === 'th' ? `วิ่ง ${currentWeekData.long} คุมความเหนื่อยระดับ ${currentWeekData.lZone}` : `Run ${currentWeekData.long} at ${currentWeekData.lZone} effort`, cooldown: [lang === 'th' ? 'เดินคลายกรด 10 นาที' : '10 min walk', lang === 'th' ? 'ยืดเหยียดค้างท่า (Static)' : 'Static stretching'] };
             } else if(dayType === 'speed') {
                 let sPace = pz.in;
                 if(currentWeekData.sZone === '70%') sPace = getPaceRange(70);
@@ -336,8 +369,21 @@
                 else if(currentWeekData.sZone === '60%') sPace = getPaceRange(60);
                 else if(currentWeekData.sZone === 'Pace10K') sPace = getPaceRange(90);
                 
-                cfg = { id:'speed', name:'Quality Work', desc:currentWeekData.speed, pace:`${sPace}`, hr:getHrZone(0.8,0.9, prof.age, prof.rhr), meals: dynamicMeals, ex:[`⚡ ${currentWeekData.speed.split(' ')[0]}`,'วอร์มอัพให้ถึงก่อนวิ่งเร็ว','Russian Twist 3 เซต'], advice: 'ตารางวันนี้ช่วยขยับเพดานความฟิต (VCR) ให้สูงขึ้น วิ่งเสร็จต้องคูลดาวน์ให้ดีครับ' };
-                cfg.detailedWorkout = { warmup: ['จ๊อกกิ้งเบาๆ 15 นาที', 'ทำ Drills ยกเข่าเตะก้น'], main: `${currentWeekData.speed} (เป้าหมาย: ${sPace})`, cooldown: ['จ๊อกกิ้งเบาๆ คลายกล้ามเนื้อ 15 นาที'] };
+                cfg = { 
+                    id:'speed', 
+                    name: lang === 'th' ? 'Quality Work (ลงคอร์ท)' : 'Quality Work (Intervals)', 
+                    desc: lang === 'th' ? `โจทย์วันนี้: ${currentWeekData.speed}` : `Today's workout: ${currentWeekData.speed}`, 
+                    pace:`${sPace}`, hr:getHrZone(0.8,0.9, prof.age, prof.rhr), meals: dynamicMeals, 
+                    ex: [
+                        lang === 'th' ? 'จ๊อกกิ้งวอร์มอัพ โซน 2 (15-20 นาที) ให้เหงื่อซึมเพื่อป้องกันกล้ามเนื้อฉีกขาด' : '15-20m Z2 Warm-up jog (crucial: break a sweat to prevent muscle tears)',
+                        lang === 'th' ? 'ทำท่ายืดเหยียดแบบขยับ (Dynamic Stretching) 5 นาที เตรียมกล้ามเนื้อพร้อมกระชาก' : '5 mins Dynamic Stretching to prep muscles for speed',
+                        `⚡ ลุยคอร์ทหลัก: ${currentWeekData.speed}`,
+                        lang === 'th' ? 'จ๊อกกิ้งเบาๆ คูลดาวน์ (15 นาที) เพื่อระบายกรดแลคติกออกจากกล้ามเนื้อ' : '15m easy cool-down jog to flush out lactic acid build-up',
+                        lang === 'th' ? 'เสริมความแกร่ง (Core): ท่า Russian Twist 20 ครั้ง x 3 เซต' : 'Core strength: Russian Twist 20 reps x 3 sets'
+                    ], 
+                    advice: lang === 'th' ? 'ตารางวันนี้ช่วยขยับเพดานความฟิต (VCR) ให้สูงขึ้น กฎเหล็กคือต้องวอร์มอัพให้ถึงก่อนวิ่งเร็วนะครับ!' : 'Today helps increase your VCR ceiling. The golden rule: warm up properly before sprinting!' 
+                };
+                cfg.detailedWorkout = { warmup: [lang === 'th' ? 'จ๊อกกิ้งเบาๆ 15 นาที' : '15 min easy jog', lang === 'th' ? 'ทำ Drills ยกเข่าเตะก้น' : 'Drills: high knees, butt kicks'], main: `${currentWeekData.speed} (${lang==='th'?'เป้าหมาย':'Target'}: ${sPace})`, cooldown: [lang === 'th' ? 'จ๊อกกิ้งเบาๆ คลายกล้ามเนื้อ 15 นาที' : '15 min easy cool-down jog'] };
             } else if(dayType === 'easy') {
                 let easyTask = '';
                 if (dayIndex === 0) { 
@@ -345,7 +391,7 @@
                 } else if (dayIndex % 3 === 1) { 
                     easyTask = currentWeekData.drill;
                 } else if (dayIndex % 3 === 2) { 
-                    easyTask = 'วิ่งจ๊อกกิ้งสบายๆ (Easy Run) คุมโซน 2 ประมาณ 45-50 นาที';
+                    easyTask = lang === 'th' ? 'วิ่งจ๊อกกิ้งสบายๆ (Easy Run) คุมโซน 2 ประมาณ 45-50 นาที' : 'Easy Run for 45-50 mins in Zone 2';
                 } else { 
                     easyTask = currentWeekData.easy;
                 }
@@ -358,8 +404,24 @@
                     }
                 }
                 
-                const isRunningTask = easyTask.includes('วิ่ง') || easyTask.includes('จ๊อกกิ้ง') || easyTask.includes('jog');
+                const isRunningTask = easyTask.includes('วิ่ง') || easyTask.includes('จ๊อกกิ้ง') || easyTask.includes('jog') || easyTask.includes('Run');
                 const displayPace = isRunningTask ? pz.ez : '-';
+                
+                let exList = [];
+                if (isRunningTask) {
+                    exList = [
+                        `🏃‍♂️ ${easyTask}`,
+                        lang === 'th' ? 'โฟกัสที่ฟอร์มวิ่ง: ผ่อนคลายหัวไหล่ แกว่งแขนเบาๆ ไม่ก้มหน้ามองพื้น' : 'Focus on running form: relaxed shoulders, light arm swing, chin up',
+                        lang === 'th' ? 'พยายามควบคุม Heart Rate ให้อยู่ในขอบเขตโซน 2 อย่างเคร่งครัด' : 'Strictly maintain your Heart Rate within Zone 2',
+                        lang === 'th' ? 'เสริมช่วงล่าง: ทำ Bodyweight Squat 15 ครั้ง x 3 เซต' : 'Leg strength: Bodyweight Squats 15 reps x 3 sets'
+                    ];
+                } else {
+                    exList = [
+                        `🤸‍♂️ ${easyTask}`,
+                        lang === 'th' ? 'รักษาจังหวะการหายใจให้สม่ำเสมอ ไม่ให้ออกแรงจนหอบเกินไป' : 'Maintain a steady breathing rhythm, avoid panting',
+                        lang === 'th' ? 'ควบคุม Heart Rate ให้อยู่ในระดับใกล้เคียงการออกกำลังกายโซน 2' : 'Keep your Heart Rate close to Zone 2 level effort'
+                    ];
+                }
                 
                 let adv = isRunningTask ? (lang === 'th' ? 'วันวิ่งสบายคือการนวดกล้ามเนื้อด้วยการวิ่ง ท่าวิ่งต้องผ่อนคลายที่สุด ไม่ก้มหน้าครับ' : 'Easy runs are like a massage for your muscles. Keep your form relaxed.') 
                                         : (lang === 'th' ? 'วันนี้เป็นการออกกำลังกายแบบ Cross-Training เพื่อเซฟข้อต่อและสร้างความแข็งแรง คุมหัวใจให้อยู่โซน 2 ก็พอครับ' : 'Today is for cross-training to save your joints. Keep your HR in zone 2.');
@@ -378,7 +440,14 @@
                                         : 'Take it easy today to let your body recover from being sick. Just light walking or stretching!';
                 }
                 
-                cfg = { id:'easy', name: needRecoveryActiveDay ? 'Recovery (พักฟื้น)' : 'Active Recovery', desc:easyTask, pace:displayPace, hr:getHrZone(0.6,0.7, prof.age, prof.rhr), meals: dynamicMeals, ex:[`${isRunningTask ? '🏃‍♂️' : '🤸‍♂️'} ${easyTask.substring(0,25)}...`, lang === 'th' ? 'ยืดเหยียด (Stretching)' : 'Stretching', lang === 'th' ? 'Squats 3 เซต (หรือ Bodyweight)' : '3 Sets Squats (or Bodyweight)'], advice: adv };
+                cfg = { 
+                    id:'easy', 
+                    name: needRecoveryActiveDay ? (lang==='th'?'Recovery (พักฟื้น)':'Recovery') : (lang==='th'?'Active Recovery':'Active Recovery'), 
+                    desc: lang === 'th' ? 'รักษากล้ามเนื้อให้ขยับตัว' : 'Keep muscles moving', 
+                    pace:displayPace, hr:getHrZone(0.6,0.7, prof.age, prof.rhr), meals: dynamicMeals, 
+                    ex: exList, 
+                    advice: adv 
+                };
                 cfg.detailedWorkout = { warmup: [lang === 'th' ? 'หมุนข้อต่อ 3 นาที' : 'Joint rotation 3 mins'], main: `${easyTask}`, cooldown: [lang === 'th' ? 'คลายกล้ามเนื้อ 5 นาที' : 'Cool down 5 mins'] };
             }
 
@@ -540,9 +609,7 @@
             const [lifestyle, setLifestyle] = useState(initialProf.lifestyle || 'active');
             
             const [goal, setGoal] = useState(initialProf.primaryGoal || 'performance');
-            
             const [course, setCourse] = useState(initialProf.targetRaceCourse || 'standard');
-            
             const [raceDateStr, setRaceDateStr] = useState(initialProf.raceDate || '2026-11-15');
             
             const [avail, setAvail] = useState(initialProf.schedule ? {0: initialProf.schedule[0]!=='rest', 1: initialProf.schedule[1]!=='rest', 2: initialProf.schedule[2]!=='rest', 3: initialProf.schedule[3]!=='rest', 4: initialProf.schedule[4]!=='rest', 5: initialProf.schedule[5]!=='rest', 6: initialProf.schedule[6]!=='rest'} : {0:true, 1:false, 2:true, 3:true, 4:false, 5:true, 6:false});
@@ -937,7 +1004,7 @@
                                     <p className="text-xs text-zinc-400 font-bold uppercase">Sleep: {Math.floor(daily.rSleep/60)}h {daily.rSleep%60}m | HRV: {daily.rHrv}ms</p>
                                     <p className={`text-xl font-black italic mt-1 ${daily.rReadinessScore >= 70 ? 'text-lime-400' : daily.rReadinessScore >= 50 ? 'text-yellow-400' : 'text-red-500'}`}>{t.readiness}: {daily.rReadinessScore}%</p>
                                 </div>
-                                <button onClick={()=>updateDaily('rReadinessChecked', false)} className="text-[10px] text-zinc-500 hover:text-white uppercase font-bold underline">RESET</button>
+                                <button onClick={()=>updateDaily({rReadinessChecked: false})} className="text-[10px] text-zinc-500 hover:text-white uppercase font-bold underline">RESET</button>
                             </div>
                         )}
                     </section>
@@ -951,7 +1018,7 @@
                         <h3 className="font-black text-sm uppercase text-zinc-300 mb-5 tracking-widest flex items-center gap-2"><span>🍏</span> {t.nutrition}</h3>
                         <div className="grid grid-cols-2 gap-4">
                             {[ {k:'b',l:t.breakfast}, {k:'l',l:t.lunch}, {k:'s',l:t.snack}, {k:'d',l:t.dinner} ].map(m => (
-                                <button key={m.k} onClick={()=>updateDaily(m.k, !daily[m.k])} className={`p-5 rounded-xl text-sm font-bold uppercase transition-all border ${daily[m.k] ? 'suunto-bg-accent border-[#bef264]' : 'bg-[#18181b] text-zinc-300 border-zinc-700 hover:bg-zinc-800'}`}>{m.l}</button>
+                                <button key={m.k} onClick={()=>updateDaily({[m.k]: !daily[m.k]})} className={`p-5 rounded-xl text-sm font-bold uppercase transition-all border ${daily[m.k] ? 'suunto-bg-accent border-[#bef264]' : 'bg-[#18181b] text-zinc-300 border-zinc-700 hover:bg-zinc-800'}`}>{m.l}</button>
                             ))}
                         </div>
                     </section>
@@ -959,9 +1026,9 @@
                     <section className="suunto-card p-6 flex items-center justify-between">
                         <div><h3 className="font-black text-sm uppercase text-cyan-500 tracking-widest flex items-center gap-2"><span>💧</span> {t.hydration}</h3><p className="text-xs text-zinc-400 font-bold uppercase mt-2">Target: {targetWater} {t.glasses}</p></div>
                         <div className="flex items-center gap-4">
-                            <button onClick={()=>updateDaily('w', Math.max(0, daily.w-1))} className="w-14 h-14 bg-[#18181b] rounded-xl font-black text-3xl text-zinc-400 border border-zinc-700 active:scale-95">-</button>
+                            <button onClick={()=>updateDaily({w: Math.max(0, daily.w-1)})} className="w-14 h-14 bg-[#18181b] rounded-xl font-black text-3xl text-zinc-400 border border-zinc-700 active:scale-95">-</button>
                             <span className="text-4xl font-black text-white w-10 text-center italic">{daily.w}</span>
-                            <button onClick={()=>updateDaily('w', daily.w+1)} className="w-14 h-14 bg-cyan-600/20 text-cyan-400 border border-cyan-800 rounded-xl font-black text-3xl active:scale-95 hover:bg-cyan-600/40">+</button>
+                            <button onClick={()=>updateDaily({w: daily.w+1})} className="w-14 h-14 bg-cyan-600/20 text-cyan-400 border border-cyan-800 rounded-xl font-black text-3xl active:scale-95 hover:bg-cyan-600/40">+</button>
                         </div>
                     </section>
                     
@@ -975,7 +1042,7 @@
                         <p className="text-base text-zinc-300 mb-6 leading-relaxed font-medium">{cfg.desc}</p>
                         <div className="space-y-4 mb-8">
                             {cfg.ex.map((ex, i) => (
-                                <div key={i} onClick={()=>{let nx=[...(daily.ex||[false,false,false])]; nx[i]=!nx[i]; updateDaily('ex', nx);}} className={`p-5 rounded-xl border flex items-center gap-4 cursor-pointer transition-all ${daily.ex?.[i] ? 'bg-[#bef264]/10 border-[#bef264] suunto-accent' : 'bg-[#18181b] border-zinc-700 text-zinc-300 hover:border-zinc-500'}`}>
+                                <div key={i} onClick={()=>{let nx=[...(daily.ex||[false,false,false])]; nx[i]=!nx[i]; updateDaily({ex: nx});}} className={`p-5 rounded-xl border flex items-center gap-4 cursor-pointer transition-all ${daily.ex?.[i] ? 'bg-[#bef264]/10 border-[#bef264] suunto-accent' : 'bg-[#18181b] border-zinc-700 text-zinc-300 hover:border-zinc-500'}`}>
                                     <div className={`w-6 h-6 rounded flex items-center justify-center shrink-0 ${daily.ex?.[i] ? 'bg-[#bef264] text-black' : 'border-2 border-zinc-500'}`}>{daily.ex?.[i] && <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>}</div>
                                     <span className="font-bold text-base tracking-wide">{ex}</span>
                                 </div>
@@ -1558,10 +1625,21 @@
             const activeDateObj = new Date(logDate + 'T12:00:00');
             const activeDateStr = activeDateObj.toDateString();
             
+            // 🛠️ โค้ดตรงนี้ที่ลูกน้ำหายไป! นำมาเขียนใหม่แบบคลีนๆ เป๊ะๆ
             const [daily, setDaily] = useState(prof.records?.[activeDateStr] || { 
-                w:0, b:false, l:false, s:false, d:false, ex:[false,false,false,false], 
-                rLog:false, activities: [], tss: 0, 
-                rReadinessChecked: false, rSleep: 0, rHrv: 0, rReadinessScore: 100,
+                w: 0, 
+                b: false, 
+                l: false, 
+                s: false, 
+                d: false, 
+                ex: [false, false, false, false], 
+                rLog: false, 
+                activities: [], 
+                tss: 0, 
+                rReadinessChecked: false, 
+                rSleep: 0, 
+                rHrv: 0, 
+                rReadinessScore: 100,
                 skipReason: 'none' 
             });
             
@@ -1638,9 +1716,19 @@
             useEffect(() => {
                 if (prof.records) {
                     setDaily(prof.records[activeDateStr] || { 
-                        w:0, b:false, l:false, s:false, d:false, ex:[false,false,false,false], 
-                        rLog:false, activities: [], tss: 0, 
-                        rReadinessChecked: false, rSleep: 0, rHrv: 0, rReadinessScore: 100,
+                        w: 0, 
+                        b: false, 
+                        l: false, 
+                        s: false, 
+                        d: false, 
+                        ex: [false, false, false, false], 
+                        rLog: false, 
+                        activities: [], 
+                        tss: 0, 
+                        rReadinessChecked: false, 
+                        rSleep: 0, 
+                        rHrv: 0, 
+                        rReadinessScore: 100,
                         skipReason: 'none'
                     });
                 }
@@ -1834,7 +1922,6 @@
                         </div>
                     )}
 
-                    {/* 🛠️ วางทับบล็อก Header นี้ทั้งหมด เพื่อซ่อมแซมบรรทัดที่แหว่งไปครับ */}
                     <header className="flex justify-between items-start mb-8 pt-4 gap-4">
                         <div className="flex-1">
                             <p className="text-zinc-400 font-black text-[10px] md:text-xs tracking-[0.2em] md:tracking-[0.3em] uppercase mb-2">{t.targetRaceDay}</p>
