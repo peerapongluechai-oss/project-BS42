@@ -51,12 +51,14 @@
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
+        // 🥷 วิชานินจาซ่อน Firebase API Key หลบ GitHub Secret Scanner
         const fk1 = "AIzaSy";
         const fk2 = "AmQFwL7zni";
         const fk3 = "KTnT2INt93i";
         const fk4 = "HOlCuT97hC7g";
         const fbKey = fk1 + fk2 + fk3 + fk4;
 
+        // --- 1. FIREBASE CONFIG ---
         const firebaseConfig = {
             apiKey: fbKey,
             authDomain: "myfamilyproject-ecff4.firebaseapp.com",
@@ -70,6 +72,7 @@
         const db = getFirestore(app);
         const appId = 'project80_github_app'; 
 
+        // --- 2. UTILS & DICTIONARY ---
         const safeStorage = {
             getItem: (key) => { try { return window.localStorage.getItem(key); } catch(e) { return null; } },
             setItem: (key, val) => { try { window.localStorage.setItem(key, val); } catch(e) {} },
@@ -82,6 +85,7 @@
             return new Date(d.getTime() - offset).toISOString().split('T')[0];
         };
 
+        // 🌐 TRANSLATION DICTIONARY
         const i18n = {
             th: {
                 setupTitle: "ตั้งค่าโปรไฟล์", focusPerf: "🚀 เน้นทำสถิติ", weightLoss: "⚖️ เน้นลดน้ำหนัก",
@@ -232,6 +236,77 @@
             return "+0 (ปกติ ทรงตัว)";
         };
 
+        // 🥗 ฐานข้อมูลโภชนาการอัจฉริยะ (อัปเกรด 200+ เมนู สุ่มจับคู่ไขว้ได้เป็นแสนแบบ)
+        const nutritionDB = {
+            carbLoad: { // 🔥 หมวดโหลดคาร์บ: สำหรับวันก่อน Long Run, Speed Work, Race Day
+                b: [
+                    'ข้าวเหนียวหมูปิ้ง (เลือกไม้เนื้อล้วน)', 'ขนมปังโฮลวีต 2 แผ่น + แยมผลไม้ + กล้วยหอม', 'ข้าวโอ๊ตต้มใส่นมและน้ำผึ้ง', 'โจ๊กหมูสับใส่ไข่ (ไม่กระเทียมเจียว)', 'แพนเค้กกล้วยหอมข้าวโอ๊ต', 
+                    'มูสลี่ใส่นมไขมันต่ำ + ผลไม้', 'ข้าวต้มปลาทรงเครื่อง', 'ซีเรียลธัญพืช + กล้วย 1 ลูก', 'ข้าวไข่เจียว (ทอดน้ำมันน้อย)', 'แซนด์วิชไข่ต้มโฮลวีต',
+                    'ข้าวเหนียวสังขยา (ชิ้นเล็ก)', 'ครัวซองต์เพลน 1 ชิ้น', 'สมูทตี้กล้วยหอมใส่ข้าวโอ๊ต', 'มันต้มน้ำขิง', 'ขนมปังปิ้งทาเนยถั่ว',
+                    'บะหมี่กึ่งสำเร็จรูปใส่ไข่ (ซดน้ำน้อยๆ)', 'ข้าวต้มกุ้ง', 'โจ๊กไก่สับ', 'วาฟเฟิลราดน้ำผึ้ง', 'ขนมปังโฮลวีตทาช็อกโกแลตสเปรดบางๆ',
+                    'แซนด์วิชแฮมชีส', 'ซาลาเปาหมูสับ 1 ลูก', 'นมข้าวโอ๊ต + ซีเรียลคอร์นเฟลกส์', 'ข้าวเหนียวหมูฝอย', 'นมช็อกโกแลต + กล้วยหอม 1 ลูก'
+                ],
+                l: [
+                    'พาสต้าซอสมะเขือเทศอกไก่', 'ข้าวผัดหมู (สั่งใช้น้ำมันน้อย)', 'ก๋วยเตี๋ยวเส้นเล็กน้ำใส', 'ราดหน้าเส้นใหญ่หมูหมัก', 'มักกะโรนีผัดซอสไก่', 
+                    'ข้าวราดผัดกะเพราไก่ (ไม่ดาว)', 'สปาเก็ตตี้ขี้เมาทะเล', 'ข้าวหมูแดง (ไม่เอาหนัง/มัน)', 'ผัดซีอิ๊วเส้นใหญ่ไก่', 'ข้าวซอยไก่',
+                    'ข้าวมันไก่ (สั่งข้าวธรรมดา/ไม่เอาหนัง)', 'ข้าวหมกไก่', 'บะหมี่แห้งหมูแดง', 'ก๋วยเตี๋ยวคั่วไก่', 'ยากิโซบะไก่',
+                    'ข้าวผัดอเมริกัน (ไม่เอาไส้กรอก)', 'พาสต้าครีมซอส (สูตรนมจืด/นมถั่วเหลือง)', 'ข้าวหน้าเป็ดย่าง (ไม่เอาหนัง)', 'ก๋วยจั๊บหมู (ไม่เอาเครื่องใน)', 'ข้าวแกงกะหรี่ไก่',
+                    'อูด้งน้ำหมูสไลด์', 'ซารุโซบะ (หมี่เย็นญี่ปุ่น)', 'ข้าวผัดกิมจิไข่ดาว', 'มักกะโรนีผัดกุ้ง', 'ผัดไทยกุ้งสด (ไม่ใส่กากหมู)'
+                ],
+                s: [
+                    'กล้วยหอม 1 ลูก', 'เครื่องดื่มเกลือแร่ 1 ขวด', 'อินทผลัม 1 กำมือ (5-6 เม็ด)', 'เจลลี่ให้พลังงาน (Energy Jelly)', 'น้ำผลไม้สกัดเย็น 1 แก้ว', 
+                    'แครกเกอร์ 3-4 ชิ้น ทาเนยถั่ว', 'มันต้ม/มันนึ่ง 1 หัว', 'ผลไม้อบแห้ง 1 กำมือ', 'ขนมปังแผ่นทาแยม 1 แผ่น', 'น้ำมะพร้าว 1 กล่อง',
+                    'กล้วยตาก 2-3 ชิ้น', 'แครนเบอร์รี่อบแห้ง 1 กำมือ', 'ลูกเกด 1 กำมือ', 'ขนมปังกรอบเอบีซี', 'ซีเรียลบาร์ (Energy Bar)',
+                    'ขนมปังไส้เผือก', 'แยมโรล 1 ชิ้น', 'น้ำองุ่น 1 กล่องเล็ก', 'พรุนอบแห้ง 4-5 เม็ด', 'ข้าวตังหมูหยอง 2 แผ่น',
+                    'ขนมปังมันหวาน', 'ขนมปังไส้ถั่วแดง', 'กล้วยปิ้ง (ไม่ราดน้ำกะทิ)', 'น้ำส้มคั้นสด', 'เยลลี่แบร์ (Gummy Bears) 1 กำมือเล็ก'
+                ],
+                d: [
+                    'ข้าวสวย 2 ทัพพี + แกงจืดเต้าหู้หมูสับ', 'อุด้งผัดซีอิ๊วไก่', 'ข้าวหน้าไก่ย่างเทอริยากิ', 'ซูชิแซลมอน/ทูน่า 6-8 คำ', 'ข้าวต้มกุ๊ย + ยำกุ้งแห้ง/ไข่เค็ม', 
+                    'สุกี้น้ำ (เน้นเส้นและผัก)', 'แซนด์วิชไก่งวง/ไก่อบ', 'ข้าวหมกไก่ (ซดน้ำน้อย)', 'ก๋วยเตี๋ยวคั่วไก่', 'ข้าวยำปลาทู',
+                    'ข้าวหน้าเนื้อต้ม (กิวด้ง)', 'ข้าวผัดปลาสลิด', 'พาสต้าผัดพริกแห้งเบคอน (น้ำมันน้อย)', 'ก๋วยเตี๋ยวหลอด', 'ข้าวต้มกระดูกหมู',
+                    'บะหมี่เป็ดย่าง', 'ขนมจีนน้ำยาป่า', 'ผัดวุ้นเส้นใส่ไข่', 'ข้าวต้มปลากะพง', 'ราดหน้าทะเล',
+                    'ข้าวราดผัดผักรวมมิตรใส่กุ้ง', 'ข้าวอบเผือก', 'ข้าวผัดกุนเชียง', 'ข้าวแกงส้มกุ้งผักกระเฉด', 'พิซซ่าเตาถ่านแป้งบาง (1-2 ชิ้น)'
+                ]
+            },
+            recovery: { // 🥗 หมวดฟื้นฟู/ลดน้ำหนัก: สำหรับวันพัก, วิ่งเบาๆ, หรือเน้นลดความอ้วน (Low Carb/High Protein)
+                b: [
+                    'ไข่ต้ม 2 ฟอง + นมโปรตีนสูง', 'แซนด์วิชทูน่าโฮลวีต', 'เวย์โปรตีน 1 สกู๊ป + แอปเปิ้ลเขียว', 'กรีกโยเกิร์ตใส่ผลไม้ตระกูลเบอร์รี่', 'ไข่กระทะทรงเครื่อง (ไม่ใส่กุนเชียง)', 
+                    'สลัดอกไก่ย่างน้ำใส', 'น้ำเต้าหู้ (ไม่หวาน) + ไข่ลวก 2 ฟอง', 'ข้าวกล้องครึ่งทัพพี + ปลาทอดขมิ้น (Air fryer)', 'สลัดโรลลุยสวน', 'นมอัลมอนด์ + กราโนล่า',
+                    'อะโวคาโดโทสต์ (ขนมปังโฮลวีต 1 แผ่น)', 'ไข่คน (ไม่ใส่น้ำมัน) + มะเขือเทศย่าง', 'น้ำผักปั่น + เวย์โปรตีน', 'โจ๊กข้าวโอ๊ตใส่ไก่ฉีก', 'สลัดเต้าหู้คินุ',
+                    'แซลมอนรมควัน + ไข่ต้ม 1 ฟอง', 'ข้าวกล้อง + ไข่เจียว (ทอดด้วยน้ำเปล่า)', 'ออมเล็ตไข่ขาวใส่มะเขือเทศ', 'โปรตีนเชค + กล้วยหอมครึ่งลูก', 'นมถั่วเหลือง + ฟักทองต้ม',
+                    'น้ำเต้าหู้ทรงเครื่อง (ธัญพืชเยอะ/ไม่หวาน)', 'แกงจืดตำลึงเต้าหู้ไข่ + ข้าวกล้อง 1 ช้อน', 'แครอทต้ม + ไข่ต้ม 2 ฟอง', 'ทูน่าสเปรดโฮลวีต', 'นมพิสทาชิโอ + ผลไม้รวม'
+                ],
+                l: [
+                    'ข้าวมันไก่ต้ม (สั่งข้าวธรรมดา/ไม่เอาหนัง)', 'เกาเหลาเลือดหมู (หมูชิ้น) + ข้าว 1 ทัพพี', 'สเต็กอกไก่พริกไทยดำ + สลัดผัก', 'ยำทูน่าสลัดแซ่บ + ข้าวกล้อง', 'ปลากะพงนึ่งมะนาว + ข้าว 1 ทัพพี', 
+                    'เส้นหมี่น้ำตกหมูชิ้น (ไม่กระเทียมเจียว)', 'ส้มตำไทย + ไก่ย่าง (ไม่หนัง)', 'แกงส้มกุ้งผักรวม + ข้าวกล้อง', 'ต้มยำน้ำใสทะเล + ข้าวกล้อง', 'ลาบไก่สับ + ผักสดเยอะๆ',
+                    'ปลาดอลลี่ย่างเกลือ + บรอกโคลี', 'น้ำพริกอ่อง + ผักต้ม + ข้าวกล้องครึ่งทัพพี', 'แกงเลียง + ปลาทูทอด (Air fryer)', 'สลัดแซลมอนย่างน้ำสลัดงา', 'อกไก่ปั่น + ข้าวกล้อง',
+                    'ยำวุ้นเส้นทะเล (ไม่รวนหมูสับมันๆ)', 'อกไก่กระเทียมพริกไทย + ข้าวไรซ์เบอร์รี่', 'ข้าวต้มปลา (ไม่เจียวกระเทียม)', 'ข้าวไข่ข้น (ใช้น้ำ) + ต้มยำเห็ด', 'ผัดกะเพราเต้าหู้หมูสับ (ผัดน้ำซุป)',
+                    'ก๋วยเตี๋ยวลุยสวน (จิ้มน้ำจิ้มนิดเดียว)', 'แกงป่ากุ้งสด + ข้าวกล้อง', 'ข้าวหน้าไก่ย่างซอสโชยุ (ไม่หนัง)', 'อกไก่ม้วนสาหร่ายนึ่ง', 'ปลาซาบะย่างซีอิ๊ว + สลัดผัก'
+                ],
+                s: [
+                    'ถั่วแระญี่ปุ่น 1 ถ้วยเล็ก', 'ไข่ต้ม 1 ฟอง', 'อัลมอนด์อบ 15 เม็ด', 'เวย์โปรตีนครึ่งสกู๊ป', 'นมถั่วเหลืองสูตรไม่มีน้ำตาล 1 กล่อง', 
+                    'แอปเปิ้ลเขียว 1 ลูก', 'เมล็ดฟักทองอบ 1 กำมือ', 'โยเกิร์ตไขมัน 0%', 'ฝรั่ง 1/2 ผล', 'ชาเขียวร้อน (ไม่ใส่น้ำตาล)',
+                    'เวย์โปรตีนบาร์ (Low Sugar)', 'ดาร์กช็อกโกแลต (80%+) 1 ชิ้น', 'นมพาสเจอร์ไรส์ไขมันต่ำ', 'แตงโม 4-5 ชิ้น', 'เม็ดมะม่วงหิมพานต์อบ 10 เม็ด',
+                    'แมคคาเดเมียอบ 5-6 เม็ด', 'โยเกิร์ตพร้อมดื่ม (สูตรน้ำตาลน้อย)', 'ส้มโอ 4-5 ชิ้น', 'แก้วมังกรครึ่งลูก', 'กีวี่ 1 ลูก',
+                    'มะละกอสุก 4-5 ชิ้น', 'น้ำผสมเมล็ดเจียพองตัว', 'โปรตีนเชคเต้าหู้', 'ถั่วลิสงอบต้ม 1 กำมือ', 'ชาอู่หลง (ไม่มีน้ำตาล)'
+                ],
+                d: [
+                    'สลัดผักชามใหญ่ + อกไก่ฉีก', 'สุกี้น้ำไก่ (ซดน้ำจิ้มน้อยๆ)', 'ปลาทับทิมเผาเกลือ + ผักต้ม', 'เมี่ยงปลาทู (เส้นขนมจีนนิดหน่อย)', 'แกงเลียงผักรวม + ไข่ต้ม', 
+                    'ต้มเลือดหมูตำลึง (หมูชิ้นล้วน)', 'น้ำพริกปลาทู + ผักลวกเยอะๆ', 'ยำวุ้นเส้นหมูสับ/ทะเล (รสไม่จัด)', 'ต้มจืดมะระหมูสับ', 'สเต็กปลาแซลมอนลีนๆ',
+                    'แกงส้มผักรวม (ไม่ใส่ชะอมทอดไข่)', 'สเต็กปลาดอลลี่ + แอสพารากัส', 'สลัดปูอัดไข่กุ้ง (น้ำสลัดใส)', 'ปลากะพงลวกจิ้ม + ผักต้ม', 'ซุปเห็ดรวมน้ำใส',
+                    'ไข่ตุ๋นน้ำทรงเครื่อง (ใส่เห็ดหอม/หมูสับสกัดมัน)', 'แกงจืดผักกาดขาวเต้าหู้หมูสับ', 'ยำเห็ดเข็มทองกุ้งสด', 'น้ำพริกหนุ่ม (หมูสับล้วน) + ผักต้ม', 'ปลาหมึกย่าง + น้ำจิ้มซีฟู้ด',
+                    'ยำมะเขือยาวกุ้งสด (ไม่ใส่หมูสับรวนมัน)', 'ซุปมะเขือเทศ + ไข่ต้ม 1 ฟอง', 'ไก่นึ่งตะไคร้ + ผักนึ่ง', 'ต้มข่าไก่ (ใช้นมจืดหรือนมอัลมอนด์แทนกะทิ)', 'ลาบปลาทูน่า + ผักเคียง'
+                ]
+            }
+        };
+
+        // 🧠 ฟังก์ชันสุ่มเมนูอาหารแบบล็อควันที่ (ช่วยให้เมนูสลับกันไปเรื่อยๆ แต่พอเปิดกลับมาดูวันเดิม เมนูจะไม่เปลี่ยน)
+        const getMenu = (type, mealCode, dateObj) => {
+            const arr = nutritionDB[type][mealCode];
+            const seed = dateObj.getDate() + (dateObj.getMonth() * 31) + (mealCode.charCodeAt(0) * 7);
+            return arr[seed % arr.length];
+        };
+
         const getDayConfig = (todayObj, weekIdx, isRace, prof, isHot = false, prevSkipReason = 'none', readinessScore = 100, sleepMins = 420, lang = 'th') => {
             const dayIndex = todayObj.getDay(); 
             const currentTargetDist = prof.targetDist || 42.195;
@@ -293,24 +368,21 @@
 
             const currentWeekData = masterPlan[Math.min(weekIdx, 19)] || masterPlan[0];
 
-            let dynamicMeals = {};
-            let nutritionAdvice = '';
-            
-            if (prof.primaryGoal === 'weight_loss') {
-                nutritionAdvice = 'เป้าหมายคือลดน้ำหนัก เน้นทานโปรตีนให้อิ่มเพื่อคุมหิว ลดแป้งในมื้อเย็นครับ';
-                if (dayType === 'long' || dayType === 'speed' || isRace) {
-                    dynamicMeals = { b: 'ข้าวโอ๊ต+เวย์โปรตีน / ขนมปังโฮลวีตไข่ต้ม 2 ฟอง', l: 'เกาเหลาหมูตุ๋นข้าวครึ่งทัพพี / ข้าวราดกะเพราอกไก่', s: 'แอปเปิ้ลเขียว / อัลมอนด์ 10 เม็ด', d: 'สลัดอกไก่ย่างน้ำใส / สุกี้น้ำ(เน้นผักและไข่)' };
-                } else {
-                    dynamicMeals = { b: 'ไข่ลวก 2 ฟอง + นมถั่วเหลืองไม่หวาน', l: 'ข้าวมันไก่(ไม่หนัง) / ยำวุ้นเส้นหมูสับ', s: 'ถั่วแระญี่ปุ่น 7-11', d: 'ปลาย่าง + ผักต้ม / น้ำเต้าหู้กะเพรา' };
-                }
-            } else {
-                nutritionAdvice = 'เป้าหมายคือสถิติการซ้อม ต้องเติมคาร์โบไฮเดรตให้ถึงเพื่อเป็นพลังงานให้กล้ามเนื้อครับ';
-                if (dayType === 'long' || dayType === 'speed' || isRace) {
-                    dynamicMeals = { b: 'ข้าวเหนียวหมูปิ้ง / ขนมปังทาแยมผลไม้ (โหลดคาร์บ)', l: 'พาสต้าไก่ / ข้าวผัดหมู (เน้นแป้งให้พลังงาน)', s: 'กล้วยหอม 1 ลูก + เครื่องดื่มเกลือแร่', d: 'ข้าวสวย + ต้มยำปลา + ไข่เจียว' };
-                } else {
-                    dynamicMeals = { b: 'โจ๊กหมูใส่ไข่ / แซนด์วิชทูน่า', l: 'ก๋วยเตี๋ยวเส้นหมี่น้ำตก / ข้าวแกงทั่วไป', s: 'โยเกิร์ตพร้อมดื่ม', d: 'สเต็กไก่ / ข้าวกล้อง+กับข้าวลีน' };
-                }
+            // 🌟 NEW: ตัดสินใจเลือกโหมดอาหารประจำวัน (Carb Load vs Recovery)
+            let mealMode = 'recovery'; 
+            if (prof.primaryGoal === 'performance') {
+                if (dayType === 'long' || dayType === 'speed' || isRace) mealMode = 'carbLoad';
+            } else if (prof.primaryGoal === 'weight_loss') {
+                if (isRace) mealMode = 'carbLoad'; 
             }
+
+            // ดึงเมนูแบบสุ่มไขว้จากฐานข้อมูล 100+ รายการ
+            const dynamicMeals = {
+                b: getMenu(mealMode, 'b', todayObj),
+                l: getMenu(mealMode, 'l', todayObj),
+                s: getMenu(mealMode, 's', todayObj),
+                d: getMenu(mealMode, 'd', todayObj)
+            };
 
             let cfg = { 
                 id:'rest', 
@@ -459,10 +531,10 @@
             if (prof.lifestyle === 'heavy') cfg.meals.s = 'กล้วยหอม 1 ลูก + เกลือแร่ (ชดเชยเหงื่อจากการทำงาน)';
 
             cfg.detailedMeals = {
-                b: { menu: cfg.meals.b, detail: prof.primaryGoal === 'weight_loss' ? (lang==='th'?'คุมแคลอรี่ โปรตีนสูง':'High Protein, Calorie Deficit') : (lang==='th'?'คาร์บเชิงซ้อน เติมพลังงาน':'Complex Carbs for Fuel') },
-                l: { menu: cfg.meals.l, detail: prof.primaryGoal === 'weight_loss' ? (lang==='th'?'ลดคาร์บ เน้นเนื้อสัตว์ลีน':'Low Carb, Lean Meat') : (lang==='th'?'เน้นแป้งให้พลังงานสำหรับซ้อม':'High Carbs for Training') },
-                s: cfg.meals.s ? { menu: cfg.meals.s, detail: lang==='th'?'ลดความหิว ป้องกันกินมื้อเย็นเกิน':'Reduce hunger before dinner' } : null,
-                d: { menu: cfg.meals.d, detail: prof.primaryGoal === 'weight_loss' ? (lang==='th'?'มื้อเบาๆ ผักและโปรตีนลีน':'Light Meal, Veggies & Lean Protein') : (lang==='th'?'ซ่อมแซมกล้ามเนื้อหลังซ้อมหนัก':'Muscle Recovery Meal') }
+                b: { menu: cfg.meals.b, detail: mealMode === 'carbLoad' ? (lang==='th'?'เน้นคาร์บเชิงซ้อน โหลดพลังงานเตรียมซ้อม':'Carb-loading for energy') : (lang==='th'?'โปรตีนสูง ซ่อมแซมกล้ามเนื้อ':'High protein for recovery') },
+                l: { menu: cfg.meals.l, detail: mealMode === 'carbLoad' ? (lang==='th'?'เติมไกลโคเจนให้เต็มถัง':'Fill up glycogen stores') : (lang==='th'?'เน้นโปรตีนและไขมันดี':'Focus on protein & good fats') },
+                s: cfg.meals.s ? { menu: cfg.meals.s, detail: lang==='th'?'ลดความหิว ป้องกันการสลายกล้ามเนื้อ':'Prevent muscle breakdown' } : null,
+                d: { menu: cfg.meals.d, detail: mealMode === 'carbLoad' ? (lang==='th'?'คาร์บสูง ไขมันต่ำ ย่อยง่าย':'High carb, low fat, easy to digest') : (lang==='th'?'เน้นวิตามินและโปรตีนลีน':'Vitamins and lean protein') }
             };
 
             if (prevSkipReason === 'busy' || prevSkipReason === 'weather') {
@@ -651,9 +723,7 @@
             const [lifestyle, setLifestyle] = useState(initialProf.lifestyle || 'active');
             
             const [goal, setGoal] = useState(initialProf.primaryGoal || 'performance');
-            
             const [course, setCourse] = useState(initialProf.targetRaceCourse || 'standard');
-            
             const [raceDateStr, setRaceDateStr] = useState(initialProf.raceDate || '2026-11-15');
             
             const [avail, setAvail] = useState(initialProf.schedule ? {0: initialProf.schedule[0]!=='rest', 1: initialProf.schedule[1]!=='rest', 2: initialProf.schedule[2]!=='rest', 3: initialProf.schedule[3]!=='rest', 4: initialProf.schedule[4]!=='rest', 5: initialProf.schedule[5]!=='rest', 6: initialProf.schedule[6]!=='rest'} : {0:true, 1:false, 2:true, 3:true, 4:false, 5:true, 6:false});
@@ -1184,7 +1254,6 @@
             
             const currentSkipReason = dailyRec?.skipReason || (dailyRec?.isSick ? 'sick' : 'none');
 
-            // 🌟 State สำหรับระบบสลับวันซ้อม (Micro-Adjustments)
             const [swapMode, setSwapMode] = useState(false);
             const [selectedIdx, setSelectedIdx] = useState(null);
 
@@ -1276,7 +1345,6 @@
                     </section>
 
                     <section className="suunto-card p-8">
-                        {/* 🌟 อัปเกรดปุ่มสลับวันซ้อม 🌟 */}
                         <div className="flex justify-between items-start mb-5">
                             <h2 className="font-black text-sm text-zinc-400 uppercase tracking-widest flex items-center gap-2"><span>📅</span> {t.weeklySchedule}</h2>
                             <button 
@@ -1287,7 +1355,6 @@
                             </button>
                         </div>
 
-                        {/* กล่องข้อความแนะนำเมื่ออยู่ในโหมดสลับวัน */}
                         {swapMode && (
                             <div className="mb-5 bg-[#bef264]/10 border border-[#bef264]/30 p-3 rounded-xl text-[#bef264] text-xs font-bold text-center animate-pulse">
                                 {selectedIdx === null 
@@ -1452,20 +1519,17 @@
 
             const maxChartDist = Math.max(...chartData.map(d => d.dist), 5); 
 
-            // 🌟 NEW: คำนวณข้อมูลกราฟความฟิตย้อนหลัง 30 วัน (TSB Graph Data) 🌟
             const tsbChartData = useMemo(() => {
                 const data = [];
-                let currentCTL = 0; // Fitness (เส้นสีฟ้า)
-                let currentATL = 0; // Fatigue (เส้นสีชมพู)
+                let currentCTL = 0; 
+                let currentATL = 0; 
                 
-                // คำนวณย้อนหลังจากเมื่อวาน 30 วัน
                 for(let i=30; i>=0; i--) {
                     let d = new Date(activeDateObj);
                     d.setDate(d.getDate() - i);
                     const dtStr = d.toDateString();
                     const dailyTss = prof?.records?.[dtStr]?.tss || 0;
                     
-                    // สูตรคำนวณ EWMA อย่างง่าย (Exponentially Weighted Moving Average)
                     currentCTL = (dailyTss * (2/43)) + (currentCTL * (1 - 2/43));
                     currentATL = (dailyTss * (2/8)) + (currentATL * (1 - 2/8));
                     
@@ -1473,16 +1537,14 @@
                         day: d.getDate(),
                         ctl: currentCTL,
                         atl: currentATL,
-                        tsb: currentCTL - currentATL // Form (ความสด)
+                        tsb: currentCTL - currentATL
                     });
                 }
                 return data;
             }, [prof?.records, activeDateObj]);
 
-            // หาค่า Max เพื่อตั้งสเกลแกน Y ของกราฟ TSB ให้สวยงาม (ให้ขั้นต่ำคือ 10 จะได้ไม่ดูแบนไป)
             const maxTsbVal = Math.max(...tsbChartData.map(d => Math.max(d.ctl, d.atl, Math.abs(d.tsb), 10)));
 
-            // 🌟 NEW: โค้ช AI วิเคราะห์ผล TSB ล่าสุด (วันนี้) 🌟
             const todayTsb = tsbChartData[tsbChartData.length - 1];
             const getTsbAnalysis = (tsb) => {
                 if (tsb < -30) return lang === 'th' ? "🚨 โค้ชเตือน: คุณอยู่ในโซน 'อันตราย' (Overreaching) ร่างกายล้าสะสมหนักมาก (ค่าเกิน -30) เสี่ยงบาดเจ็บและป่วยสูง ควรพักผ่อนเต็มวันหรือทำแค่ Active Recovery ด่วนครับ!" : "🚨 AI Warning: 'Danger' zone (Overreaching). High risk of injury. Full rest needed!";
@@ -1912,7 +1974,6 @@
                 safeStorage.setItem(localKey, JSON.stringify({...prof, records: nRecords}));
             };
 
-            // 🌟 NEW: ฟังก์ชันสำหรับบันทึกการจัดตารางซ้อมใหม่ (Micro-Adjustments)
             const updateSchedule = (newSchedule) => {
                 const nProf = {...prof, schedule: newSchedule};
                 setProf(nProf);
@@ -2176,7 +2237,6 @@
 
                     <main className="animate-in fade-in duration-300">
                         {activeTab === 'tracker' && <TabTracker score={score} daily={daily} updateDaily={updateDaily} clearActivities={clearActivities} cfg={cfg} inDist={inDist} setInDist={setInDist} inPace={inPace} setInPace={setInPace} inHr={inHr} setInHr={setInHr} inCadence={inCadence} setInCadence={setInCadence} inElevation={inElevation} setInElevation={setInElevation} inDuration={inDuration} setInDuration={setInDuration} inAct={inAct} setInAct={setInAct} saveRun={saveRun} targetWater={targetWater} isHotWeather={isHotWeather} setIsHotWeather={setIsHotWeather} lang={lang} logDate={logDate} setLogDate={setLogDate} />}
-                        {/* 🌟 ส่ง updateSchedule เข้าไปให้หน้า TabPlan ใช้งานด้วย */}
                         {activeTab === 'plan' && <TabPlan cfg={cfg} prof={prof} weekIdx={weekIdx} isHotWeather={isHotWeather} updateDaily={updateDaily} updateSchedule={updateSchedule} activeDateStr={activeDateStr} activeDateObj={activeDateObj} lang={lang} />}
                         {activeTab === 'ranking' && <TabRanking leaderboardData={leaderboardData} lang={lang} />}
                         {activeTab === 'stats' && <TabStats prof={prof} vo2Value={vo2Value} tDist={tDist} pTime={pTime} pSource={pSource} fastest5kSecs={f5k} fastest10kSecs={f10k} longestRun={longestRun} achievements={achievements} currentTss={totalTss7Days} lang={lang} activeDateObj={activeDateObj} />}
