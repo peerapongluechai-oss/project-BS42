@@ -669,6 +669,7 @@
                 return targetModel;
             };
 
+            // 🛠️ แก้ไขบั๊กเซฟทับกัน โดยรวม Data เป็นก้อนเดียว (Object) แล้วส่งไปเซฟ
             const handleManualReadiness = () => {
                 let sMins = (parseInt(sleepHrs) || 0) * 60 + (parseInt(sleepMins) || 0);
                 let hrvVal = parseInt(hrvInput) || 0;
@@ -683,10 +684,13 @@
                 let rScore = Math.round(sleepScore + hrvScore);
                 if (rScore < 10) rScore = 10;
 
-                updateDaily('rSleep', sMins);
-                updateDaily('rHrv', hrvVal);
-                updateDaily('rReadinessScore', rScore);
-                updateDaily('rReadinessChecked', true);
+                // อัปเดตทีเดียวรวดเดียวจบ ป้องกันบั๊กจอดำและค่ากลายเป็น 0
+                updateDaily({
+                    rSleep: sMins,
+                    rHrv: hrvVal,
+                    rReadinessScore: rScore,
+                    rReadinessChecked: true
+                });
                 
                 if (rScore < 60 || sMins < 360) {
                     alert(`⚠️ โค้ช AI สังเกตเห็นว่าร่างกายคุณต้องการการพักผ่อน (อาจจะนอนน้อยหรือความพร้อมต่ำ) ตารางวิ่งหนักวันนี้จะถูกปรับเป็น Recovery ให้อัตโนมัติครับ!`);
@@ -710,7 +714,8 @@
 
                         const url = `https://generativelanguage.googleapis.com/v1beta/models/${targetModel}:generateContent?key=${secretKey}`;
                         
-                        const promptText = "Extract Sleep duration and HRV (Heart Rate Variability) from this health app screenshot. Return ONLY a valid JSON object without markdown. Keys needed: 'sleepMinutes' (number, total sleep in minutes, e.g. 7h 30m = 450. If 8h = 480), 'hrv' (number, HRV value in ms). If not found, return 0.";
+                        // 🛠️ อัปเกรดคำสั่ง Prompt ให้ AI คำนวณเวลาการนอนจาก 6:42 เป็น 402 นาทีให้เลย
+                        const promptText = "Extract Sleep duration and HRV (Heart Rate Variability) from this health app screenshot. Return ONLY a valid JSON object without markdown. Keys needed: 'sleepMinutes' (number, total sleep in minutes. For example, if the image shows 6:42, it means 6 hours and 42 minutes, which is (6*60)+42 = 402 minutes.), 'hrv' (number, HRV value in ms). If not found, return 0.";
 
                         const payload = {
                             contents: [{ role: "user", parts: [{ text: promptText }, { inlineData: { mimeType: file.type, data: base64Data } }] }],
@@ -734,10 +739,13 @@
                             let rScore = Math.round(sleepScore + hrvScore);
                             if (rScore < 10) rScore = 10;
 
-                            updateDaily('rSleep', sMins);
-                            updateDaily('rHrv', hrvVal);
-                            updateDaily('rReadinessScore', rScore);
-                            updateDaily('rReadinessChecked', true);
+                            // อัปเดตทีเดียวรวดเดียวจบ
+                            updateDaily({
+                                rSleep: sMins,
+                                rHrv: hrvVal,
+                                rReadinessScore: rScore,
+                                rReadinessChecked: true
+                            });
                             
                             if (rScore < 60 || sMins < 360) {
                                 alert(`⚠️ โค้ช AI สังเกตเห็นว่าร่างกายคุณต้องการการพักผ่อน (อาจจะนอนน้อยหรือความพร้อมต่ำ) ตารางวิ่งหนักวันนี้จะถูกปรับเป็น Recovery ให้อัตโนมัติครับ!`);
