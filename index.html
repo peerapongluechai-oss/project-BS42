@@ -1162,7 +1162,8 @@
                                         {type !== 'rest' && (
                                             <div className="mt-2 pt-3 border-t border-zinc-700/50">
                                                 <p className={`text-xs font-bold leading-relaxed mb-3 ${isToday ? 'text-white' : 'text-zinc-400'}`}>
-                                                    {prevSkip === 'sick' && <span className="text-orange-400 font-black mr-1">[ปรับลด]</span>}
+                                                    {/* 🛠️ ลิงก์ป้ายเตือนกับตัวแปรที่ถูกคำนวณมาจากโค้ช */}
+                                                    {dayCfg.isDowngraded && <span className="text-orange-400 font-black mr-1">{lang === 'th' ? '[ปรับลด]' : '[DOWNGRADED]'}</span>}
                                                     {dayCfg.detailedWorkout.main}
                                                 </p>
                                                 <div className="flex gap-2">
