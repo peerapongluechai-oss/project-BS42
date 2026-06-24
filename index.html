@@ -186,10 +186,18 @@
             return `${Math.round(hrr*min)+Number(rhr||60)}-${Math.round(hrr*max)+Number(rhr||60)} bpm`;
         };
 
-        const generateFeedback = (dist, pace, hr, targetPaceStr, actType = 'Run', cadence = '', elevation = '', duration = '', lang = 'th') => {
+        // 🌟 อัปเดตให้ AI นำ "ความรู้สึก" มาประเมินร่วมกับสถิติ 🌟
+        const generateFeedback = (dist, pace, hr, targetPaceStr, actType = 'Run', cadence = '', elevation = '', duration = '', lang = 'th', feeling = 'normal') => {
             const t = lang === 'th';
             let cadenceFeedback = "";
             let elevFeedback = "";
+            let feelingFeedback = "";
+            
+            // 🧠 AI แปลผลความรู้สึก (RPE)
+            if (feeling === 'great') feelingFeedback = t ? " 🤩 ร่างกายตอบสนองดีเยี่ยมเลยครับ ฟอร์มกำลังมา!" : " 🤩 You felt great! Fitness is peaking.";
+            else if (feeling === 'good') feelingFeedback = t ? " 🙂 รู้สึกดี สบายๆ ถือว่าคุมจังหวะได้สวยครับ" : " 🙂 Felt good. Solid effort.";
+            else if (feeling === 'tired') feelingFeedback = t ? " 😮‍💨 รู้สึกตึงๆ ล้าๆ ใช่ไหมครับ พักผ่อนและยืดเหยียดเพิ่มอีกนิดนะ" : " 😮‍💨 Felt tired. Make sure to prioritize recovery.";
+            else if (feeling === 'exhausted') feelingFeedback = t ? " 🥵 หมดสภาพเลย! ร่างกายอาจจะพักผ่อนไม่พอ มื้อเย็นเติมคาร์บด่วนๆ ครับ" : " 🥵 Exhausted! Might be under-recovered. Fuel up with carbs tonight!";
             
             if (elevation && Number(elevation) > 50) elevFeedback = t ? ` (สู้กับความชัน ${elevation}m ⛰️ กล้ามเนื้อขาแกร่งขึ้นแน่นอน!)` : ` (Elevation ${elevation}m ⛰️ great for leg strength!)`;
             
@@ -197,21 +205,21 @@
                 if (cadence) {
                     const spm = Number(cadence);
                     if (spm > 0 && spm < 160) {
-                        cadenceFeedback = t ? ` ⚠️ รอบขาของคุณค่อนข้างต่ำ (${spm} SPM) ระวัง Overstride และเจ็บเข่านะครับ ลองซอยให้แตะ 170+ ครับ` : ` ⚠️ Your cadence is a bit low (${spm} SPM). Try to reach 170+ to prevent overstriding.`;
+                        cadenceFeedback = t ? ` ⚠️ รอบขาต่ำไปนิด (${spm} SPM) ระวังเจ็บเข่านะครับ ลองซอยให้แตะ 170+` : ` ⚠️ Cadence a bit low (${spm} SPM). Try to hit 170+.`;
                     } else if (spm >= 170) {
-                        cadenceFeedback = t ? ` 🏃‍♂️ รอบขา ${spm} SPM เยี่ยมมาก! พับเข่าดึงเท้าได้ดี เซฟข้อต่อสุดๆ` : ` 🏃‍♂️ Great cadence at ${spm} SPM! Very efficient form.`;
+                        cadenceFeedback = t ? ` 🏃‍♂️ รอบขา ${spm} SPM เยี่ยมมาก! พับเข่าดึงเท้าดี เซฟข้อต่อสุดๆ` : ` 🏃‍♂️ Great cadence (${spm} SPM)! Very efficient.`;
                     } else if (spm > 0) {
-                        cadenceFeedback = t ? ` 👍 รอบขา ${spm} SPM กำลังดีครับ คุมให้สม่ำเสมอ` : ` 👍 Cadence at ${spm} SPM is good. Keep it steady.`;
+                        cadenceFeedback = t ? ` 👍 รอบขา ${spm} SPM กำลังดี คุมให้สม่ำเสมอครับ` : ` 👍 Cadence ${spm} SPM is steady.`;
                     }
                 }
             }
 
-            if (actType === 'Trail') return (t ? `⛰️ เพซเทรลจะช้าเป็นปกติครับ AI ไม่นำเพซ ${pace} นี้ไปฉุด VCR ถือว่าได้ฝึกกล้ามเนื้อเต็มๆ!` : `⛰️ Trail pace is naturally slower. AI won't use ${pace} to drop your VCR. Great leg workout!`) + elevFeedback + cadenceFeedback;
-            if (actType === 'Swim') return (t ? `🏊‍♂️ ว่ายน้ำ ${duration} นาที เป็น Cross-Training ที่ช่วยเซฟข้อต่อและสร้าง Aerobic base ได้ยอดเยี่ยมมากครับ!` : `🏊‍♂️ Swimming for ${duration} mins is excellent cross-training for your joints!`);
-            if (actType === 'Bike') return (t ? `🚴‍♂️ ปั่นจักรยาน ${duration} นาที ช่วยสร้างกล้ามเนื้อขาส่วนหน้า (Quads) ได้ดี AI บันทึกความล้าให้เรียบร้อยครับ!` : `🚴‍♂️ Biking for ${duration} mins builds great quad strength!`);
-            if (actType === 'Other') return (t ? `🏋️‍♂️ การซ้อมเสริมความแข็งแรง ${duration} นาที จะช่วยป้องกันการบาดเจ็บจากการวิ่งระยะไกลได้ครับ` : `🏋️‍♂️ ${duration} mins of strength training will bulletproof your body for long runs!`);
+            if (actType === 'Trail') return (t ? `⛰️ เพซเทรลจะช้าเป็นปกติครับ ถือว่าได้ฝึกกล้ามเนื้อเต็มๆ!` : `⛰️ Trail pace is naturally slower. Great leg workout!`) + elevFeedback + cadenceFeedback + feelingFeedback;
+            if (actType === 'Swim') return (t ? `🏊‍♂️ ว่ายน้ำ ${duration} นาที ช่วยเซฟข้อต่อและสร้าง Aerobic base ได้ยอดเยี่ยมครับ!` : `🏊‍♂️ Swimming for ${duration} mins is excellent cross-training!`) + feelingFeedback;
+            if (actType === 'Bike') return (t ? `🚴‍♂️ ปั่นจักรยาน ${duration} นาที ช่วยสร้างกล้ามเนื้อขาส่วนหน้าได้ดีครับ!` : `🚴‍♂️ Biking for ${duration} mins builds great quads!`) + feelingFeedback;
+            if (actType === 'Other') return (t ? `🏋️‍♂️ การซ้อมเสริมความแข็งแรง ${duration} นาที ช่วยป้องกันบาดเจ็บจากการวิ่งระยะไกลได้ครับ` : `🏋️‍♂️ ${duration} mins of strength prep is crucial!`) + feelingFeedback;
 
-            if(!pace || pace === '0:00' || !targetPaceStr || targetPaceStr === '-') return (t ? "บันทึกสถิติสำเร็จ! วินัยคือหัวใจสำคัญครับ 🏃‍♂️" : "Activity saved! Consistency is key. 🏃‍♂️") + elevFeedback + cadenceFeedback;
+            if(!pace || pace === '0:00' || !targetPaceStr || targetPaceStr === '-') return (t ? "บันทึกสถิติสำเร็จ! วินัยคือหัวใจสำคัญครับ 🏃‍♂️" : "Activity saved! Consistency is key. 🏃‍♂️") + elevFeedback + cadenceFeedback + feelingFeedback;
             
             const pSecs = parsePace(pace);
             const tSecsArr = targetPaceStr.split(' - ').map(parsePace);
@@ -219,11 +227,11 @@
                 const minT = Math.min(...tSecsArr);
                 const maxT = Math.max(...tSecsArr);
                 
-                if(pSecs < minT - 15) return (t ? `⚡ คุณวิ่งเพซ ${pace} ซึ่งเร็วกว่าเป้าหมาย (${targetPaceStr})! โค้ชเตือนว่าซ้อมเร็วกว่ากำหนดระวังจะกรอบนะครับ` : `⚡ You ran at ${pace}, faster than the target (${targetPaceStr})! Careful not to burn out.`) + elevFeedback + cadenceFeedback;
-                if(pSecs > maxT + 15) return (t ? `🐢 เพซ ${pace} วันนี้ช้ากว่าเป้า (${targetPaceStr}) นิดหน่อย แต่ร่างกายได้สร้าง Endurance ถือว่าทำได้ดีครับ` : `🐢 Pace ${pace} was slightly slower than target (${targetPaceStr}), but great for endurance.`) + elevFeedback + cadenceFeedback;
-                return (t ? `🎯 เพอร์เฟกต์! เพซ ${pace} ตรงตามแผน (${targetPaceStr}) เป๊ะๆ ร่างกายกำลังพัฒนาไปถูกทางครับ` : `🎯 Perfect execution! Pace ${pace} is exactly within the target (${targetPaceStr}).`) + elevFeedback + cadenceFeedback;
+                if(pSecs < minT - 15) return (t ? `⚡ คุณวิ่งเพซ ${pace} เร็วกว่าเป้าหมาย (${targetPaceStr})! ระวังจะกรอบนะครับ` : `⚡ You ran ${pace}, faster than target (${targetPaceStr})! Careful not to burn out.`) + elevFeedback + cadenceFeedback + feelingFeedback;
+                if(pSecs > maxT + 15) return (t ? `🐢 เพซ ${pace} วันนี้ช้ากว่าเป้า (${targetPaceStr}) นิดหน่อย แต่ได้ Endurance ถือว่าทำได้ดีครับ` : `🐢 Pace ${pace} slightly slower than target (${targetPaceStr}), but great for endurance.`) + elevFeedback + cadenceFeedback + feelingFeedback;
+                return (t ? `🎯 เพอร์เฟกต์! เพซ ${pace} ตรงตามแผน (${targetPaceStr}) เป๊ะๆ ร่างกายกำลังพัฒนาไปถูกทางครับ` : `🎯 Perfect! Pace ${pace} is exactly within target (${targetPaceStr}).`) + elevFeedback + cadenceFeedback + feelingFeedback;
             }
-            return (t ? "ยอดเยี่ยมมากครับ! เก็บสะสมไมล์ไปเรื่อยๆ ความฟิตจะตามมาเอง 🏆" : "Excellent work! Keep logging miles and fitness will follow. 🏆") + elevFeedback + cadenceFeedback;
+            return (t ? "ยอดเยี่ยมมากครับ! เก็บสะสมไมล์ไปเรื่อยๆ ความฟิตจะตามมาเอง 🏆" : "Excellent work! Keep logging miles and fitness will follow. 🏆") + elevFeedback + cadenceFeedback + feelingFeedback;
         };
 
         const calcCondition = (hr, pace) => {
@@ -875,6 +883,9 @@
             const [sleepHrs, setSleepHrs] = useState('');
             const [sleepMins, setSleepMins] = useState('');
             const [hrvInput, setHrvInput] = useState('');
+            
+            // 🌟 NEW: State เก็บความรู้สึกหลังซ้อม (RPE Feeling)
+            const [inFeeling, setInFeeling] = useState('normal'); 
 
             const isRunOrTrail = inAct === 'Run' || inAct === 'Trail';
 
@@ -1067,8 +1078,14 @@
             };
 
             const displayActivities = daily.activities?.length > 0 ? daily.activities : (daily.rLog && daily.rDist ? [{
-                id: 'legacy', type: daily.rType, dist: daily.rDist, pace: daily.rPace, hr: daily.rHr, cadence: daily.rCadence, elevation: daily.rElevation, duration: daily.rDuration, aiFeedback: daily.aiFeedback, perfCondition: daily.perfCondition, tss: daily.tss
+                id: 'legacy', type: daily.rType, dist: daily.rDist, pace: daily.rPace, hr: daily.rHr, cadence: daily.rCadence, elevation: daily.rElevation, duration: daily.rDuration, aiFeedback: daily.aiFeedback, perfCondition: daily.perfCondition, tss: daily.tss, feeling: daily.rFeeling || 'normal'
             }] : []);
+            
+            // 🌟 Wrapper สำหรับการกดปุ่ม Save Activity เพื่อแนบ Feeling ไปด้วย
+            const handleSaveWithFeeling = () => {
+                saveRun(inFeeling);
+                setInFeeling('normal'); // Reset หลังเซฟ
+            };
 
             return (
                 <div className="space-y-5">
@@ -1181,7 +1198,11 @@
                                                 <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">HR</p><p className="text-white font-black text-sm md:text-lg italic text-red-400">{act.hr || '-'}</p></div>
                                                 {(act.type === 'Run' || act.type === 'Trail') && <div><p className="text-[10px] text-zinc-500 font-bold uppercase mb-2">SPM</p><p className="text-white font-black text-sm md:text-lg italic text-orange-400">{act.cadence || '-'}</p></div>}
                                             </div>
-                                            <p className="text-sm font-bold text-zinc-300 leading-relaxed">{act.aiFeedback}</p>
+                                            <p className="text-sm font-bold text-zinc-300 leading-relaxed">
+                                                {/* 🌟 โชว์ Emoji ความรู้สึกหน้า Feedback */}
+                                                {act.feeling === 'great' ? '🤩 ' : act.feeling === 'good' ? '🙂 ' : act.feeling === 'tired' ? '😮‍💨 ' : act.feeling === 'exhausted' ? '🥵 ' : ''}
+                                                {act.aiFeedback}
+                                            </p>
                                             {act.perfCondition && <span className="text-[10px] font-black text-black uppercase bg-[#bef264] px-2 py-1 rounded-lg mt-3 inline-block">{act.perfCondition}</span>}
                                         </div>
                                     ))}
@@ -1235,7 +1256,19 @@
                                 </div>
                             )}
 
-                            <button onClick={saveRun} disabled={isRunOrTrail ? (!inDist || !inPace) : !inDuration} className={`w-full py-5 rounded-xl uppercase tracking-widest text-sm font-black disabled:opacity-30 disabled:grayscale transition-all active:scale-95 ${displayActivities.length > 0 ? 'bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.2)]' : 'suunto-bg-accent shadow-[0_0_15px_rgba(190,242,100,0.1)]'}`}>{t.saveActivity}</button>
+                            {/* 🌟 NEW: แผงควบคุม "ความรู้สึกหลังซ้อม (RPE Feeling)" */}
+                            <div className="mb-6">
+                                <p className="text-[10px] text-zinc-500 font-bold uppercase mb-3 text-center">ความรู้สึกหลังซ้อม (RPE / FEELING)</p>
+                                <div className="flex justify-between gap-2 bg-black p-2 rounded-xl border border-zinc-800">
+                                    <button onClick={() => setInFeeling('great')} className={`flex-1 py-3 rounded-lg text-2xl transition-all ${inFeeling === 'great' ? 'bg-[#bef264]/20 border border-[#bef264]/50 scale-110' : 'opacity-50 hover:opacity-100 grayscale'}`}>🤩</button>
+                                    <button onClick={() => setInFeeling('good')} className={`flex-1 py-3 rounded-lg text-2xl transition-all ${inFeeling === 'good' ? 'bg-cyan-500/20 border border-cyan-500/50 scale-110' : 'opacity-50 hover:opacity-100 grayscale'}`}>🙂</button>
+                                    <button onClick={() => setInFeeling('normal')} className={`flex-1 py-3 rounded-lg text-2xl transition-all ${inFeeling === 'normal' ? 'bg-zinc-500/20 border border-zinc-500/50 scale-110 grayscale-0' : 'opacity-50 hover:opacity-100 grayscale'}`}>😐</button>
+                                    <button onClick={() => setInFeeling('tired')} className={`flex-1 py-3 rounded-lg text-2xl transition-all ${inFeeling === 'tired' ? 'bg-orange-500/20 border border-orange-500/50 scale-110' : 'opacity-50 hover:opacity-100 grayscale'}`}>😮‍💨</button>
+                                    <button onClick={() => setInFeeling('exhausted')} className={`flex-1 py-3 rounded-lg text-2xl transition-all ${inFeeling === 'exhausted' ? 'bg-red-500/20 border border-red-500/50 scale-110' : 'opacity-50 hover:opacity-100 grayscale'}`}>🥵</button>
+                                </div>
+                            </div>
+
+                            <button onClick={handleSaveWithFeeling} disabled={isRunOrTrail ? (!inDist || !inPace) : !inDuration} className={`w-full py-5 rounded-xl uppercase tracking-widest text-sm font-black disabled:opacity-30 disabled:grayscale transition-all active:scale-95 ${displayActivities.length > 0 ? 'bg-cyan-500 text-black shadow-[0_0_15px_rgba(6,182,212,0.2)]' : 'suunto-bg-accent shadow-[0_0_15px_rgba(190,242,100,0.1)]'}`}>{t.saveActivity}</button>
                         </div>
 
                     </section>
@@ -1983,7 +2016,7 @@
             
             const clearActivities = () => {
                 if(window.confirm(lang === 'th' ? "ลบประวัติการซ้อมของวันนี้ทั้งหมด?" : "Clear all activities for today?")) {
-                    const nd = { ...daily, rLog: false, activities: [], tss: 0, rDist:'', rPace:'', rHr:'', rType:'' };
+                    const nd = { ...daily, rLog: false, activities: [], tss: 0, rDist:'', rPace:'', rHr:'', rType:'', rFeeling: 'normal' };
                     setDaily(nd);
                     const nRecords = {...prof.records, [activeDateStr]: nd};
                     const nProf = {...prof, records: nRecords};
@@ -1993,7 +2026,8 @@
                 }
             };
 
-            const saveRun = () => {
+            // 🌟 อัปเดต saveRun ให้รับค่า feeling ที่ส่งมาจาก Component
+            const saveRun = (feelingVal = 'normal') => {
                 const isRunOrTrail = inAct === 'Run' || inAct === 'Trail';
                 const rSecs = isRunOrTrail ? parsePace(inPace) : 0; 
                 const dNum = parseFloat(inDist) || 0;
@@ -2014,7 +2048,8 @@
                 
                 const cfgToday = getDayConfig(activeDateObj, weekIdx, false, prof, isHotWeather, prevSkipReasonActive, activeReadiness, activeSleep, lang);
                 
-                const ai = generateFeedback(dNum, inPace, inHr, cfgToday.pace, inAct, inCadence, inElevation, inDuration, lang);
+                // 🧠 ส่ง Feeling เข้าไปให้ AI วิเคราะห์
+                const ai = generateFeedback(dNum, inPace, inHr, cfgToday.pace, inAct, inCadence, inElevation, inDuration, lang, feelingVal);
                 const perf = calcCondition(inHr, inPace);
                 
                 const hrNum = Number(inHr) || prof.rhr || 60;
@@ -2029,13 +2064,16 @@
                     currentActs.push({
                         id: 'legacy', type: daily.rType, dist: daily.rDist, pace: daily.rPace, hr: daily.rHr,
                         cadence: daily.rCadence, elevation: daily.rElevation, duration: daily.rDuration,
-                        aiFeedback: daily.aiFeedback, perfCondition: daily.perfCondition, tss: daily.tss || 0
+                        aiFeedback: daily.aiFeedback, perfCondition: daily.perfCondition, tss: daily.tss || 0,
+                        feeling: daily.rFeeling || 'normal'
                     });
                 }
                 
+                // 🌟 บันทึก Feeling เข้าไปใน Activity ใหม่
                 const newAct = {
                     id: Date.now(), type: inAct, dist: inDist, pace: inPace, hr: inHr, cadence: inCadence,
-                    elevation: inElevation, duration: inDuration, aiFeedback: ai, perfCondition: perf, tss: todayTss
+                    elevation: inElevation, duration: inDuration, aiFeedback: ai, perfCondition: perf, tss: todayTss,
+                    feeling: feelingVal
                 };
                 currentActs = [...currentActs, newAct];
                 
